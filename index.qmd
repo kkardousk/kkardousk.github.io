@@ -1,0 +1,31 @@
+---
+title: "Replication"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once)
+    css: nyt_theme.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+---

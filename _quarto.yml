@@ -1,0 +1,25 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Karim K. Kardous"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+      - Is NHS Good Value ? (Replication)
+      - Has International Travel to the U.S. Really Collapsed ? (Replication)
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: nyt_theme.css
+    highlight-style: github-dark
+    toc: true
+
+editor: visual
+

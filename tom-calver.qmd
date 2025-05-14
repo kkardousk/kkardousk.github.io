@@ -1,0 +1,962 @@
+---
+title: |
+  <div class="custom-title-block">
+    <span style="color:#000000; font-size:1em;">Replication of below article's Data and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.7em;">"We keep pumping money into the NHS. Is it good value?"</span><br>
+    <span style="color:#666666; font-size:0.5em;">
+      By <a href="https://www.thetimes.com/comment/columnists/article/we-keep-pumping-money-into-the-nhs-is-it-good-value-blq8bxc39" 
+      target="_blank" style="color:#000000; text-decoration:underline;">Tom Calver</a>
+    </span><br>
+    <span style="font-size:0.7em; color:#333333;"><br>
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once)
+    css: nyt_theme.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+editor: visual
+---
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+# install pacman if it's not already installed
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+# install.packages("gdtools", type = "source")
+
+install.packages("gdtools", type = "source")
+
+# brew install cairo harfbuzz fribidi
+# Load or install packages
+pacman::p_load(
+  gdtools,
+  tidyverse,
+  quarto,
+  chromote,
+  here,
+  tidycensus,
+  janitor,
+  purrr,
+  ggtext,
+  ggiraph,
+  gfonts,
+  showtext,
+  ggborderline,
+  shiny,
+  gt,
+  rsvg,
+  magick,
+  stringr,
+  ggimage
+)
+# potential steps on mac for registering then loading Roboto font into 
+# Set theme and options
+options(scipen = 999)
+theme_set(theme_minimal())
+
+suppressMessages({
+  gdtools::register_gfont("Roboto", "roboto")
+  sysfonts::font_add_google("Roboto", "roboto")
+  showtext_auto()
+  showtext_opts(dpi = 300)
+})
+```
+
+**Data Import/Read:** Lucky for us, the data is embedded in
+
+```{r}
+#| echo: fenced
+#| message: false
+#| output: false
+#| warning: false
+b <- ChromoteSession$new()
+b$Page$navigate("https://www.thetimes.com/comment/columnists/article/we-keep-pumping-money-into-the-nhs-is-it-good-value-blq8bxc39")
+Sys.sleep(6) # allow some time for dynamic content to render
+
+# extract all iframe srcs (joined by || in this case)
+iframes_html <- b$Runtime$evaluate("Array.from(document.querySelectorAll('iframe')).map(el => el.src).join('||')")$result$value
+# split and filter valid Datawrapper url's
+chart_urls <- str_split(iframes_html, "\\|\\|")[[1]] |>
+  str_subset("^https://datawrapper\\.dwcdn\\.net/[a-zA-Z0-9]+/\\d+$")
+
+all_data <- purrr::map_dfr(chart_urls, function(url) {  
+  message("Navigating to: ", url)
+  b$Page$navigate(url)
+  Sys.sleep(3)
+  
+  html <- b$Runtime$evaluate("document.documentElement.outerHTML")$result$value
+  
+  # match visible chart values if any
+  pattern <- 'aria-datavariables="year,\\s*([A-Z]+)".*?aria-datavalues="([0-9]{4}),\\s*([0-9.]+)"'
+  matches <- str_match_all(html, pattern)[[1]]
+  
+  # match dataset.csv url as well 
+  csv_pattern <- "https://datawrapper\\.dwcdn\\.net/[a-zA-Z0-9]+/\\d+/dataset\\.csv"
+  csv_link <- str_extract(html, csv_pattern)
+  if (is.na(csv_link)) {
+    csv_link <- str_glue("{url}/dataset.csv")
+  }
+  
+  tibble(
+    chart_url = url,
+    country = if(nrow(matches)) matches[, 2] else NA,
+    year = if(nrow(matches)) as.integer(matches[, 3]) else NA,
+    value = if(nrow(matches)) as.numeric(matches[, 4]) else NA,
+    dataset_csv = csv_link
+  )
+})
+```
+
+```{r}
+# add a custom gt boilerplate -from {gt} package (great tables)-to reduce code redundancy (having to copy/paste same chunks of code every # time we turn a tibble into a gt object)
+
+gt_nyt_custom <- function(x, title = '', subtitle = '', first_10_rows_only = TRUE){
+  
+  x <- x |> clean_names(case = 'title')
+  numeric_cols <- x |> select(where(is.double)) |> names()
+  integer_cols <- x |> select(where(is.integer)) |> names()
+  
+  title_fmt <- if(title != "") glue::glue("**{title}**") else ""
+  subtitle_fmt <- if(subtitle != "") glue::glue("*{subtitle}*") else ""
+  
+  x |>
+    (\(x) if (first_10_rows_only) slice_head(x, n = 10) else x)() |>
+    gt() |> 
+    tab_header(
+      title = md(title_fmt),
+      subtitle = md(subtitle_fmt)
+    ) |> 
+    tab_style(
+      style = list(
+        cell_text(color = '#333333')
+      ),
+      locations = cells_body()
+    ) |> 
+    tab_style(
+      style = list(
+        cell_text(color = '#CC6600', weight = 'bold')
+      ),
+      locations = cells_column_labels(everything())
+    ) |> 
+    fmt_number(
+      columns = c(numeric_cols),
+      decimals = 1
+    ) |> 
+    fmt_number(
+      columns = c(integer_cols),
+      decimals = 0
+    ) |> 
+    tab_options(
+      table.font.names = c("Merriweather", "Georgia", "serif"),
+      table.font.size = 14,
+      heading.title.font.size = 18,
+      heading.subtitle.font.size = 14,
+      column_labels.font.weight = "bold",
+      column_labels.background.color = "#eeeeee",
+      table.border.top.color = "#dddddd",
+      table.border.bottom.color = "#dddddd",
+      data_row.padding = px(6),
+      row.striping.include_table_body = TRUE,
+      row.striping.background_color = "#f9f9f9"
+    )
+  
+}
+all_data |> 
+  count(url = chart_url, download_link = dataset_csv) |> 
+  select(-n) |> 
+  gt_nyt_custom(title = 'Dataset Ids') |> 
+  cols_label(
+    Url = "Plot URL",
+    `Download Link` = "Link to CSV"
+  )
+
+health_sat <- 
+  all_data |> 
+  drop_na() |> 
+  mutate(
+    country_name = case_when(
+      country == "DE" ~ "Germany",
+      country == "ES" ~ "Spain",
+      country == "FR" ~ "France",
+      country == "GB" ~ "UK",
+      country == "IE" ~ "Ireland",
+      country == "NO" ~ "Norway",
+      country == "PT" ~ "Portugal",
+      TRUE ~ NA_character_
+    )
+  )
+```
+
+### Health service satisfaction (ESS Survey; European Social Survey)
+
+```{r}
+# now we can focus on building plot 
+all_data |> 
+  gt_nyt_custom() |> 
+  tab_header(
+    title = md("**Chart Data Summary**"),
+    subtitle = md("*Extracted from embedded datawrapper from the HTML Source page*")
+  )
+```
+
+```{r}
+# let's just go with smoothing 
+extract_smooth_build <- function(tibble, country = 'GB'){
+  
+  initial_pull <- 
+    all_data |> 
+    filter(country %in% {{country}}) |> 
+    ggplot(aes(x = year, y = value)) + 
+    geom_smooth(method = 'loess')
+  
+  # fetch country abbs for ids, and ranges
+  country_ids <- c(na.omit(all_data |> pull(country) |> unique()))
+  country_max <- all_data |> filter(country == {{country}}) |> pull(value) |> max()
+  country_min <- all_data |> filter(country == {{country}}) |> pull(value) |> min()
+  
+  # access smoothed, include actual years to imputed/smoothed points, cap at min max per country/series
+  # and keep only columns of interest
+  smoothed_df <- ggplot_build(initial_pull)[[1]] |> as.data.frame() |> as_tibble()
+  
+  complete_series <- 
+    smoothed_df |> 
+    select(year = x, value = y) |> 
+    mutate(country := country) |> 
+    bind_rows(
+      all_data |> 
+        filter(country == {{country}}) |> 
+        select(year, value) 
+    ) |> 
+    mutate(
+      year = as.integer(year),
+      year_val_tie_breaker = if_else(is.na(country), 1, 0)
+    ) |> 
+    group_by(country, year) |> 
+    arrange(desc(year_val_tie_breaker)) |> 
+    mutate(ties = row_number()) |> 
+    filter(
+      if (n() < 4) TRUE else ties + year_val_tie_breaker != 1 # make sure every year/country combo gets same no. of obs
+      # and that original values (only in the event a given year is even or survey year) take precedence over smoothed ones
+      # otherwise just pass/do nothing
+    ) |> 
+    ungroup() |> 
+    # ensuer smoothed values don't go below/beyond lower/upper bounds
+    mutate(
+      value = pmin(pmax(value, country_min), country_max)
+    ) |> 
+    arrange(year) |> 
+    fill(country, .direction = 'downup') |>  # since every year starts with 
+    select(year, country, value) 
+  
+  return(complete_series)
+  
+}
+# country vector to loop thru
+country_name_abbs <- c(na.omit(all_data |> pull(country) |> unique()))
+# combine all series
+all_series <- map_dfr(.x = country_name_abbs, ~extract_smooth_build(tibble = all_data, country = .x))
+
+# set contry 'switch; so that tooltip can change accordingly for odd numebred years
+country_labels <- c(
+  NO = "Norway", DE = "Germany", ES = "Spain",
+  FR = "France", GB = "UK", IE = "Ireland", PT = "Portugal"
+)
+
+# adding year as continuous variable (decimal years) so that points don't overlap but strech over whithin a year to year span
+all_series <- 
+  all_series |> 
+  mutate(
+    rn = row_number(), .by = c(country, year)
+  ) |> 
+  mutate(
+    decimal_year = if_else(rn == 1, year, year + rn / 8)
+  ) |> 
+  mutate(
+    year = decimal_year
+  ) |> 
+  select(-decimal_year)
+
+# also join on country full name mapping so we can generate a consolidate data_id that links the aestethics together (for interactive simultaneus highlighting, etc.)
+all_series <- 
+  all_series |> 
+  inner_join(
+    country_labels |> enframe() |> rename(values = value), 
+    join_by(country == name)
+  ) |> 
+  mutate(
+    data_id = str_c(country, values)
+  ) |> 
+  select(-values) |> 
+  mutate(
+    country_name = str_sub(data_id, 3, 20)
+  )
+
+# also generate visible (and non visible years by exclusion) as they don't visually get the same properties; visible (even numbered years) get the country abb as a tooltip (and larger markers/circles), 
+# while 'invisible' ones (odd numbered years along with year 2023) get their country names fully spelled out and get transparent marker/circle fill
+visible_years <- c(seq(2002, 2022, 2), 2023)
+
+visible_points <- 
+  all_series |> 
+  filter(round(year) %in% visible_years & floor(year) == ceiling(year))
+invisible_points <- all_series |> 
+  filter(!round(year) %in% visible_years & floor(year) != ceiling(year))
+
+# final touchups
+# set color mappings
+color_map <- expr(
+  case_when(
+    country %in% c('NO', 'Norway') ~ '#d43b45',
+    country %in% c('DE', 'Germany') ~ '#DCA825',
+    country %in% c('ES', 'Spain') ~ '#b01622',
+    country %in% c('FR', 'France') ~ '#487caa',
+    country %in% c('GB', 'UK') ~ '#264250',
+    country %in% c('IE', 'Ireland') ~ '#61A861',
+    country %in% c('PT', 'Portugal') ~ '#d27e4e',
+    TRUE ~ '#000000'
+  )
+)
+
+# set tooltip mappings
+tooltip_map <- expr(
+  case_when(
+    !year %in% c(seq(2002, 2022, 2), 2023) & country %in% names(country_labels) ~ country_labels[country],
+    TRUE ~ country
+  )
+)
+
+label_data <-
+  all_series |>
+  group_by(country) |>
+  arrange(desc(year)) |> 
+  filter(row_number() == 1) |>
+  mutate(
+    y_offset = case_when(
+      country == 'ES' ~ value + .1,
+      country == 'FR' ~ value +  0,
+      country == 'DE' ~ value - .05,
+      country == 'GB' ~ value - .1,
+      country == 'PT' ~ value + .2,
+      TRUE ~ value)
+  ) |> 
+  ungroup() |> 
+  mutate(
+    country_name = case_when(
+      country == "DE" ~ "Germany",
+      country == "ES" ~ "Spain",
+      country == "FR" ~ "France",
+      country == "GB" ~ "UK",
+      country == "IE" ~ "Ireland",
+      country == "NO" ~ "Norway",
+      country == "PT" ~ "Portugal",
+      TRUE ~ NA_character_
+    ),
+    country_color = case_when(
+      country %in% c("DE", 'Germany') | country_name %in% 'Germany' ~ "#9b6e00",  # override DE/Germany label color here since curve color is different than country label color (only one)
+      country %in% c('NO', 'Norway') ~ '#d43b45',
+      country %in% c('ES', 'Spain') ~ '#b01622',
+      country %in% c('FR', 'France') ~ '#487caa',
+      country %in% c('GB', 'UK') ~ '#264250',
+      country %in% c('IE', 'Ireland') ~ '#61A861',
+      country %in% c('PT', 'Portugal') ~ '#d27e4e',
+      TRUE ~ '#000000'
+    )
+  ) |> 
+  inner_join(
+    country_labels |> enframe() |> rename(values = value), join_by(country == name)
+  ) |> 
+  mutate(
+    data_id = str_c(country, values),
+    country = if_else(country == 'DE', 'Germany', country)
+  )
+# add caption to match Tom's
+caption_text <- "<span style='color:#232323;'>0 = extremely bad, 10 = extremely good.</span><br>
+                 <span style='color:#939293; font-weight: bold;'>Chart: Tom Calver | The Times and The Sunday Times • Source: ESS/K. Kardous</span><br>"
+
+p <- 
+  all_series |> distinct() |> 
+  ggplot(
+    aes(x = year, 
+        y = value, 
+        group = data_id, 
+        color = country)
+  ) +
+  scale_color_manual(
+    values = c(
+      'NO' = "#d43b45",
+      'DE' = '#DCA825',
+      'ES' = '#b01622',
+      'FR' = '#487caa',
+      'GB' = '#264250',
+      'IE' = '#61A861',
+      'PT' = '#d27e4e')
+  ) +
+  scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0, 8)) + 
+  scale_x_continuous(
+    breaks = seq(2002, 2022, 2), 
+    limits = c(2002, 2023),
+    expand = c(0, 0.1)
+  ) + 
+  theme(
+    legend.position = 'none',
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  geom_smooth_interactive(
+    data = all_series,
+    aes(x = year, y = value, data_id = paste0(country, country_name)),
+    method = "loess",
+    se = FALSE,
+    linewidth = 3.5, # thick line acts as the 'border'
+    alpha = 1,
+    show.legend = FALSE,
+    color = "white"
+  ) +
+  # colored interactive smooth line
+  geom_smooth_interactive(data = all_series |> filter(!country %in% 'IE'),
+                          aes(data_id = paste0(country, country_name)),
+                          method = "loess", 
+                          se = FALSE, 
+                          linewidth = 0.9, 
+                          fill = NA
+  ) +
+  geom_smooth_interactive(data = all_series |> filter(country %in% 'IE'),
+                          aes(data_id = paste0(country, country_name)),
+                          method = "loess", se = FALSE, linewidth = 0.9, fill = NA
+  ) +
+  scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0, 8)) + 
+  scale_x_continuous(
+    breaks = seq(2002, 2022, 2), 
+    limits = c(2002, 2024),
+    expand = c(0, 0.1)
+  ) +
+  labs(
+    x = NULL,
+    y = NULL,
+    caption = caption_text
+  ) +
+  # final touchoups before interactive rendering thru girafe()
+  theme(
+    panel.spacing = unit(20, 'cm'),
+    plot.margin = margin(l = 5, b = 10), # leave some space/margin at the bottom for caption 'room to breathe'
+    legend.position = 'none',
+    axis.text = element_text(face = "bold"), # axis tick labels
+    strip.text = element_text(face = "bold"), # facet labels
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(margin = margin(b = 9, t = -9)),
+    panel.grid.major.y = element_line(color = "gray90"),
+    plot.caption = element_markdown(
+      hjust = 0,
+      size = 9,
+      lineheight = 1.4,
+      family = "roboto",
+      face = 'bold',
+      margin = margin(l = -10, t = 5)
+    ) 
+  ) +
+  geom_segment(aes(x = 2002, xend = 2023, y = 0, yend = 0), color = 'black')
+
+p_interactive <- p +
+  geom_point_interactive(
+    data = visible_points,
+    aes(
+      x = year,
+      y = value, 
+      color = country,
+      data_id = paste0(country, country_name)
+    ),
+    alpha = 0.1, fill = 'white', show.legend = FALSE
+  ) +
+  geom_point_interactive(
+    data = 
+      all_series |> 
+      mutate(
+        point_size = if_else(country %in% c('NO', 'Norway', 'PT', 'Portugal'), 3, 1.5),
+        point_stroke = point_size
+      ),
+    aes(
+      x = year, 
+      y = value,
+      data_id = paste0(country, country_name),
+      tooltip = paste0(
+        "<div style='text-align:", 
+        if_else(year <= 2015.250, "left", "right"), 
+        "; line-height: 1.1;'>", # tightens spacing
+        "<div style='font-weight:bold; font-size:16px; color:",
+        if_else(country_name == "Germany", "#9b6e00", eval(color_map)), 
+        ";'>", 
+        eval(tooltip_map), 
+        "</div>",
+        "<div style='font-size:16px;'>", round(year, 0), "</div>",
+        "<div style='font-size:16px;'>", round(value, 2), "</div>",
+        "</div>"
+      )
+    ),
+    color = 'white', fill = 'white', shape = 21, alpha = 0, show.legend = FALSE
+  ) +
+  geom_rect(
+    inherit.aes = FALSE,
+    aes(xmin = 2024, xmax = Inf, ymin = -Inf, ymax = Inf),
+    color = NA, fill = "white", 
+  ) +
+  geom_label_interactive(
+    data = all_series |> slice_max(year) |> mutate(country_name = str_sub(data_id, 3, 20)),
+    aes(
+      x = year,
+      y = value,
+      group = paste0(country, country_name),
+      label = country_name,
+      data_id = paste0(country, country_name)
+    ),
+    label.size = NA,
+    fill = NA,
+    size = 2.2,
+    hjust = 0,
+    fontface = 'bold',
+    inherit.aes = TRUE,
+    alpha = 1
+  ) +
+  scale_color_manual(
+    breaks = c("GB", "FR", "IE", "PT", "ES", "NO", 'DE', 'Germany'), # this makes sure Germany as a country label gets dark yellow while 'DE' as a curve gets a darker yellow color
+    values = c("#264250", "#487caa", "#61A861", "#d27e4e", "#b01622", "#d43b45", '#DCA825', '#9b6e00') # this makes sure Germany as a country label gets dark yellow while 'DE' as a curve gets a darker yellow color
+  ) +
+  # scale_color_identity() +  # correctly apply the country color to the label's font
+  coord_cartesian(xlim = c(2002, 2024.5)) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  # add persistent white circle that follows mouse (via selection); one to cover all data points is simply assigning data to country.year combo
+  geom_point_interactive(
+    data = all_series,
+    aes(
+      x = year,
+      y = value,
+      group = paste0(year, country_name)
+    ),
+    shape = 21,
+    size = 0.4,
+    stroke = 1,
+    fill = 'white',
+    color = "grey85",
+    alpha = 0
+  ) 
+# render interactive plot thru girafe() engine
+girafe(
+  ggobj = p_interactive,
+  options = list(
+    opts_tooltip(
+      css = "
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      font-family: sans-serif;
+      text-shadow:
+      0 0 4px rgba(234, 255, 255, 1),
+      0 0 4px rgba(234, 255, 255, 1),
+      0 0 4px rgba(255, 255, 255, 1);
+      border-radius: none;
+      transform: translate(-50%, 20px);
+      transition: all 0.2s ease-in-out;",
+      delay_mouseover = 300,
+      delay_mouseout = 500
+    ),
+    opts_hover(
+      css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1;",
+      nearest_distance = 30,
+      reactive = FALSE
+    ),
+    opts_hover_inv(
+      css = "stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
+    )
+  )
+)
+
+
+```
+
+### Room to improve
+
+```{r}
+# generate the data
+p3_prep <-
+  tribble(
+    ~Current,  ~Potential,  ~Country,
+    78.9,      84.1,       "United States",
+    78.1,      83.8,       "Germany",
+    80.9,      80.9,       "Poland",
+    81.1,      83.8,       "United Kingdom",
+    81.6,      84.1,       "Ireland",
+    81.4,      83.8,       "Finland",
+    82.0,      84.1,       "Norway",
+    82.3,      84.1,       "France",
+    82.4,      84.1,       "Sweden",
+    81.4,      82.6,       "Portugal",
+    83.0,      84.1,       "Australia",
+    83.0,      83.2,       "Italy",
+    81.7,      81.7,       "Greece",
+    83.1,      83.1,       "Spain",
+    84.1,      84.1,       "Japan"
+  ) |> 
+  select(last_col(), everything()) |> 
+  # order gets lost when pivoting longer so we create a integer sequence and force rank/arrange that way
+  mutate(seq = 1:15)
+
+# create country abb names (fetched from one of the html nodes within the original plot) and build urls/per flag
+country_abbs <- c('us', 'de', 'pl', 'gb', 'ie', 'fi', 'no', 'fr', 'se', 'pt', 'au', 'it', 'gr', 'es', 'jp')
+flag_urls <- str_glue("https://static.dwcdn.net/css/flag-icons/flags/4x3/{country_abbs}.svg")
+
+# loop thru svg's and convert to png's
+flag_paths <- map(
+  flag_urls, function(url) {
+
+    svg_path <- tempfile(fileext = ".svg")
+    png_path <- tempfile(fileext = ".png")
+    
+    download.file(url, svg_path, mode = "wb")
+    rsvg::rsvg_png(svg_path, png_path)
+    
+    return(png_path)
+  }
+) 
+flag_paths <- setNames(flag_paths, country_abbs)
+
+
+# add the 2 additional columns back to p3
+p3_data <- p3_prep |> 
+  bind_cols(
+    flag_paths |> unlist() |> stack() |> rename(flag_pngs = values, country_abbs = ind)
+  ) |> 
+  select(Country, country_abbs, Current, Potential, flag_pngs)
+
+# also add html code straight into p3_data but first abbreviate country names
+p3_data <- 
+  p3_data |> 
+  # abbreviated United States and United Kingdom because i noticed the blanks/two or more words can throw off element markdown, especially
+  # when embedding svg's; while not perfectly replicating here, in the context of country names, 'US' and 'UK' are universally reconized, especially
+  # if flag images are appended to them 
+  mutate(
+    Country = if_else(
+      Country == 'United Kingdom', 'UK',
+      if_else(Country == 'United States', 'US', Country)
+      ),
+    flag_html = sprintf("<img src='%s' width='25' height='15'> %s", flag_pngs, Country)
+    )
+# we will also preserve html flags as a single charazcter string in the event we create an independ plot and stack it (veritically)
+# alongside progress plot (for Current vs. Potential arrow chart)
+# flag_html <- str_c(
+# 	map2(rep(flag_paths, each = 2), p3_data_prep$Country,
+# 			 ~ sprintf("<img src='%-s' width='20' height='15'> %-s", .x, .y)),
+# 	collapse = "<br>"
+# )
+
+# we have to turb this from wide to long; to get a tracking per country (current -> potential)
+p3_data_prep <- 
+  p3_data |> 
+  # order gets lost when pivoting longer so we create a integer sequence and force rank/arrange that way
+  mutate(seq = 1:15) |> 
+  pivot_longer(
+    -c(seq, Country, country_abbs, flag_pngs, flag_html), names_to = 'progress'
+  ) |> 
+  mutate(
+    # add color codes (different for UK compared to rest)
+    # for greece, default arrow shows a recession, but in Tom's plot, it's '>', it's the same value for current and for potential for Greece, so we 
+    # artificially add + 0.001 to the Greek score for potential for force '>' arrow direction
+    # value = if_else(Country == 'Greece' & progress == 'Potential', value + 0.0001, value),
+    hex_codes = if_else(Country == 'UK', '#73a3d3', '#264250'), # UK gets its own color
+    arrow_end_angle = if_else(Country %in% c('Spain', 'Japan'), 90, 70)) |> 
+  arrange(desc(seq)) # for some reason, below plot was reversing order, so we reverse order here so that plot arranges countries properly
+
+# since arrow() wouldn't natively recoznied arrow_end_angle,
+# we create an variable in the global env. to call it within arrow() later on
+p3 <- p3_data_prep |> 
+  ggplot(aes(y = fct_reorder(Country, -seq), x = value, color = hex_codes)) +  
+  geom_path(arrow = arrow(
+    type = "open", 
+    angle = c(rep(90, 3), rep(60, 27)), 
+    length = unit(3, 'pt')), 
+    linewidth = .8
+  ) +
+  geom_label(
+    data = p3_data_prep |> filter(progress == 'Current'),
+    aes(label = value, hjust = 1.2, family = "roboto"),
+    size = 2, fill = 'white', label.size = NA
+  ) +
+  geom_text(
+    data = p3_data_prep |> filter(progress == 'Potential'),
+    aes(label = value, hjust = -.3, family = "roboto"),
+    size = 2
+  ) + 
+  geom_text(
+    aes(x = 78.9, y = 15, label = '\nCurrent\n', family = 'roboto'), 
+    size = 1.9, nudge_y = .5, nudge_x = -.2
+  ) + 
+  geom_text(
+    aes(x = 84.1, y = 15, label = '\nPotential\n', family = 'roboto'), 
+    size = 1.9, nudge_y = .5, nudge_x = .1
+  ) + 
+  scale_color_identity() +  
+  scale_y_discrete(
+    labels = p3_data_prep |> filter(progress == "Current") |> pull(flag_html)
+  ) +
+  theme(
+    axis.text.y = element_markdown(inherit.blank = FALSE, family = "roboto", size = 4, hjust = 0, face = 'bold'),  
+    axis.text.x = element_text(family = "roboto", size = 4),  
+    axis.title.x = element_text(size = 7),  
+    axis.title.y = element_text(size = 7), 
+    panel.grid.minor.x = element_blank()
+    # plot.margin = margin(r = 30)
+  ) + 
+  labs(x = NULL, y = NULL) + 
+  theme(legend.position = 'none') + 
+  geom_segment(
+    aes(x = 78.9, xend = 78.9, y = 15.1, yend = 15.3), 
+    color = "grey70", linewidth = 0.1, inherit.aes = FALSE
+  ) + 
+  geom_segment(
+    aes(x = 84.1, xend = 84.1, y = 15.1, yend = 15.3), 
+    color = 'grey70', linewidth = 0.1, inherit.aes = FALSE
+  ) 
+
+# add plot caption to match what Tom has 
+caption_text <- "<span style='color:#989799; font-weight:bold;'>Chart: The Times And The Sunday Times • Source</span> 
+                 <span style='color:#232323; font-weight:bold;'>Zarulli et al.</span>"
+
+p3 <- p3 + 
+  labs(caption = caption_text) + 
+  theme(
+    plot.caption = element_markdown(inherit.blank = TRUE,
+                                    hjust = -0.18,  
+                                    size = 4.7,
+                                    lineheight = 1.2,
+                                    family = "roboto"
+    )
+  )
+p3
+```
+
+### Value for money (Excludes 2020-22 given the high COVID spend)
+
+```{r}
+country_labels <- tribble(
+  ~country, ~year, ~spend, ~life_expectancy, ~xnudge, ~ynudge,
+  "France", 2023,  5014,   83.3,             500,       0,
+  "Germany",2023,  5971,   81.4,             600,       0,
+  "UK",     2023,  4444,   81.3,             350,       0,
+  "Italy",  2023,  3249,   83.7,             0,       0.55,
+  "Canada", 2023,  5307,   82.6,             550,       0,
+  "Japan",  2023,  4874,   84.7,             500,       0,
+  "US",     2023, 10827,   79.3,             0,       0.5
+)
+
+
+data <- 
+  read_tsv("https://datawrapper.dwcdn.net/Bxhol/9/dataset.csv") |> 
+  mutate(last_year = year == 2023) |>  # this is done because most recent year gets a black fill/border while antecedent years get a white one
+  arrange(country, year) |> 
+  mutate(
+    country_tooltip = if_else(year == 2023, country, paste(country, year, sep = ', '))
+  ) |> 
+  mutate(
+    country_fill = case_when(
+      str_detect(country_tooltip, "US") ~ "US",
+      str_detect(country_tooltip, "France") ~ "France",
+      str_detect(country_tooltip, "Italy") ~ "Italy",
+      str_detect(country_tooltip, "Germany") ~ "Germany",
+      str_detect(country_tooltip, "Canada") ~ "Canada",
+      str_detect(country_tooltip, "Japan") ~ "Japan",
+      str_detect(country_tooltip, "UK") ~ "UK",
+      TRUE ~ country_tooltip
+    )
+  ) |> 
+  # make sure to hide tooltips for most recent years as they will get an explicit data label there anywyas
+  mutate(
+    country_tooltip = if_else(year == 2023, '', country_tooltip)
+  ) |> 
+  mutate(
+    country = factor(country, levels = c("Canada", "France", "Germany", "Japan", "Italy", "UK", "US"))
+  )
+
+p2 <- data |> 
+  ggplot(aes(x = spend, y = le, color = last_year, fill = country_fill, group = country_fill)) +
+  geom_point_interactive(
+    aes(size = size, data_id = country_fill, tooltip = country_tooltip), 
+    shape = 21, alpha = 1
+  ) +
+  geom_text_interactive(
+    data = data |> slice_max(year) |> distinct(country_fill, .keep_all = TRUE), 
+    aes(
+      text = country_fill, 
+      label = country_fill, 
+      data_id = country_fill, 
+      tooltip = country_tooltip
+    ), 
+    hjust = -0.3, vjust = 0, alpha = 1
+  ) +
+  scale_fill_manual(
+    breaks = c("US", "France", "Italy", "Germany", "Canada", "Japan", "UK"),
+    values = c("#4076A4", "#80B1E2", "#61A961", "#F5C55E", "#FFAEA9", "#DACFC0", "#E94F55")
+  ) +
+  scale_color_manual(
+    breaks = c(FALSE, TRUE),
+    values = c('white', 'black')
+  ) +
+  theme(
+    plot.title = element_markdown(size = 12, lineheight = 1.2, linewidth = 1.5),
+    plot.subtitle = element_markdown(size = 12, lineheight = 1.2)
+  ) + 
+  labs(
+    title = '**Value for money**',
+    subtitle = "How life expectancy and per-capita healthcare spend have changed since 2000.<br> 
+               <span style='background-color:#e94f55; color:white; padding:2px 4px;'>**UK**</span> spending is rising, but life expectancy has stalled."
+  ) +
+  labs(x = NULL, y = NULL) +
+  scale_x_continuous(
+    breaks = seq(3000, 11000, 1000),
+    labels = c(format(seq(3000, 10000, 1000), big.mark = ",", trim = TRUE), "$11,000")
+  ) +
+  coord_cartesian(
+    xlim = c(2100, 11300),
+    ylim = c(77, 86), 
+    expand = FALSE, 
+    clip = 'off'
+  ) +
+  # add caption for p2
+  labs(
+    caption = "<span style='color:#232323; font-weight:bold;'>In US Dollars, adjusted for purchasing power and inflation. Excludes 2020-22.</span>  <br>
+             <span style='color:#989799; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
+  ) +
+  theme(
+    text = element_text(family = 'roboto'), element_text(color = 'black', face = 'bold'),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major = element_line(size = 0.3, color = "grey80"),
+    axis.line = element_line(color = "black", size = 0.3),
+    legend.position = 'none',
+    plot.caption = element_markdown(
+      size = 10, 
+      hjust = 0, 
+      lineheight = 1.2
+    )
+  ) +
+  annotate(
+    geom = 'rect', 
+    xmin = 2075,
+    xmax = 2345,
+    ymax = 86.5,
+    ymin = 86.15, 
+    fill = '#e94f55'
+  ) + 
+  # we also need to annotate the years 2000 and 2023 with Germany's yellow hex code (to match what Tom has)
+  # not so much for Germany but for reference in general to the range of years for the plot
+  # 2000 persistent text geom; for 2023 we use text geom; for 2000, we use label with no borders to bring forward '2000'
+  annotate( 
+    geom = 'label', 
+    label = '2000',
+    x = 4250,
+    y = 77.97,
+    color = '#F5C55E',
+    fill = 'white',
+    label.size = NA,
+    fontface = "bold" 
+  ) +
+  # 2023 persistent text geom
+  annotate(
+    geom = 'text', 
+    label = '2023',
+    x = 6400,
+    y = 81.2,
+    color = '#F5C55E',
+    fontface = "bold" 
+  ) + 
+  # add x and y axes titles (within the plot itself)
+  # y axis
+  annotate(
+    geom = 'text', 
+    label = 'Life expectancy',
+    x = 2685,
+    y = 85.8,
+    color = '#7B7B7B',
+    fontface = "bold",
+    fontfamily = 'Roboto',
+    fontsize = 15
+  ) +
+  # x axis
+  annotate(
+    geom = 'text', 
+    label = 'Per-capita\n  spend',
+    x = 11200,
+    y = 77.5,
+    color = '#7B7B7B',
+    fontface = "bold",
+    fontfamily = 'Roboto',
+    fontsize = 15,
+    hjust = .9,
+    vjust = .6
+  ) 
+
+girafe(
+  ggobj = p2,
+  width_svg = 10, height_svg = 6, 
+  options = list(
+    opts_tooltip(
+      css = "background: white;
+             border: 1px solid #ddd;
+             border-radius: 4px;
+             padding: 6px;
+             font-family: 'Roboto', sans-serif;
+             font-size: 14px;
+             font-weight: bold;
+             color: #232323;
+             text-align: left;
+             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);"
+    ),
+    opts_hover(
+      css = "stroke-opacity: 1; fill-opacity: 1; color: #232323; font-size: 12px; alpha: 1;"
+    ),
+    opts_hover_inv(
+      css = "fill-opacity: 0.01; stroke-opacity: 0.01; color: transparent; font-size: 0.1px;"
+    )
+  )
+) 
+```
