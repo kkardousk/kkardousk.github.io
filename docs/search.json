@@ -11,6 +11,13 @@
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "About this site\n\n\nCode\n1 + 1\n\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Karim K. Kardous",
+    "section": "",
+    "text": "Welcome to my website! Check out my data analysis projects:\n\nIs NHS Good Value? (Replication)\nHas International Travel to the U.S. Really Collapsed? (Replication)"
   }
 ]
