@@ -66,7 +66,7 @@ editor: visual
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 # install.packages("gdtools", type = "source")
 
-## NOTE; potential steps on mac for registering then loading Roboto font into Quarto below
+## NOTE; potential (might not be needed) steps on mac for registering then loading Roboto font into Quarto below
 
 ## from terminal/shell
 # brew install cairo fontconfig freetype pkg-config
