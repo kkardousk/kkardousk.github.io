@@ -7,12 +7,19 @@ project:
 
 website:
   title: "Karim K. Kardous"
+  site-url: https://kkardousk.github.io/
+  site-path: /
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
-      
+      - href: about.qmd
+        text: About
+      - href: tom-calver.qmd
+        text: "Is NHS Good Value ? (Replication)"
+      # - href: has-international-travel-to-the-us-really-collapsed.qmd
+      #   text: "Has International Travel to the U.S. Really Collapsed ? (Replication)"
+
 format:
   html:
     theme:
@@ -20,5 +27,6 @@ format:
       - brand
     css: nyt_theme.css
     highlight-style: github-dark
-
-
+    toc: true
+    code-fold: true
+    embed-resources: true  

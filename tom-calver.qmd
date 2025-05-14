@@ -52,6 +52,7 @@ execute:
   message: false
   info: false
   cache: true
+  freeze: auto
 editor: visual
 ---
 
