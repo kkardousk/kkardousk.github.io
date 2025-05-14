@@ -3,4 +3,4 @@ title: "Karim K. Kardous"
 format: html
 ---
 Welcome to my website; check out my data replication, visualizations, analysis projects I like to do in my spare time
-- [Is NHS Good Value? (Replication)](tom-calver.qmd)
+- [Is NHS Good Value? (Replication)](tom-calver-article-NHS.html)
