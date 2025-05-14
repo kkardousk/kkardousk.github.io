@@ -51,7 +51,7 @@ execute:
   warning: false
   message: false
   info: false
-  cache: false
+  cache: true
 editor: visual
 ---
 
@@ -65,9 +65,19 @@ editor: visual
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 # install.packages("gdtools", type = "source")
 
-install.packages("gdtools", type = "source")
+## NOTE; potential steps on mac for registering then loading Roboto font into Quarto below
 
-# brew install cairo harfbuzz fribidi
+## from terminal/shell
+# brew install cairo fontconfig freetype pkg-config
+# export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/opt/homebrew/share/pkgconfig"
+# export PKG_CFLAGS="-I/opt/homebrew/include"
+# export PKG_LIBS="-L/opt/homebrew/lib"
+
+## then from Rstudio
+# install.packages("gdtools", type = "source")
+
+
+
 # Load or install packages
 pacman::p_load(
   gdtools,
@@ -90,7 +100,7 @@ pacman::p_load(
   stringr,
   ggimage
 )
-# potential steps on mac for registering then loading Roboto font into 
+
 # Set theme and options
 options(scipen = 999)
 theme_set(theme_minimal())

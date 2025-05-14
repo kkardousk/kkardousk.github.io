@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: docs
+  render:
+    - "*.qmd"
+    - "!drafts/"
 
 website:
   title: "Karim K. Kardous"
@@ -9,9 +12,7 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
-      - Is NHS Good Value ? (Replication)
-      - Has International Travel to the U.S. Really Collapsed ? (Replication)
-
+      
 format:
   html:
     theme:
@@ -19,7 +20,5 @@ format:
       - brand
     css: nyt_theme.css
     highlight-style: github-dark
-    toc: true
 
-editor: visual
 
