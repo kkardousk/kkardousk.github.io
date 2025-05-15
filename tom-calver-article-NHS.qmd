@@ -213,14 +213,23 @@ gt_nyt_custom <- function(x, title = '', subtitle = '', first_10_rows_only = TRU
     )
   
 }
-all_data |> 
-  count(url = chart_url, download_link = dataset_csv) |> 
-  select(-n) |> 
-  gt_nyt_custom(title = 'Dataset Ids') |> 
+# display 
+all_data |>
+  count(
+    url = chart_url, download_link = dataset_csv
+  ) |>
+  select(-n) |>
+  gt_nyt_custom(
+    title = 'Dataset Ids'
+  ) |>
   cols_label(
     Url = "Plot URL",
     `Download Link` = "Link to CSV"
-  )
+  ) |> 
+  tab_footnote(
+    "Again, in the event you download the links yourself and run your own script,
+    the last two should be treated as tsv files, otherwise csv's"
+  ) 
 
 health_sat <- 
   all_data |> 
