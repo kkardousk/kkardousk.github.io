@@ -14,7 +14,7 @@ Replication of a data-driven article/analysis of the UK's healthcare systems amo
 
 [View Project](tom-calver-article-NHS.qmd)
 
-<!-- You can add more project cards here as you develop more content -->
+<!--  more project cards can go here once i build more stuff -->
 
 ## About This Site
 
