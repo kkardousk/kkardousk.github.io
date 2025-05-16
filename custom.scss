@@ -1,0 +1,117 @@
+/*-- scss:defaults --*/
+$primary: #e67e22;
+$secondary: #3498db;
+$body-color: #333;
+$body-bg: #f9f9f9;
+$headings-font-family: 'Playfair Display', serif;
+$font-family-base: 'Source Sans Pro', sans-serif;
+$font-size-base: 1rem;
+$h1-font-size: 2.5rem;
+$h2-font-size: 2rem;
+$h3-font-size: 1.75rem;
+$enable-shadows: true;
+$border-radius: 0.5rem;
+
+/*-- scss:rules --*/
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
+// Enhanced link styles
+a {
+  text-decoration: none;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Navigation sidebar tweaks
+.sidebar-navigation {
+  .sidebar-item-container {
+    .sidebar-item-section {
+      font-weight: 600;
+      color: darken($primary, 10%);
+      margin-top: 1.5rem;
+    }
+  }
+}
+
+// Content area styling
+.content-block {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: $border-radius;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+// Code blocks
+div.sourceCode {
+  border-left: 3px solid $primary;
+}
+
+// Tables
+.table {
+  thead {
+    background-color: rgba($primary, 0.1);
+  }
+}
+
+// Quote styling
+blockquote {
+  border-left: 4px solid $primary;
+  padding-left: 1rem;
+  color: lighten($body-color, 15%);
+  font-style: italic;
+}
+
+// Brand title
+.navbar-brand {
+  font-family: $headings-font-family;
+  font-weight: 700;
+}
+
+// TOC styling
+#toc-title {
+  font-family: $headings-font-family;
+  font-size: 1.2rem;
+  color: $primary;
+}
+
+#TOC {
+  border-left: 1px solid rgba($primary, 0.3);
+  
+  a:hover {
+    color: $primary;
+  }
+}
+
+// Footer styling
+.footer {
+  font-size: 0.9rem;
+  border-top: 1px solid #eee;
+  padding-top: 1.5rem;
+}
+
+// Callout styling
+.callout {
+  border-left-color: $primary;
+}
+
+// Code folding button
+.code-fold-btn-show {
+  color: $primary;
+}
+
+.name-heading.no-link {
+  white-space: nowrap;
+  border-bottom: 2px solid #e67e22;
+  display: inline-block;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Make sure it's never styled like a link */
+.name-heading.no-link a {
+  all: unset;
+}

@@ -1,0 +1,178 @@
+/* Custom styles to complement the theme */
+
+/* General styling */
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f9f9f9;
+}
+
+
+/* Header styling */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Main container sizing and spacing */
+.quarto-container {
+  max-width: 1200px;
+}
+
+/* Link styling */
+a {
+  color: #e67e22;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #d35400;
+  text-decoration: underline;
+}
+
+/* Sidebar styling */
+.sidebar-navigation {
+  background-color: #f8f9fa;
+  border-right: 1px solid #29ecef;
+}
+
+.sidebar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e67e22;
+}
+
+.sidebar nav .nav-item {
+  margin-bottom: 0.25rem;
+}
+
+.sidebar nav .nav-link {
+  color: #495057;
+  border-left: 3px solid transparent;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar nav .nav-link:hover,
+.sidebar nav .nav-link.active {
+  color: #e67e22;
+  border-left-color: #e67e22;
+  background-color: rgba(230, 126, 34, 0.05);
+}
+
+/* Header banner with SVG */
+.header-banner {
+  position: relative;
+  padding: 2rem 0;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header-svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+/* Content area */
+.quarto-title-banner {
+  background-color: #fff;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.quarto-title {
+  color: #2c3e50;
+}
+
+/* Code blocks */
+pre {
+  border-radius: 4px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+th, td {
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+}
+
+/* Footer styling */
+footer {
+  margin-top: 3rem;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Animation for data visualization elements */
+.data-viz {
+  transition: transform 0.3s ease;
+}
+
+.data-viz:hover {
+  transform: scale(1.05);
+}
+
+/* SVG styling */
+.data-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Special styling for project cards */
+.project-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.project-title {
+  color: #e67e22;
+  margin-bottom: 0.75rem;
+}
+
+/* Reading time and metadata styling */
+.quarto-categories {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}

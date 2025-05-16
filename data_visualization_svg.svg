@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <!-- Background Grid -->
+  <defs>
+    <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#f0f0f0" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#smallGrid)"/>
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background with Grid -->
+  <rect width="100%" height="100%" fill="url(#grid)" opacity="0.6"/>
+  
+  <!-- Main Visualization Elements -->
+  
+  <!-- Connected Scatter Plot -->
+  <polyline points="100,350 150,280 200,320 250,200 300,230 350,150 400,180 450,120 500,90 550,120 600,70 650,100 700,50" 
+          fill="none" stroke="#e67e22" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Data Points -->
+  <circle cx="100" cy="350" r="6" fill="#3498db"/>
+  <circle cx="150" cy="280" r="6" fill="#3498db"/>
+  <circle cx="200" cy="320" r="6" fill="#3498db"/>
+  <circle cx="250" cy="200" r="6" fill="#3498db"/>
+  <circle cx="300" cy="230" r="6" fill="#3498db"/>
+  <circle cx="350" cy="150" r="6" fill="#3498db"/>
+  <circle cx="400" cy="180" r="6" fill="#3498db"/>
+  <circle cx="450" cy="120" r="6" fill="#3498db"/>
+  <circle cx="500" cy="90" r="6" fill="#3498db"/>
+  <circle cx="550" cy="120" r="6" fill="#3498db"/>
+  <circle cx="600" cy="70" r="6" fill="#3498db"/>
+  <circle cx="650" cy="100" r="6" fill="#3498db"/>
+  <circle cx="700" cy="50" r="6" fill="#3498db"/>
+  
+  <!-- Bar Chart Elements -->
+  <rect x="100" cy="400" width="30" height="50" y="350" fill="#e67e22" opacity="0.7"/>
+  <rect x="150" cy="400" width="30" height="120" y="280" fill="#e67e22" opacity="0.7"/>
+  <rect x="200" cy="400" width="30" height="80" y="320" fill="#e67e22" opacity="0.7"/>
+  <rect x="250" cy="400" width="30" height="200" y="200" fill="#e67e22" opacity="0.7"/>
+  <rect x="300" cy="400" width="30" height="170" y="230" fill="#e67e22" opacity="0.7"/>
+  <rect x="350" cy="400" width="30" height="250" y="150" fill="#e67e22" opacity="0.7"/>
+  <rect x="400" cy="400" width="30" height="220" y="180" fill="#e67e22" opacity="0.7"/>
+  <rect x="450" cy="400" width="30" height="280" y="120" fill="#e67e22" opacity="0.7"/>
+  <rect x="500" cy="400" width="30" height="310" y="90" fill="#e67e22" opacity="0.7"/>
+  <rect x="550" cy="400" width="30" height="280" y="120" fill="#e67e22" opacity="0.7"/>
+  <rect x="600" cy="400" width="30" height="330" y="70" fill="#e67e22" opacity="0.7"/>
+  <rect x="650" cy="400" width="30" height="300" y="100" fill="#e67e22" opacity="0.7"/>
+  <rect x="700" cy="400" width="30" height="350" y="50" fill="#e67e22" opacity="0.7"/>
+  
+  <!-- Axes -->
+  <line x1="80" y1="400" x2="750" y2="400" stroke="#333" stroke-width="2"/>
+  <line x1="80" y1="50" x2="80" y2="400" stroke="#333" stroke-width="2"/>
+  
+  <!-- Scatter Plot with Trend Line -->
+  <g transform="translate(150, 150) scale(0.8)">
+    <circle cx="50" cy="120" r="8" fill="#9b59b6" opacity="0.7"/>
+    <circle cx="90" cy="100" r="6" fill="#9b59b6" opacity="0.7"/>
+    <circle cx="130" cy="90" r="9" fill="#9b59b6" opacity="0.7"/>
+    <circle cx="170" cy="70" r="5" fill="#9b59b6" opacity="0.7"/>
+    <circle cx="210" cy="65" r="7" fill="#9b59b6" opacity="0.7"/>
+    <circle cx="250" cy="50" r="8" fill="#9b59b6" opacity="0.7"/>
+    
+    <line x1="40" y1="115" x2="260" y2="55" stroke="#9b59b6" stroke-width="2" stroke-dasharray="5,5"/>
+  </g>
+  
+  <!-- Pie Chart -->
+  <g transform="translate(650, 250)">
+    <path d="M0,0 L50,0 A50,50 0 0,1 25,43.3 z" fill="#e74c3c"/>
+    <path d="M0,0 L25,43.3 A50,50 0 0,1 -25,43.3 z" fill="#3498db"/>
+    <path d="M0,0 L-25,43.3 A50,50 0 0,1 -50,0 z" fill="#2ecc71"/>
+    <path d="M0,0 L-50,0 A50,50 0 0,1 -25,-43.3 z" fill="#f1c40f"/>
+    <path d="M0,0 L-25,-43.3 A50,50 0 0,1 25,-43.3 z" fill="#9b59b6"/>
+    <path d="M0,0 L25,-43.3 A50,50 0 0,1 50,0 z" fill="#1abc9c"/>
+  </g>
+  
+  <!-- Decorative Elements -->
+  <g transform="translate(400, 250)" opacity="0.1">
+    <path d="M0,0 L100,0 L50,86.6 z" fill="#3498db"/>
+    <path d="M0,0 L50,86.6 L-50,86.6 z" fill="#9b59b6"/>
+    <path d="M0,0 L-50,86.6 L-100,0 z" fill="#2ecc71"/>
+    <path d="M0,0 L-100,0 L-50,-86.6 z" fill="#e74c3c"/>
+    <path d="M0,0 L-50,-86.6 L50,-86.6 z" fill="#f1c40f"/>
+    <path d="M0,0 L50,-86.6 L100,0 z" fill="#1abc9c"/>
+  </g>
+  
+  <!-- Text Labels -->
+  <text x="400" y="460" text-anchor="middle" font-family="'Source Sans Pro', sans-serif" font-size="14" fill="#555">
+    Where Data Meets Curiosity
+  </text>
+</svg>

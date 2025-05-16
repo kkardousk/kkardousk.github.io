@@ -6,27 +6,44 @@ project:
     - "!drafts/"
 
 website:
-  title: "Karim K. Kardous"
   site-url: https://kkardousk.github.io/
   site-path: /
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - href: about.qmd
-        text: About
-      - href: tom-calver-article-NHS.qmd
-        text: "Is NHS Good Value ? (Replication)"
-      # - href: has-international-travel-to-the-us-really-collapsed.qmd
-      #   text: "Has International Travel to the U.S. Really Collapsed ? (Replication)"
+  
+  page-navigation: true
+  
+  sidebar:
+    style: "docked"
+    search: true
+    collapse-level: 1
+    title: "Karim K. Kardous"  
+    contents:
+      - section: "Navigation"
+        contents:
+          - href: index.qmd
+            text: Home
+          - href: about.qmd
+            text: About
+          - href: tom-calver-article-NHS.qmd
+            text: "Is NHS Good Value? (Replication)"
+      # Uncomment when ready
+      # - section: "Projects"
+      #   contents:
+      #     - href: has-international-travel-to-the-us-really-collapsed.qmd
+      #       text: "Has International Travel to the U.S. Really Collapsed? (Replication)"
+  
+  page-footer:
+    left: "© 2025 Karim K. Kardous"
+    right:
+      - icon: github
+        href: https://github.com/kkardousk
 
 format:
   html:
     theme:
-      - cosmo
-      - brand
-    css: nyt_theme.css
+      light: [cosmo, custom.scss]
+    css: styles.css
     highlight-style: github-dark
-    toc: true
+    toc: true    
     code-fold: true
-    embed-resources: true  
+    embed-resources: true
+    
