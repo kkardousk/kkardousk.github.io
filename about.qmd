@@ -28,5 +28,4 @@ title: "About Me"
     
   <p>I'm always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through <a href="https://github.com/kkardousk">GitHub</a> or connect with me on other platforms.</p>
   </div>
-  
   <div class="col-md-4">
