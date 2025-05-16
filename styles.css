@@ -23,7 +23,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Link styling */
 a {
-  color: #e67e22;
+  color: #ffa65c;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -42,9 +42,12 @@ a:hover {
 .sidebar-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid #e67e22;
+  padding: .2rem;
+  white-space: nowrap; /* Prevents text from wrapping */
+  /*margin-bottom: 1rem;
+  /*border-bottom: 2px solid;
+  /*overflow: hidden;    /* Optional: Hides any overflow */
+  /*text-overflow: ellipsis; /* Optional: Shows ellipsis (...) for overflowing text */
 }
 
 .sidebar nav .nav-item {
@@ -60,8 +63,8 @@ a:hover {
 
 .sidebar nav .nav-link:hover,
 .sidebar nav .nav-link.active {
-  color: #e67e22;
-  border-left-color: #e67e22;
+  color: #ffa65c;
+  border-left-color: #ffa65c;
   background-color: rgba(230, 126, 34, 0.05);
 }
 
@@ -170,6 +173,7 @@ footer {
   margin-bottom: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: bold; 
 }
 
 .project-card:hover {
@@ -178,7 +182,7 @@ footer {
 }
 
 .project-title {
-  color: #e67e22;
+  color: #ffa65c;
   margin-bottom: 0.75rem;
 }
 
