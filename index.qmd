@@ -1,19 +1,18 @@
 ---
-title: "*Site's full functionality in Progress"
+title: "*Site's full functionality in Progress*"
 ---
 
-<div class="header-banner">
-<h1>Where Data Meets Curiosity (that was indeed corny) </h1>
-  <p class="lead">I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution !</p>
-</div>
+# Where Data Meets Curiosity (that was indeed corny)
+
+I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution!
 
 ## Recent Projects
 
-<div class="project-card">
-  <h3 class="project-title">Is NHS Good Value? (Replication)</h3>
-  <p>Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver</p>
-  <a href="tom-calver-article-NHS.qmd" class="btn btn-primary">View Project</a>
-</div>
+### Is NHS Good Value? (Replication)
+
+Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
+
+[View Project](tom-calver-article-NHS.qmd)
 
 <!-- You can add more project cards here as you develop more content -->
 
