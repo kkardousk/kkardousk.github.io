@@ -3,7 +3,7 @@ title: "About Me"
 ---
 <div class="row">
   <div class="col-md-8">
-  <p>Hello ! I'm a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.</p></p>
+<p>Hello ! I'm a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.</p></p>
   </div>
 </div>
 <p>On this website, I share various data projects I've worked on, focusing particularly on:</p>
