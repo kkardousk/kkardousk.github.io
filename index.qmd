@@ -48,8 +48,8 @@ I find the exercise interesting for multiple reasons, one of which being thinkin
 
 In terms of coding choices; I will mostly be using R *in tandem* with Quarto along with python and potentially explore additional languages/frameworks along the way.
 
-**On Analysis:** Once things get streamlined and time to publish additional replication projects shrinks, I will most likely begin devoting time to dive into articles or more generally online sources that I will either support or *critique*. This will be relying more on the analytical side of things in making my point of whether or not I think the article/piece drives home their point home with rigor; and if not, suggest concrete improvements; be it on the choice of methods and/or how the message is conveyed visually.
+**On Analysis:** Once things get streamlined and time to publish additional replication projects shrinks, I will most likely begin devoting time to dive into articles or more generally online sources that I will either support or *critique*. This will be relying more on the analytical side of things in making my point of whether or not I think the article/piece drives home their point with rigor; and if not, suggest concrete improvements; be it on the choice of methods and/or how the message is conveyed visually.
 
-**On Opinion:** This section will really focus more on (potentially pompous) philosophical and metaphysical takes (I warned you) to take a step back and some hindsight into decyphering the speed with which things are evolving, tackling many topics..more to come on that section ! 
+**On Opinion:** This section will really focus more on (potentially pompous) philosophical and metaphysical takes (I warned you) to take a step back and some hindsight into deciphering the speed with which things are evolving, tackling many topics..more to come on that section ! 
 
 
