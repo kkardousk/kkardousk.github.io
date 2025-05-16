@@ -9,7 +9,7 @@ format:
 
 ::: {.g-col-5}
 # Where Data Meets Curiosity {.text-center}
-
+  
 I explain my thought process (once I understand my own brain or once I realize what I was trying to do from the day before), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution !
 :::
 
@@ -33,4 +33,23 @@ Replication of a data-driven article/analysis of the UK's healthcare systems amo
 
 ## About This Site
 
-This personal website serves as a repository for my data analysis projects, replications of interesting studies, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my findings.
+This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings in as many coding languages as I possibly can. 
+
+**On Replications:** There has been a clear increase in the use of data ubiquitously and over recent years, news articles are therefore no exception. 
+Embedded in news articles these days you can, and without much effort, find anything from simple tables to fairly involved/advanced visualizations.
+But of course, you seldom find the exact methodology the author(s) used in presenting said visualizations to their readers. 
+The purpose here then becomes to reverse-engineer the final article output to generate a clear path to each 'element' that is required to make said output - almost like reconstructing a puzzle. 
+
+"Where there is a will, there is way"; similarly, where there is HTML, there is its source page; less poetic but equally true.
+This will be the leitmotif for most data extraction from articles I work on replicating; unless they are behind a paywall (where an account has to be created first -with or without a paid subscription); or JS is intentionally set to not redirect; not allowing for the actual data to be revealed under the hood. 
+
+Along the way, I hope I do a good job explaining why I went with one method over another based on high certainty; meaning that this is what the author did as well; or purely making an educated guess, and then seeing how well the guessed method's output matches the article's. 
+I find the exercise interesting for multiple reasons, one of which being thinking the same way the author thought so that both outputs align; that can be a useful learning experience for me and hopefully for you as well ! 
+
+In terms of coding choices; I will mostly be using R *in tandem* with Quarto along with python and potentially explore additional languages/frameworks along the way.
+
+**On Analysis:** Once things get streamlined and time to publish additional replication projects shrinks, I will most likely begin devoting time to dive into articles or more generally online sources that I will either support or *critique*. This will be relying more on the analytical side of things in making my point of whether or not I think the article/piece drives home their point home with rigor; and if not, suggest concrete improvements; be it on the choice of methods and/or how the message is conveyed visually.
+
+**On Opinion:** This section will really focus more on (potentially pompous) philosophical and metaphysical takes (I warned you) to take a step back and some hindsight into decyphering the speed with which things are evolving, tackling many topics..more to come on that section ! 
+
+
