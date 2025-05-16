@@ -1,6 +1,6 @@
 ---
 title: ""
----
+--- 
 
 # Where Data Meets Curiosity (that was indeed corny)
 
@@ -10,7 +10,7 @@ I explain my thought process (once I understand my own brain), feel free to chec
 
 ### Is NHS Good Value? (Replication)
 
-Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
+Replication of a data-driven article/analysis of the UK's healthcare system among other countries; by British editor Tom Calver
 
 [View Project](tom-calver-article-NHS.qmd)
 
