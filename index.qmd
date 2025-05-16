@@ -1,20 +1,35 @@
 ---
 title: ""
---- 
+format:
+  html:
+    css: styles.css
+---
 
-# Where Data Meets Curiosity (that was indeed corny)
+:::: {.header-banner .grid}
 
-I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution!
+::: {.g-col-5}
+# Where Data Meets Curiosity {.text-center}
+
+I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution !
+:::
+
+::: {.g-col-4 .gif-container .text-center}
+![](giphy.gif){.rounded-gif}
+:::
+
+::::
 
 ## Recent Projects
 
-### Is NHS Good Value? (Replication)
+::: {.project-card}
+### Is NHS Good Value? (Replication) {.project-title}
 
-Replication of a data-driven article/analysis of the UK's healthcare system among other countries; by British editor Tom Calver
+Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
 
-[View Project](tom-calver-article-NHS.qmd)
+[View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
+:::
 
-<!--  more project cards can go here once i build more stuff -->
+<!-- more projections go here once i engage in more work on this -->
 
 ## About This Site
 

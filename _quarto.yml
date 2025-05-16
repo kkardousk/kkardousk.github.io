@@ -43,7 +43,7 @@ format:
       light: [cosmo, custom.scss]
     css: styles.css
     highlight-style: github-dark
-    toc: true    
+    toc: false
     code-fold: true
     embed-resources: true
     

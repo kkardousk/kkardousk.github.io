@@ -11,7 +11,7 @@
     "href": "about.html",
     "title": "About Me",
     "section": "",
-    "text": "Hello ! I’m a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.\n\n\n\n\n\nOn this website, I share various data projects I’ve worked on, focusing particularly on:\n\n\n\nData replications of interesting studies and articles\n\n\nVisualizations that help tell stories through data\n\n\nAnalysis of topics related to economics, healthcare, and social sciences\n\n\n\nMy Approach\n\n\nI believe in transparent, reproducible data analysis. When working on projects, I strive to:\n\n\n\nClearly document my methodology and thought process\n\n\nShare code and data sources when possible\n\n\nPresent findings in accessible, visually appealing formats\n\n\nAcknowledge limitations and potential biases in my analysis\n\n\n\nConnect With Me\n\n\nI’m always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through GitHub or connect with me on other platforms.",
+    "text": "Hello! I’m a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.\nOn this website, I share various data projects I’ve worked on, focusing particularly on:\n\nData replications of interesting studies and articles\nVisualizations that help tell stories through data\nAnalysis of topics related to economics, healthcare, and social sciences\n\n\nMy Approach\nI believe in transparent, reproducible data analysis. When working on projects, I strive to:\n\nClearly document my methodology and thought process\nShare code and data sources when possible\nPresent findings in accessible, visually appealing formats\nAcknowledge limitations and potential biases in my analysis\n\n\n\nConnect With Me\nI’m always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through GitHub or connect with me on other platforms.",
     "crumbs": [
       "Navigation",
       "About"
@@ -20,9 +20,9 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "*Site’s full functionality in Progress",
+    "title": "Where Data Meets Curiosity",
     "section": "",
-    "text": "I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution !",
+    "text": "I explain my thought process (once I understand my own brain), feel free to check out my data replication, visualizations, and analysis projects I like to do in my spare time - also feel free to connect with me if you have any questions or suggestions; proceed with caution!",
     "crumbs": [
       "Navigation",
       "Home"
@@ -42,9 +42,9 @@
   {
     "objectID": "index.html#recent-projects",
     "href": "index.html#recent-projects",
-    "title": "*Site’s full functionality in Progress",
+    "title": "Where Data Meets Curiosity",
     "section": "Recent Projects",
-    "text": "Recent Projects\n\n\nIs NHS Good Value? (Replication)\n\n\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\n\nView Project",
+    "text": "Recent Projects\n\nIs NHS Good Value? (Replication)\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\nView Project",
     "crumbs": [
       "Navigation",
       "Home"
@@ -53,7 +53,7 @@
   {
     "objectID": "index.html#about-this-site",
     "href": "index.html#about-this-site",
-    "title": "*Site’s full functionality in Progress",
+    "title": "Where Data Meets Curiosity",
     "section": "About This Site",
     "text": "About This Site\nThis personal website serves as a repository for my data analysis projects, replications of interesting studies, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my findings.",
     "crumbs": [

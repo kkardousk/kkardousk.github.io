@@ -149,6 +149,18 @@ footer {
   max-width: 100%;
   height: auto;
 }
+/* For the GIF styling */
+.gif-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rounded-gif {
+  border-radius: 50%;  /* Makes the GIF circular if desired */
+  max-width: 100%;     /* Ensures the GIF is responsive */
+  height: auto;
+}
 
 /* Special styling for project cards */
 .project-card {
