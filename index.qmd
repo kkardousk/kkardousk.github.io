@@ -1,5 +1,5 @@
 ---
-title: "*Site's full functionality in Progress*"
+title: ""
 ---
 
 # Where Data Meets Curiosity (that was indeed corny)
