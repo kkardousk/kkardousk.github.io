@@ -43,7 +43,8 @@ a:hover {
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
   padding: .2rem;
-  white-space: nowrap; /* Prevents text from wrapping */
+  white-space: nowrap; 
+  pointer-events: none; /* makes the element unclickable */
   /*margin-bottom: 1rem;
   /*border-bottom: 2px solid;
   /*overflow: hidden;    /* Optional: Hides any overflow */
