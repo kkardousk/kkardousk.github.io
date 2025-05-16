@@ -3,7 +3,7 @@ title: "About Me"
 ---
 <div class="row">
   <div class="col-md-8">
-  <p>Hello! I'm a data enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.</p></p>
+  <p>Hello ! I'm a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.</p></p>
   </div>
 </div>
 <p>On this website, I share various data projects I've worked on, focusing particularly on:</p>
@@ -30,18 +30,3 @@ title: "About Me"
   </div>
   
   <div class="col-md-4">
-    <!-- This would be a good place for a profile photo or additional sidebar information -->
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title">Skills & Tools</h4>
-      <ul class="list-unstyled">
-        <li>📊 Data Analysis</li>
-        <li>📈 Data Visualization</li>
-        <li>🧮 Statistical Methods</li>
-        <li>🖥️ R / Python / SQL</li>
-        <li>📝 Research Design</li>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>

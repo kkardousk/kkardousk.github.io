@@ -11,7 +11,7 @@
     "href": "about.html",
     "title": "About Me",
     "section": "",
-    "text": "Karim K. Kardous\n\n\nHello! I’m a data enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.\n\n\n\n\n\nOn this website, I share various data projects I’ve worked on, focusing particularly on:\n\n\n\nData replications of interesting studies and articles\n\n\nVisualizations that help tell stories through data\n\n\nAnalysis of topics related to economics, healthcare, and social sciences\n\n\n\nMy Approach\n\n\nI believe in transparent, reproducible data analysis. When working on projects, I strive to:\n\n\n\nClearly document my methodology and thought process\n\n\nShare code and data sources when possible\n\n\nPresent findings in accessible, visually appealing formats\n\n\nAcknowledge limitations and potential biases in my analysis\n\n\n\nConnect With Me\n\n\nI’m always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through GitHub or connect with me on other platforms.",
+    "text": "Hello ! I’m a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.\n\n\n\n\n\nOn this website, I share various data projects I’ve worked on, focusing particularly on:\n\n\n\nData replications of interesting studies and articles\n\n\nVisualizations that help tell stories through data\n\n\nAnalysis of topics related to economics, healthcare, and social sciences\n\n\n\nMy Approach\n\n\nI believe in transparent, reproducible data analysis. When working on projects, I strive to:\n\n\n\nClearly document my methodology and thought process\n\n\nShare code and data sources when possible\n\n\nPresent findings in accessible, visually appealing formats\n\n\nAcknowledge limitations and potential biases in my analysis\n\n\n\nConnect With Me\n\n\nI’m always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through GitHub or connect with me on other platforms.",
     "crumbs": [
       "Navigation",
       "About"
@@ -44,7 +44,7 @@
     "href": "index.html#recent-projects",
     "title": "\nWhere Data Meets Curiosity\n",
     "section": "Recent Projects",
-    "text": "Recent Projects\n\n\nIs NHS Good Value? (Replication)\n\n\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\n\nView Project",
+    "text": "Recent Projects\n\n\nIs NHS Good Value? (Replication)\n\n\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\n\ns View Project",
     "crumbs": [
       "Navigation",
       "Home"

@@ -11,7 +11,7 @@ title: ""
 
 <div class="project-card">
   <h3 class="project-title">Is NHS Good Value? (Replication)</h3>
-  <p>Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver</p>
+  <p>Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver</p>s
   <a href="tom-calver-article-NHS.qmd" class="btn btn-primary">View Project</a>
 </div>
 
