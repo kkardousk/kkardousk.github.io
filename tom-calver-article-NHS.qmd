@@ -81,6 +81,8 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
 # Load or install packages
 pacman::p_load(
+  xml2,
+  downlit,
   gdtools,
   tidyverse,
   quarto,

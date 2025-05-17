@@ -40,7 +40,7 @@ Embedded in news articles these days you can, and without much effort, find anyt
 But of course, you seldom find the exact methodology the author(s) used in presenting said visualizations to their readers. 
 The purpose here then becomes to reverse-engineer the final article output to generate a clear path to each 'element' that is required to make said output - almost like reconstructing a puzzle. 
 
-"Where there is a will, there is a way"; similarly, where there is HTML, there is its source page; less poetic but equally true.
+"Where there is a will, there is a way"; similarly, where there is HTML, there is its source page- less poetic but equally true.
 This will be the leitmotif for most data extraction from articles I work on replicating; unless they are behind a paywall (where an account has to be created first -with or without a paid subscription); or JS is intentionally set to not redirect; not allowing for the actual data to be revealed under the hood. 
 
 Along the way, I hope I do a good job explaining why I went with one method over another based on high certainty; meaning that this is what the author did as well; or purely making an educated guess, and then seeing how well the guessed method's output matches the article's. 
