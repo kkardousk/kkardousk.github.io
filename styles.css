@@ -52,16 +52,15 @@ a:hover {
 }
 
 .sidebar nav .nav-item {
+  font-size: 1.2rem;  /* Changed from 10rem to a more reasonable size */
   margin-bottom: 0.25rem;
 }
-
 .sidebar nav .nav-link {
   color: #495057;
   border-left: 3px solid transparent;
   padding: 0.5rem 1rem;
   transition: all 0.2s ease;
 }
-
 .sidebar nav .nav-link:hover,
 .sidebar nav .nav-link.active {
   color: #ffa65c;
