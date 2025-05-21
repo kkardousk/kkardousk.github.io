@@ -123,16 +123,22 @@ pacman::p_load(
   ggimage
 )
 
-# set ggplot theme and options
-options(scipen = 999)
-theme_set(theme_minimal())
+showtext::showtext_auto(enable = FALSE)
 
-suppressMessages({
-  gdtools::register_gfont("Roboto", "roboto")
-  sysfonts::font_add_google("Roboto", "roboto")
-  showtext_auto()
-  showtext_opts(dpi = 300)
-})
+# Load fonts properly - using simpler approach
+library(systemfonts)
+library(showtext)
+
+# roboto font properly
+font_add_google("Roboto", "roboto")
+showtext_auto()
+
+# ggplot theme set
+theme_set(
+  theme_minimal() +
+  theme(text = element_text(family = "roboto", "Roboto"))
+)
+
 ```
 
 While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
@@ -262,8 +268,6 @@ all_data |>
     "In the event you download the links yourself and run your own script,
     the third and last should be treated as tsv files, otherwise csv's"
   ) 
-
-
 ```
 
 #### Data Sample 
@@ -560,16 +564,18 @@ label_data <-
     data_id = str_c(country, values),
     country = if_else(country == 'DE', 'Germany', country)
   )
+
 # add caption to match Tom's
 caption_text <- "<span style='color:#232323;'>0 = extremely bad, 10 = extremely good.</span><br>
-                 <span style='color:#939293; font-weight: bold;'>Chart: Tom Calver | The Times and The Sunday Times • Source: ESS/K. Kardous</span><br>"
+                 <span style='color:#939293; font-weight: bold;'>Chart: Tom Calver | The Times and The Sunday Times • Source: ESS/K.   Kardous</span><br>"
+
 
 p <- 
   all_series |> distinct() |> 
   ggplot(
     aes(x = year, 
         y = value, 
-        group = data_id, 
+        group = data_id,
         color = country)
   ) +
   scale_color_manual(
@@ -582,7 +588,9 @@ p <-
       'IE' = '#61A861',
       'PT' = '#d27e4e')
   ) +
-  scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0, 8)) + 
+  scale_y_continuous(
+    breaks = seq(0, 7, 1), limits = c(0, 8)
+    ) + 
   scale_x_continuous(
     breaks = seq(2002, 2022, 2), 
     limits = c(2002, 2023),
@@ -604,18 +612,27 @@ p <-
     color = "white"
   ) +
   # colored interactive smooth line
-  geom_smooth_interactive(data = all_series |> filter(!country %in% 'IE'),
-                          aes(data_id = paste0(country, country_name)),
-                          method = "loess", 
-                          se = FALSE, 
-                          linewidth = 0.9, 
-                          fill = NA
+  geom_smooth_interactive(
+    data = all_series |> filter(!country %in% 'IE'),
+    aes(data_id = paste0(country, country_name)),
+    method = "loess", 
+    se = FALSE, 
+    linewidth = 0.9, 
+    fill = NA,
+    show.legend = FALSE
   ) +
-  geom_smooth_interactive(data = all_series |> filter(country %in% 'IE'),
-                          aes(data_id = paste0(country, country_name)),
-                          method = "loess", se = FALSE, linewidth = 0.9, fill = NA
+  geom_smooth_interactive(
+    data = all_series |> filter(country %in% 'IE'),
+    aes(data_id = paste0(country, country_name)),
+    method = "loess",
+    se = FALSE, 
+    linewidth = 0.9, 
+    fill = NA, 
+    show.legend = FALSE
   ) +
-  scale_y_continuous(breaks = seq(0, 7, 1), limits = c(0, 8)) + 
+  scale_y_continuous(
+    breaks = seq(0, 7, 1), limits = c(0, 8)
+    ) + 
   scale_x_continuous(
     breaks = seq(2002, 2022, 2), 
     limits = c(2002, 2024),
@@ -630,23 +647,21 @@ p <-
   theme(
     panel.spacing = unit(20, 'cm'),
     plot.margin = margin(l = 5, b = 10), # leave some space/margin at the bottom for caption 'room to breathe'
-    legend.position = 'none',
     axis.text = element_text(face = "bold"), # axis tick labels
     strip.text = element_text(face = "bold"), # facet labels
     panel.grid.major.x = element_blank(),
     axis.text.x = element_text(margin = margin(b = 9, t = -9)),
     panel.grid.major.y = element_line(color = "gray90"),
+    axis.ticks.x = element_blank(),
     plot.caption = element_markdown(
       hjust = 0,
       size = 9,
       lineheight = 1.4,
-      margin = margin(l = -10, t = 5),
-      family = "Roboto",
+      family = "roboto",
       face = 'bold'
       ) 
   ) +
-  geom_segment(aes(x = 2002, xend = 2023, y = 0, yend = 0), color = 'black') + 
-  theme_minimal()
+  geom_segment(aes(x = 2002, xend = 2023, y = 0, yend = 0), color = 'black') 
 
 p_interactive <- p +
   geom_point_interactive(
@@ -684,12 +699,16 @@ p_interactive <- p +
         "</div>"
       )
     ),
-    color = 'white', fill = 'white', shape = 21, alpha = 0, show.legend = FALSE
+    color = 'white',
+    fill = 'white', 
+    shape = 21, 
+    alpha = 0
   ) +
   geom_rect(
     inherit.aes = FALSE,
     aes(xmin = 2024, xmax = Inf, ymin = -Inf, ymax = Inf),
-    color = NA, fill = "white", 
+    color = NA, 
+    fill = "white"
   ) +
   geom_label_interactive(
     data = all_series |> slice_max(year) |> mutate(country_name = str_sub(data_id, 3, 20)),
@@ -731,46 +750,62 @@ p_interactive <- p +
     stroke = 1,
     fill = 'white',
     color = "grey85",
-    alpha = 0
-  ) + 
-  theme_minimal()
+    alpha = 0,
+    show.legend = FALSE
+  ) 
 ```
-#### Data Visualization
+
+#### Data Visualization 
 ```{r}
 #|echo: false
 #|message: false
 #|warning: false
 
-# render interactive plot thru girafe() engine
-girafe(
-  ggobj = p_interactive,
-  options = list(
-    opts_tooltip(
-      css = "
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      font-family: sans-serif;
-      text-shadow:
-      0 0 4px rgba(234, 255, 255, 1),
-      0 0 4px rgba(234, 255, 255, 1),
-      0 0 4px rgba(255, 255, 255, 1);
-      border-radius: none;
-      transform: translate(-50%, 20px);
-      transition: all 0.2s ease-in-out;",
-      delay_mouseover = 300,
-      delay_mouseout = 500
-    ),
-    opts_hover(
-      css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1;",
-      nearest_distance = 30,
-      reactive = FALSE
-    ),
-    opts_hover_inv(
-      css = "stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
-    )
+p_ggraph_ready <- 
+  p_interactive + 
+  theme_minimal() +  
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    legend.position = 'none'
+  ) + 
+  labs(
+    caption = caption_text
+  ) + 
+  theme(
+    plot.caption = element_markdown(
+      hjust = 0,
+      size = 9
+      )
   )
-)
+
+girafe(
+    ggobj = p_ggraph_ready,
+    options = list(
+        opts_tooltip(
+        css = "
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        font-family: sans-serif;
+        text-shadow:
+        0 0 4px rgba(234, 255, 255, 1),
+        0 0 4px rgba(234, 255, 255, 1),
+        0 0 4px rgba(255, 255, 255, 1);
+        border-radius: none;
+        transform: translate(-50%, 20px);
+        transition: all 0.2s ease-in-out;",
+        delay_mouseover = 300,
+        delay_mouseout = 500
+        ),
+        opts_hover(
+          css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1;",
+          nearest_distance = 30,
+          reactive = FALSE
+          ),
+        opts_hover_inv(
+          css = "stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
+          )
+        )
+    )
 ```
-
-
