@@ -32,7 +32,7 @@ format:
     code-overflow: wrap
     code-tools:
       toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
-    css: nyt_theme.css
+    css: styles.css
     highlight-style: github-dark
     df-print: paged
     page-layout: article
