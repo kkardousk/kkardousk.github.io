@@ -2,7 +2,7 @@
    NYT-Inspired Base Styling
    ======================== */
 body {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
   font-size: 1.1em;
   line-height: 1.8;
   color: #111111;
@@ -155,7 +155,7 @@ pre code {
   overflow-x: auto;
   font-size: 0.95em;
   line-height: 1.5;
-  font-family: "Fira Code", "Courier New", monospace;
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
 }
 
 code {
@@ -163,7 +163,7 @@ code {
   padding: 2px 4px;
   border-radius: 4px;
   font-size: 0.95em;
-  font-family: "Fira Code", "Courier New", monospace;
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
 }
 
 /* ========================

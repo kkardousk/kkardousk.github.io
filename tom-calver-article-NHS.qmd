@@ -32,7 +32,7 @@ format:
     code-overflow: wrap
     code-tools:
       toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
-    css: styles.css
+    css: themes.css
     highlight-style: github-dark
     df-print: paged
     page-layout: article
@@ -62,7 +62,7 @@ If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
 
-**Steps taken:** <br> While I try to be as detailed in my comments as possible; it's still helpful to lay out the step by step process as a numbered list to get the overall chain of what each code is supposed to do:<br>
+**Steps taken:** <br> While I try to be as detailed in my comments as possible; it's still helpful to lay out the step by step process as a numbered list to get the overall chain of the code is supposed to do on a high level - without having to go into the nitty gritty- the comments in the code chunks and in that regard should hopefully help:<br>
 
 1.  Found the source of the data from HTML Source Page; clicked on Network tab after hovering on the plot panel; refreshed the page; and found 'dataset' under 'datawrapper'.
 
@@ -83,56 +83,59 @@ Prepared the final clean dataset for interactive plotting with ggiraph.
 #|warning: false
 #|include: false
 
-# install pacman if it's not already installed
-if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-# install.packages("gdtools", type = "source")
-
-## NOTE; potential (might not be needed) steps on mac for registering then loading Roboto font into Quarto below
-
-## from terminal/shell
-# brew install cairo fontconfig freetype pkg-config
-# export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/opt/homebrew/share/pkgconfig"
-# export PKG_CFLAGS="-I/opt/homebrew/include"
-# export PKG_LIBS="-L/opt/homebrew/lib"
-
-## then from Rstudio
-# install.packages("gdtools", type = "source")
-
-
-pacman::p_load(
-  xml2,
-  downlit,
-  gdtools,
-  tidyverse,
-  quarto,
-  chromote,
-  here,
-  tidycensus,
-  janitor,
-  purrr,
-  ggtext,
-  ggiraph,
-  gfonts,
-  showtext,
-  ggborderline,
-  shiny,
-  gt,
-  rsvg,
-  magick,
-  stringr,
-  ggimage
+invisible({
+  # install pacman if it's not already installed
+  if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+  # install.packages("gdtools", type = "source")
+  
+  ## NOTE; potential (might not be needed) steps on mac for registering then loading Roboto font into Quarto below
+  
+  ## from terminal/shell
+  # brew install cairo fontconfig freetype pkg-config
+  # export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/opt/homebrew/share/pkgconfig"
+  # export PKG_CFLAGS="-I/opt/homebrew/include"
+  # export PKG_LIBS="-L/opt/homebrew/lib"
+  
+  ## then from Rstudio
+  # install.packages("gdtools", type = "source")
+  
+  
+  pacman::p_load(
+    xml2,
+    downlit,
+    gdtools,
+    tidyverse,
+    quarto,
+    chromote,
+    here,
+    tidycensus,
+    janitor,
+    purrr,
+    ggtext,
+    ggshadow,
+    ggiraph,
+    gfonts,
+    showtext,
+    ggborderline,
+    shiny,
+    gt,
+    rsvg,
+    magick,
+    stringr,
+    ggimage
+  )
+  showtext::showtext_auto(enable = FALSE) 
+}
 )
 
-showtext::showtext_auto(enable = FALSE)
 
-# Load fonts properly - using simpler approach
+# load fonts properly - using simpler approach
 library(systemfonts)
 library(showtext)
 
 # roboto font properly
 font_add_google("Roboto", "roboto")
 showtext_auto()
-
 # ggplot theme set
 theme_set(
   theme_minimal() +
@@ -566,9 +569,7 @@ label_data <-
   )
 
 # add caption to match Tom's
-caption_text <- "<span style='color:#232323;'>0 = extremely bad, 10 = extremely good.</span><br>
-                 <span style='color:#939293; font-weight: bold;'>Chart: Tom Calver | The Times and The Sunday Times • Source: ESS/K.   Kardous</span><br>"
-
+caption_text <- "<span style='color:#232323;'>0 = extremely bad, 10 = extremely good</span><br><span style='color:#939291; font-weight: normal;'>Chart: Tom Calver | The Times and The Sunday Times • Source: ESS/K. Kardous</span>"
 
 p <- 
   all_series |> distinct() |> 
@@ -593,7 +594,7 @@ p <-
     ) + 
   scale_x_continuous(
     breaks = seq(2002, 2022, 2), 
-    limits = c(2002, 2023),
+    limits = c(2002, 2025),
     expand = c(0, 0.1)
   ) + 
   theme(
@@ -635,7 +636,7 @@ p <-
     ) + 
   scale_x_continuous(
     breaks = seq(2002, 2022, 2), 
-    limits = c(2002, 2024),
+    limits = c(2002, 2025),
     expand = c(0, 0.1)
   ) +
   labs(
@@ -650,18 +651,14 @@ p <-
     axis.text = element_text(face = "bold"), # axis tick labels
     strip.text = element_text(face = "bold"), # facet labels
     panel.grid.major.x = element_blank(),
-    axis.text.x = element_text(margin = margin(b = 9, t = -9)),
+    axis.text.x = element_text(margin = margin(b = 10, t = -10)),
     panel.grid.major.y = element_line(color = "gray90"),
     axis.ticks.x = element_blank(),
     plot.caption = element_markdown(
-      hjust = 0,
-      size = 9,
-      lineheight = 1.4,
-      family = "roboto",
+      family = "Roboto",
       face = 'bold'
       ) 
-  ) +
-  geom_segment(aes(x = 2002, xend = 2023, y = 0, yend = 0), color = 'black') 
+  ) 
 
 p_interactive <- p +
   geom_point_interactive(
@@ -710,23 +707,6 @@ p_interactive <- p +
     color = NA, 
     fill = "white"
   ) +
-  geom_label_interactive(
-    data = all_series |> slice_max(year) |> mutate(country_name = str_sub(data_id, 3, 20)),
-    aes(
-      x = year,
-      y = value,
-      group = paste0(country, country_name),
-      label = country_name,
-      data_id = paste0(country, country_name)
-    ),
-    label.size = NA,
-    fill = NA,
-    size = 3.2,
-    hjust = 0,
-    fontface = 'bold',
-    inherit.aes = TRUE,
-    alpha = 1
-  ) +
   scale_color_manual(
     breaks = c("GB", "FR", "IE", "PT", "ES", "NO", 'DE', 'Germany'), # this makes sure Germany as a country label gets dark yellow while 'DE' as a curve gets a darker yellow color
     values = c("#264250", "#487caa", "#61A861", "#d27e4e", "#b01622", "#d43b45", '#DCA825', '#9b6e00') # this makes sure Germany as a country label gets dark yellow while 'DE' as a curve gets a darker yellow color
@@ -774,10 +754,51 @@ p_ggraph_ready <-
   ) + 
   theme(
     plot.caption = element_markdown(
-      hjust = 0,
-      size = 9
-      )
-  )
+      lineheight = 1.2,
+      hjust = -0.01,
+      margin = margin(t = 10, l = -7, r = 1),
+      halign = 0
+    ),
+    axis.text.x = element_text(margin = margin(t = -7, l = 3, b = 7, r = -3))  
+  ) +
+  geom_segment(
+    aes(x = 2002, xend = 2023, y = 0, yend = 0), 
+    color = 'black', 
+    linewidth = .1
+  ) + 
+    geom_label_interactive(
+    data = 
+      all_series |> 
+      bind_rows(
+        all_series |>
+          slice_max(year) |>
+          arrange(desc(value)) |> 
+          mutate(
+            country_name = str_sub(data_id, 3, 20),
+            year = 2024,
+            value = c(c(7, 5.8), c(5.7, 5.4, 5.1, 4.8, 4.5) - .3)
+            )
+        )
+     |> 
+      slice_max(year) |> 
+      mutate(year = 2023.4),
+    aes(
+      x = year,
+      y = value,
+      group = paste0(country, country_name),
+      label =  c("Norway", "Spain", "France", "Germany", "UK", "Ireland", "Portugal"),
+      data_id = paste0(country, country_name)
+    ),
+    label.size = NA,
+    fill = NA,
+    color = c("#d43b45", "#b01622", "#487caa", "#9b6e00", "#264250", "#61A861", "#d27e4e"),
+    size = 3.2,
+    hjust = 0,
+    vjust = -.2,
+    # fontface = 'bold',
+    inherit.aes = FALSE,
+    alpha = 1
+  ) 
 
 girafe(
     ggobj = p_ggraph_ready,
@@ -792,20 +813,226 @@ girafe(
         0 0 4px rgba(234, 255, 255, 1),
         0 0 4px rgba(234, 255, 255, 1),
         0 0 4px rgba(255, 255, 255, 1);
+        line-shadow:
+        0 0 4px rgba(234, 255, 255, 1),
+        0 0 4px rgba(234, 255, 255, 1),
+        0 0 4px rgba(255, 255, 255, 1);
         border-radius: none;
         transform: translate(-50%, 20px);
         transition: all 0.2s ease-in-out;",
         delay_mouseover = 300,
-        delay_mouseout = 500
+        delay_mouseout = 200
         ),
         opts_hover(
           css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1;",
           nearest_distance = 30,
           reactive = FALSE
-          ),
+        ),
         opts_hover_inv(
-          css = "stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
-          )
+          css = "stroke-width: .2; stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
         )
     )
+)
 ```
+::: {.text-justify}
+**Notes on Above Plot:** I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker with a small vertical tick. <br>
+Also, white glow border of each curve works well 
+Having said that, I believe the rest remains faithful to the original throughout.
+:::
+
+## Value for Money
+**Notes on Above Plot:**
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+theme_set(
+  theme_minimal() 
+)
+
+data <- 
+  value_for_money |> 
+  drop_na(country) |> 
+  filter(
+    !country %in% c('Norway', 'Australia')
+    ) |> 
+  mutate(
+    last_year = year == 2023,
+    country_tooltip = if_else(year == 2023, country, paste(country, year, sep = ', '))
+  ) |>
+  arrange(country, year) |>
+  mutate(
+    country_fill = case_when(
+      str_detect(country_tooltip, "US") ~ "US",
+      str_detect(country_tooltip, "France") ~ "France",
+      str_detect(country_tooltip, "Italy") ~ "Italy",
+      str_detect(country_tooltip, "Germany") ~ "Germany",
+      str_detect(country_tooltip, "Canada") ~ "Canada",
+      str_detect(country_tooltip, "Japan") ~ "Japan",
+      str_detect(country_tooltip, "UK") ~ "UK",
+      TRUE ~ country_tooltip
+    )
+  ) |>
+  # make sure to hide tooltips for most recent years as they will get an explicit data label there anywyas
+  mutate(
+    country_tooltip = if_else(year == 2023, '', country_tooltip)
+  ) |>
+  mutate(
+    country = factor(country, levels = c("Canada", "France", "Germany", "Japan", "Italy", "UK", "US"))
+  )
+
+p2 <- data |>
+  ggplot(aes(x = spend, y = le, color = last_year, fill = country_fill, group = country_fill)) +
+  geom_point_interactive(
+    aes(size = size, data_id = country_fill, tooltip = country_tooltip),
+    shape = 21, alpha = 1
+  ) +
+  geom_text_interactive(
+    data = data |> slice_max(year) |> distinct(country_fill, .keep_all = TRUE),
+    aes(
+      text = country_fill,
+      label = country_fill,
+      data_id = country_fill,
+      tooltip = country_tooltip
+    ),
+    hjust = -0.3, vjust = 0, alpha = 1
+  ) +
+  scale_fill_manual(
+    breaks = c("US", "France", "Italy", "Germany", "Canada", "Japan", "UK"),
+    values = c("#4076A4", "#80B1E2", "#61A961", "#F5C55E", "#FFAEA9", "#DACFC0", "#E94F55")
+  ) +
+  scale_color_manual(
+    breaks = c(FALSE, TRUE),
+    values = c('white', 'black')
+  ) +
+  theme(
+    plot.title = element_markdown(size = 12, lineheight = 1.2, linewidth = 1.5),
+    plot.subtitle = element_markdown(size = 12, lineheight = 1.2)
+  ) +
+  labs(
+    title = '**Value for money**',
+    subtitle = "How life expectancy and per-capita healthcare spend have changed since 2000.<br>
+               <span style='background-color:#e94f55; color:white; padding:2px 4px;'>**UK**</span> spending is rising, but life expectancy has stalled."
+  ) +
+  labs(x = NULL, y = NULL) +
+  scale_x_continuous(
+    breaks = seq(3000, 11000, 1000),
+    labels = c(format(seq(3000, 10000, 1000), big.mark = ",", trim = TRUE), "$11,000")
+  ) +
+  coord_cartesian(
+    xlim = c(2100, 11300),
+    ylim = c(77, 86),
+    expand = FALSE,
+    clip = 'off'
+  ) +
+  # add caption for p2
+  labs(
+    caption = "<span style='color:#232323; font-weight:bold;'>In US Dollars, adjusted for purchasing power and inflation. Excludes 2020-22.</span>  <br>
+<span style='color:#989799; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
+  ) +
+  theme(
+    text = element_text(color = 'black', face = 'bold'),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major = element_line(size = 0.3, color = "grey80"),
+    axis.line = element_line(color = "black", size = 0.3),
+    legend.position = 'none',
+    plot.caption = element_markdown(
+      size = 10,
+      hjust = 0,
+      lineheight = 1.2,
+      face = 'plain'
+    )
+  ) +
+  annotate(
+    geom = 'rect',
+    xmin = 2075,
+    xmax = 2345,
+    ymax = 86.5,
+    ymin = 86.15,
+    fill = '#e94f55'
+  ) +
+  # we also need to annotate the years 2000 and 2023 with Germany's yellow hex code (to match what Tom has)
+  # not so much for Germany but for reference in general to the range of years for the plot
+  # 2000 persistent text geom; for 2023 we use text geom; for 2000, we use label with no borders to bring forward '2000'
+  annotate(
+    geom = 'label',
+    label = '2000',
+    x = 4250,
+    y = 77.97,
+    color = '#F5C55E',
+    fill = 'white',
+    label.size = NA,
+    fontface = "bold"
+  ) +
+  # 2023 persistent text geom
+  annotate(
+    geom = 'text',
+    label = '2023',
+    x = 6400,
+    y = 81.2,
+    color = '#F5C55E',
+    fontface = "bold"
+  ) +
+  # add x and y axes titles (within the plot itself)
+  # y axis
+  annotate(
+    geom = 'text',
+    label = 'Life expectancy',
+    x = 2685,
+    y = 85.8,
+    color = '#7B7B7B',
+    fontface = "bold",
+    fontfamily = 'roboto',
+    fontsize = 15
+  ) +
+  # x axis
+  annotate(
+    geom = 'text',
+    label = 'Per-capita\n  spend',
+    x = 11200,
+    y = 77.5,
+    color = '#7B7B7B',
+    fontface = "bold",
+    fontfamily = 'roboto',
+    fontsize = 15,
+    hjust = .9,
+    vjust = .6
+  )
+
+girafe(
+  ggobj = p2,
+  width_svg = 10, height_svg = 6,
+  options = list(
+    opts_tooltip(
+      css = "background: white;
+             border: 1px solid #ddd;
+             border-radius: 4px;
+             padding: 6px;
+             font-size: 14px;
+             font-weight: bold;
+             color: #232323;
+             text-align: left;
+             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);"
+    ),
+    opts_hover(
+      css = "stroke-opacity: 1; fill-opacity: 1; color: #232323; font-size: 12px; alpha: 1;"
+    ),
+    opts_hover_inv(
+      css = "fill-opacity: 0.01; stroke-opacity: 0.01; color: transparent; font-size: 0.1px;"
+    )
+  )
+)
+
+```
+#### Data Sample 
+Below is a sample of the data 
+
+
+
+
+
+

@@ -25,6 +25,13 @@ a {
   }
 }
 
+// Center the main content
+.quarto-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 // Navigation sidebar tweaks
 .sidebar-navigation {
   .sidebar-item-container {
@@ -44,6 +51,8 @@ a {
   border-radius: $border-radius;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   margin-bottom: 2rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 // Code blocks
@@ -70,21 +79,6 @@ blockquote {
 .navbar-brand {
   font-family: $headings-font-family;
   font-weight: 700;
-}
-
-// TOC styling
-#toc-title {
-  font-family: $headings-font-family;
-  font-size: 1.2rem;
-  color: $primary;
-}
-
-#TOC {
-  border-left: 1px solid rgba($primary, 0.3);
-  
-  a:hover {
-    color: $primary;
-  }
 }
 
 // Footer styling
@@ -115,4 +109,65 @@ blockquote {
 /* Make sure it's never styled like a link */
 .name-heading.no-link a {
   all: unset;
+}
+
+// Main layout for content and TOC to prevent overlap
+.quarto-title-meta,
+.quarto-title,
+main .content {
+  max-width: 70%;
+  margin-left: 0;
+  margin-right: auto;
+  padding-right: 2rem;
+}
+
+// TOC styling
+#toc-title {
+  font-family: $headings-font-family;
+  font-size: 1.2rem;
+  color: $primary;
+}
+
+// Comprehensive TOC styling to prevent overlap
+.sidebar.sidebar-right {
+  position: fixed;
+  right: 2rem;
+  top: 5rem;
+  width: 25%;
+  max-width: 280px;
+}
+
+#TOC {
+  border-left: 1px solid rgba($primary, 0.3);
+  padding-left: 1rem;
+  position: sticky;
+  top: 2rem;
+  max-height: 85vh;
+  overflow-y: auto;
+  
+  a:hover {
+    color: $primary;
+  }
+}
+
+// Ensure proper layout on mobile and smaller screens
+@media (max-width: 991.98px) {
+  .quarto-title-meta,
+  .quarto-title,
+  main .content {
+    max-width: 100%;
+    padding-right: 0;
+  }
+  
+  .sidebar.sidebar-right {
+    position: static;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2rem;
+  }
+  
+  #TOC {
+    position: static;
+    max-height: none;
+  }
 }
