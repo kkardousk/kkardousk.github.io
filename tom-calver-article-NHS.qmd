@@ -835,10 +835,14 @@ girafe(
 )
 ```
 ::: {.text-justify}
-**Notes on Above Plot:** I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current ggiraph framework (I might be wrong) doesn't natively support said functionality.<br>
-Another 
+**Notes on Above Plot:** This graph looks deceptively simple at first glance; but was in fact by far the hardest to replicate out of all five. <br> 
 
-Having said that, I believe the rest remains faithful to the original throughout.
+_Hallow Circles/Markers_: I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current `{ggiraph}` framework (I might be wrong) doesn't natively support said functionality.<br>
+
+_White Glow around Curve Borders_: Another feature I wanted to implement/match with Tom's original is the subtle white glow around the curves. Two functions (at least) derived from packages allow for this; `geom_glowline()` & `geom_borderline()` from the `{ggshadow}` & `{ggborderline}` packages, respectively; both of which 'get disabled' when being called in a `{ggiraph}` framework.<br>
+
+_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
+Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
 ## Value for Money
