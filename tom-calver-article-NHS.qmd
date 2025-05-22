@@ -147,7 +147,7 @@ theme_set(
       axis.title = element_text(family = "roboto-condensed", size = 11)
     )
 )
-
+showtext::showtext_auto(enable = TRUE) 
 ```
 
 While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
