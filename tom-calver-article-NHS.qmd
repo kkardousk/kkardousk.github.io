@@ -127,40 +127,27 @@ invisible({
 }
 )
 
-# loading in the fonts from venv created that has the Roboto ones (for ploting); a widespread font used by The Times, The Economist, etc.
-font_paths <- c(
-  'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Regular.ttf',
-  'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Bold.ttf',
-  'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Regular.ttf',
-  'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Bold.ttf'
-)
-
-# roboto regular + bold
-sysfonts::font_add(
-  family = "Roboto",
-  regular = font_paths[1],
-  bold = font_paths[2]
-)
-
-# roboto condensed regular + bold
-sysfonts::font_add(
-  family = "Roboto Condensed",
-  regular = font_paths[3],
-  bold = font_paths[4]
-)
+tryCatch({
+  sysfonts::font_add(family = "roboto-regular", regular = "~/Library/Fonts/Roboto-Regular.ttf")
+  sysfonts::font_add(family = "roboto-bold", regular = "~/Library/Fonts/Roboto-Bold.ttf")
+  sysfonts::font_add(family = "roboto-condensed", regular = "~/Library/Fonts/Roboto_Condensed-Regular.ttf")
+  sysfonts::font_add(family = "roboto-condensed-bold", regular = "~/Library/Fonts/Roboto_Condensed-Bold.ttf")
+}, error = function(e) {
+  message("Fonts not available locally: ", e$message)
+})
 
 # used for most things within ggplot so we can assign them as default themes set
 theme_set(
   theme_minimal() +
     theme(
-      text = element_text(family = "Roboto", size = 11),
-      plot.title = element_text(family = "Roboto", face = "bold", size = 16),
-      plot.subtitle = element_text(family = "Roboto", size = 12),
-      axis.text = element_text(family = "Roboto", size = 10),
-      axis.title = element_text(family = "Roboto Condensed", size = 11)
+      text = element_text(family = "roboto-regular", size = 11),
+      plot.title = element_text(family = "roboto-bold", size = 16),
+      plot.subtitle = element_text(family = "roboto-regular", size = 12),
+      axis.text = element_text(family = "roboto-regular", size = 10),
+      axis.title = element_text(family = "roboto-condensed", size = 11)
     )
 )
-showtext::showtext_auto(enable = TRUE) 
+
 ```
 
 While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
