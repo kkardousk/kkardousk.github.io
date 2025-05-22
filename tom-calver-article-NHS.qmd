@@ -32,7 +32,7 @@ format:
     code-overflow: wrap
     code-tools:
       toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
-    css: themes.css
+    css: styles.css
     highlight-style: github-dark
     df-print: paged
     page-layout: article
@@ -792,7 +792,7 @@ p_ggraph_ready <-
     label.size = NA,
     fill = NA,
     color = c("#d43b45", "#b01622", "#487caa", "#9b6e00", "#264250", "#61A861", "#d27e4e"),
-    size = 3.2,
+    size = 3.3,
     hjust = 0,
     vjust = -.2,
     # fontface = 'bold',
@@ -835,13 +835,14 @@ girafe(
 )
 ```
 ::: {.text-justify}
-**Notes on Above Plot:** I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker with a small vertical tick. <br>
-Also, white glow border of each curve works well 
+**Notes on Above Plot:** I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current ggiraph framework (I might be wrong) doesn't natively support said functionality.<br>
+Another 
+
 Having said that, I believe the rest remains faithful to the original throughout.
 :::
 
 ## Value for Money
-**Notes on Above Plot:**
+**Notes on Below Plot:**
 
 ```{r}
 #|echo: false
