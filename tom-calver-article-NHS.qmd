@@ -126,28 +126,45 @@ invisible({
   showtext::showtext_auto(enable = TRUE) 
 }
 )
+# 
+# font_paths <- c(
+#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Regular.ttf',
+#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Bold.ttf',
+#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Regular.ttf',
+#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Bold.ttf'
+# )
+# 
+# # roboto regular + bold
+# sysfonts::font_add(
+#   family = "Roboto Condensed",
+#   regular = font_paths[1],
+#   bold = font_paths[2]
+# )
+# 
+# # roboto condensed regular + bold
+# sysfonts::font_add(
+#   family = "Roboto Condensed",
+#   regular = font_paths[3],
+#   bold = font_paths[4]
+# )
+# 
+# # used for most things within ggplot so we can assign them as default themes set
 
-tryCatch({
-  sysfonts::font_add(family = "roboto-regular", regular = "~/Library/Fonts/Roboto-Regular.ttf")
-  sysfonts::font_add(family = "roboto-bold", regular = "~/Library/Fonts/Roboto-Bold.ttf")
-  sysfonts::font_add(family = "roboto-condensed", regular = "~/Library/Fonts/Roboto_Condensed-Regular.ttf")
-  sysfonts::font_add(family = "roboto-condensed-bold", regular = "~/Library/Fonts/Roboto_Condensed-Bold.ttf")
-}, error = function(e) {
-  message("Fonts not available locally: ", e$message)
-})
+# showtext::showtext_auto(enable = TRUE)
+font_add_google("Roboto", "Roboto")
+font_add_google("Roboto Condensed", "Roboto Condensed")
+showtext_auto()
 
-# used for most things within ggplot so we can assign them as default themes set
 theme_set(
   theme_minimal() +
     theme(
-      text = element_text(family = "roboto-regular", size = 11),
-      plot.title = element_text(family = "roboto-bold", size = 16),
-      plot.subtitle = element_text(family = "roboto-regular", size = 12),
-      axis.text = element_text(family = "roboto-regular", size = 10),
-      axis.title = element_text(family = "roboto-condensed", size = 11)
+      text = element_text(family = "Roboto", size = 11),
+      plot.title = element_text(family = "Roboto", face = "bold", size = 16),
+      plot.subtitle = element_text(family = "Roboto", size = 12),
+      axis.text = element_text(family = "Roboto", size = 10),
+      axis.title = element_text(family = "Roboto Condensed", size = 11)
     )
 )
-showtext::showtext_auto(enable = TRUE) 
 
 ```
 
@@ -852,11 +869,34 @@ _Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates
 Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
-## Value for Money
-**Notes on Below Plot:**
 
+## Value for Money
 #### Data Sample 
-Below is a sample of the data 
+Below is a sample of data showing the relationship between healthcare spending and life expectancy across seven countries—five of them European, with the US and Japan representing the West and East, respectively.<br>
+
+The data excludes spending from 2020 to 2022 (but includes 2023), as the author believes COVID-related expenditures would distort the results. This seems reasonable, although one could argue that the distortion would affect all countries similarly. Still, since changes in life expectancy tend to progress at a snail's pace, including a short-term global health crisis like the pandemic would not make sense.
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+value_for_money |> 
+  drop_na(country) |>
+  filter(
+    !country %in% c('Norway', 'Australia')
+    ) |>
+  arrange(year) |>
+  slice_max(year) |> 
+  gt_nyt_custom(
+    title = 'Data Sample of Value for Money Dataset',
+    subtitle = 'Showing in this case only most recent year (2023)'
+    )
+```
+
+#### Data Visualization 
+**Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years).<br>
 
 
 ```{r}
@@ -865,33 +905,28 @@ Below is a sample of the data
 #|warning: false
 #|include: false
 
-tryCatch({
-  sysfonts::font_add(family = "roboto-regular", regular = "~/Library/Fonts/Roboto-Regular.ttf")
-  sysfonts::font_add(family = "roboto-bold", regular = "~/Library/Fonts/Roboto-Bold.ttf")
-  sysfonts::font_add(family = "roboto-condensed", regular = "~/Library/Fonts/Roboto_Condensed-Regular.ttf")
-  sysfonts::font_add(family = "roboto-condensed-bold", regular = "~/Library/Fonts/Roboto_Condensed-Bold.ttf")
-}, error = function(e) {
-  message("Fonts not available locally: ", e$message)
-})
+font_add_google("Roboto", "Roboto")
+font_add_google("Roboto Condensed", "Roboto Condensed")
+showtext_auto()
 
-# used for most things within ggplot so we can assign them as default themes set
+
 theme_set(
   theme_minimal() +
     theme(
-      text = element_text(family = "roboto-regular", size = 11),
-      plot.title = element_text(family = "roboto-bold", size = 16),
-      plot.subtitle = element_text(family = "roboto-regular", size = 12),
-      axis.text = element_text(family = "roboto-regular", size = 10),
-      axis.title = element_text(family = "roboto-condensed", size = 11)
+      text = element_text(family = "Roboto", size = 11),
+      plot.title = element_text(family = "Roboto", face = "bold", size = 16),
+      plot.subtitle = element_text(family = "Roboto", size = 12),
+      axis.text = element_text(family = "Roboto", size = 10),
+      axis.title = element_text(family = "Roboto Condensed", size = 11)
     )
 )
-showtext::showtext_auto(enable = TRUE) 
+
 data <- 
   value_for_money |> 
   drop_na(country) |> 
   filter(
     !country %in% c('Norway', 'Australia')
-    ) |> 
+  ) |> 
   mutate(
     last_year = year == 2023,
     country_tooltip = paste(country, year, sep = ', ')
@@ -911,23 +946,40 @@ data <-
     country = factor(country, levels = c("Canada", "France", "Germany", "Japan", "Italy", "UK", "US"))
   )
 
+# adding a tibble for hjsut/vjust values as country label position is not uniform across all countries
+hjust_vjust_tibble <- 
+  data |>  
+  slice_max(year) |> 
+  distinct(country_fill, .keep_all = TRUE) |> 
+  mutate(
+    hjust_vals = if_else(country %in% c('Italy', 'US'), .5, -.25),
+    vjust_vals = if_else(country %in% c('Italy', 'US'), -1.5, 0.5),
+    hjust_vals = if_else(country %in% 'UK', -.7, hjust_vals)
+  )
+
 p2 <- data |>
-  ggplot(aes(x = spend, y = le, color = last_year, fill = country_fill, group = country_fill)) +
+  ggplot(
+    aes(x = spend, y = le, color = last_year, fill = country_fill)
+  ) +
   geom_point_interactive(
     aes(size = size, data_id = country_fill, tooltip = country_tooltip),
     shape = 21, alpha = 1
   ) +
   geom_text_interactive(
-    data = data |> slice_max(year) |> distinct(country_fill, .keep_all = TRUE),
+    data = data |> 
+      slice_max(year) |> 
+      distinct(country_fill, .keep_all = TRUE),
     aes(
-      text = country_fill,
       label = country_fill,
-      data_id = country_fill,
       tooltip = country_tooltip
     ),
-    hjust = -0.3, vjust = 0, alpha = 1
+    hjust = hjust_vjust_tibble$hjust_vals, 
+    vjust = hjust_vjust_tibble$vjust_vals, 
+    alpha = 1, 
+    color = '#7B7B7B', 
+    fontface = 'bold'
   ) +
-  scale_fill_manual(
+  scale_fill_manual( 
     breaks = c("US", "France", "Italy", "Germany", "Canada", "Japan", "UK"),
     values = c("#4076A4", "#80B1E2", "#61A961", "#F5C55E", "#FFAEA9", "#DACFC0", "#E94F55")
   ) +
@@ -935,14 +987,12 @@ p2 <- data |>
     breaks = c(FALSE, TRUE),
     values = c('white', 'black')
   ) +
-  theme(
-    plot.title = element_markdown(size = 12, lineheight = 1.2, linewidth = 1.5),
-    plot.subtitle = element_markdown(size = 12, lineheight = 1.2)
-  ) +
   labs(
     title = '**Value for money**',
-    subtitle = "How life expectancy and per-capita healthcare spend have changed since 2000.<br>
-               <span style='background-color:#e94f55; color:white; padding:2px 4px;'>**UK**</span> spending is rising, but life expectancy has stalled."
+    subtitle = 
+      "How life expectancy and per-capita healthcare spend have changed since 2000.<br>
+     <span style='background-color:#e94f55; color:white; padding:2px 4px; font-weight:normal;'>**UK**</span> spending is rising, but life
+     expectancy has stalled"
   ) +
   labs(x = NULL, y = NULL) +
   scale_x_continuous(
@@ -958,28 +1008,30 @@ p2 <- data |>
   # add caption for p2
   labs(
     caption = "<span style='color:#232323; font-weight:bold;'>In US Dollars, adjusted for purchasing power and inflation. Excludes 2020-22.</span>  <br>
-<span style='color:#989799; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
+  <span style='color:#939291; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
   ) +
   theme(
     text = element_text(family = 'Roboto', color = 'black', face = 'bold'),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.y = element_blank(),
-    panel.grid.major = element_line(size = 0.3, color = "grey80"),
+    plot.title = element_markdown(size = 12, lineheight = 1.2, linewidth = 1.5, margin = margin(b = 10, l = -15, r = 20)),
+    plot.subtitle = element_markdown(size = 12, lineheight = 1.2, face = 'plain', margin = margin(b = 10, l = -15, r = 20)),
+    axis.text.x = element_text(margin = margin(t = 5, b = -5)),
+    panel.grid.major = element_line(size = 0.3, color = "#e8e8e8"),
     axis.line = element_line(color = "black", size = 0.3),
     legend.position = 'none',
     plot.caption = element_markdown(
       size = 10,
       hjust = 0,
       lineheight = 1.2,
-      face = 'plain'
-    )
+      face = 'plain',
+      margin = margin(t = 20, r = 20, l = -15)
+    ),
   ) +
   annotate(
     geom = 'rect',
-    xmin = 2075,
-    xmax = 2345,
-    ymax = 86.5,
-    ymin = 86.15,
+    xmin = 1880,
+    xmax = 2130,
+    ymax = 86.7,
+    ymin = 86.27,
     fill = '#e94f55'
   ) +
   # we also need to annotate the years 2000 and 2023 with Germany's yellow hex code (to match what Tom has)
@@ -990,7 +1042,7 @@ p2 <- data |>
     label = '2000',
     x = 4250,
     y = 77.97,
-    color = '#F5C55E',
+    color = '#E0AB26',
     fill = 'white',
     label.size = NA,
     fontface = "bold"
@@ -1000,8 +1052,8 @@ p2 <- data |>
     geom = 'text',
     label = '2023',
     x = 6400,
-    y = 81.2,
-    color = '#F5C55E',
+    y = 81,
+    color = '#E0AB26',
     fontface = "bold"
   ) +
   # add x and y axes titles (within the plot itself)
@@ -1048,21 +1100,26 @@ girafe(
   options = list(
     opts_tooltip(
       css = "background: white;
-             border: 1px solid #ddd;
-             border-radius: 4px;
-             padding: 6px;
-             font-size: 14px;
-             font-family: Roboto;
-             font-weight: bold;
-             color: #232323;
-             text-align: left;
-             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);"
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 14px;
+            font-family: Roboto;
+            font-weight: bold;
+            color: #232323;
+            text-align: left;
+            transform: translate(-50%, 20px);
+            transition: all 0.1s ease-in-out;"
     ),
     opts_hover(
-      css = "stroke-opacity: 1; fill-opacity: 1; color: #232323; font-size: 12px; alpha: 1;"
+      css = "stroke-opacity: 1; fill-opacity: 1; opacity: 1;"
     ),
     opts_hover_inv(
-      css = "fill-opacity: 0.01; stroke-opacity: 0.01; color: transparent; font-size: 0.1px;"
+      css = "fill-opacity: 0 !important;
+            stroke-opacity: 0 !important;
+            opacity: 0 !important;
+            color: white;
+            text { display: none !important; }"
     )
   )
 )
