@@ -148,6 +148,7 @@ theme_set(
     )
 )
 showtext::showtext_auto(enable = TRUE) 
+
 ```
 
 While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
@@ -854,12 +855,37 @@ Having said all that, I believe the rest remains faithful to the original throug
 ## Value for Money
 **Notes on Below Plot:**
 
+#### Data Sample 
+Below is a sample of the data 
+
+
 ```{r}
 #|echo: false
 #|message: false
 #|warning: false
 #|include: false
 
+tryCatch({
+  sysfonts::font_add(family = "roboto-regular", regular = "~/Library/Fonts/Roboto-Regular.ttf")
+  sysfonts::font_add(family = "roboto-bold", regular = "~/Library/Fonts/Roboto-Bold.ttf")
+  sysfonts::font_add(family = "roboto-condensed", regular = "~/Library/Fonts/Roboto_Condensed-Regular.ttf")
+  sysfonts::font_add(family = "roboto-condensed-bold", regular = "~/Library/Fonts/Roboto_Condensed-Bold.ttf")
+}, error = function(e) {
+  message("Fonts not available locally: ", e$message)
+})
+
+# used for most things within ggplot so we can assign them as default themes set
+theme_set(
+  theme_minimal() +
+    theme(
+      text = element_text(family = "roboto-regular", size = 11),
+      plot.title = element_text(family = "roboto-bold", size = 16),
+      plot.subtitle = element_text(family = "roboto-regular", size = 12),
+      axis.text = element_text(family = "roboto-regular", size = 10),
+      axis.title = element_text(family = "roboto-condensed", size = 11)
+    )
+)
+showtext::showtext_auto(enable = TRUE) 
 data <- 
   value_for_money |> 
   drop_na(country) |> 
@@ -1042,8 +1068,6 @@ girafe(
 )
 
 ```
-#### Data Sample 
-Below is a sample of the data 
 
 
 
