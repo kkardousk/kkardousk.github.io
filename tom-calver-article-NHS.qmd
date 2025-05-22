@@ -62,7 +62,7 @@ If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
 
-**Steps taken:** <br> While I try to be as detailed in my comments as possible; it's still helpful to lay out the step by step process as a numbered list to get the overall chain of the code is supposed to do on a high level - without having to go into the nitty gritty- the comments in the code chunks and in that regard should hopefully help:<br>
+**Steps taken:** <br> While I try to be as detailed in my comments as possible; it's still helpful to lay out the step by step process as a numbered list to get the overall chain of what the code is supposed to do on a high level - without having to go into the nitty gritty- the comments in the code chunks and in that regard should hopefully help:<br>
 
 1.  Found the source of the data from HTML Source Page; clicked on Network tab after hovering on the plot panel; refreshed the page; and found 'dataset' under 'datawrapper'.
 
@@ -98,8 +98,7 @@ invisible({
   
   ## then from Rstudio
   # install.packages("gdtools", type = "source")
-  
-  
+
   pacman::p_load(
     xml2,
     downlit,
@@ -124,24 +123,31 @@ invisible({
     stringr,
     ggimage
   )
-  showtext::showtext_auto(enable = FALSE) 
+  showtext::showtext_auto(enable = TRUE) 
 }
 )
 
+# loading in the fonts from venv created that has the Roboto ones (for ploting); a widespread font used by The Times, The Economist, etc.
+tryCatch({
+  sysfonts::font_add(family = "roboto-regular", regular = "~/Library/Fonts/Roboto-Regular.ttf")
+  sysfonts::font_add(family = "roboto-bold", regular = "~/Library/Fonts/Roboto-Bold.ttf")
+  sysfonts::font_add(family = "roboto-condensed", regular = "~/Library/Fonts/Roboto_Condensed-Regular.ttf")
+  sysfonts::font_add(family = "roboto-condensed-bold", regular = "~/Library/Fonts/Roboto_Condensed-Bold.ttf")
+}, error = function(e) {
+  message("Fonts not available locally: ", e$message)
+})
 
-# load fonts properly - using simpler approach
-library(systemfonts)
-library(showtext)
-
-# roboto font properly
-font_add_google("Roboto", "roboto")
-showtext_auto()
-# ggplot theme set
+# used for most things within ggplot so we can assign them as default themes set
 theme_set(
   theme_minimal() +
-  theme(text = element_text(family = "roboto", "Roboto"))
+    theme(
+      text = element_text(family = "roboto-regular", size = 11),
+      plot.title = element_text(family = "roboto-bold", size = 16),
+      plot.subtitle = element_text(family = "roboto-regular", size = 12),
+      axis.text = element_text(family = "roboto-regular", size = 10),
+      axis.title = element_text(family = "roboto-condensed", size = 11)
+    )
 )
-
 ```
 
 While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
@@ -841,7 +847,7 @@ _Hallow Circles/Markers_: I'm not sure what software Tom uses to render the inte
 
 _White Glow around Curve Borders_: Another feature I wanted to implement/match with Tom's original is the subtle white glow around the curves. Two functions (at least) derived from packages allow for this; `geom_glowline()` & `geom_borderline()` from the `{ggshadow}` & `{ggborderline}` packages, respectively; both of which 'get disabled' when being called in a `{ggiraph}` framework.<br>
 
-_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
+_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points shown); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
 Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
@@ -854,10 +860,6 @@ Having said all that, I believe the rest remains faithful to the original throug
 #|warning: false
 #|include: false
 
-theme_set(
-  theme_minimal() 
-)
-
 data <- 
   value_for_money |> 
   drop_na(country) |> 
@@ -866,7 +868,7 @@ data <-
     ) |> 
   mutate(
     last_year = year == 2023,
-    country_tooltip = if_else(year == 2023, country, paste(country, year, sep = ', '))
+    country_tooltip = paste(country, year, sep = ', ')
   ) |>
   arrange(country, year) |>
   mutate(
@@ -879,13 +881,7 @@ data <-
       str_detect(country_tooltip, "Japan") ~ "Japan",
       str_detect(country_tooltip, "UK") ~ "UK",
       TRUE ~ country_tooltip
-    )
-  ) |>
-  # make sure to hide tooltips for most recent years as they will get an explicit data label there anywyas
-  mutate(
-    country_tooltip = if_else(year == 2023, '', country_tooltip)
-  ) |>
-  mutate(
+    ),
     country = factor(country, levels = c("Canada", "France", "Germany", "Japan", "Italy", "UK", "US"))
   )
 
@@ -939,7 +935,7 @@ p2 <- data |>
 <span style='color:#989799; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
   ) +
   theme(
-    text = element_text(color = 'black', face = 'bold'),
+    text = element_text(family = 'Roboto', color = 'black', face = 'bold'),
     panel.grid.minor = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.major = element_line(size = 0.3, color = "grey80"),
@@ -991,20 +987,32 @@ p2 <- data |>
     y = 85.8,
     color = '#7B7B7B',
     fontface = "bold",
-    fontfamily = 'roboto',
+    fontfamily = 'Roboto',
     fontsize = 15
   ) +
-  # x axis
+  # x axis; i couldn't get the text to right justify for x axis title 'Per Capita\n spend' even after using hjust = 1, so i split that text in two lines and that works/matches Tom's 
   annotate(
     geom = 'text',
-    label = 'Per-capita\n  spend',
+    label = 'Per-capita',
     x = 11200,
     y = 77.5,
     color = '#7B7B7B',
     fontface = "bold",
-    fontfamily = 'roboto',
+    fontfamily = 'Roboto',
     fontsize = 15,
-    hjust = .9,
+    hjust = 1,
+    vjust = .6
+  ) + 
+  annotate(
+    geom = 'text',
+    label = 'spend',
+    x = 11200,
+    y = 77.2,
+    color = '#7B7B7B',
+    fontface = "bold",
+    fontfamily = 'Roboto',
+    fontsize = 15,
+    hjust = 1,
     vjust = .6
   )
 
@@ -1018,6 +1026,7 @@ girafe(
              border-radius: 4px;
              padding: 6px;
              font-size: 14px;
+             font-family: Roboto;
              font-weight: bold;
              color: #232323;
              text-align: left;
@@ -1035,6 +1044,7 @@ girafe(
 ```
 #### Data Sample 
 Below is a sample of the data 
+
 
 
 
