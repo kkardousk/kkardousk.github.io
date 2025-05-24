@@ -1471,7 +1471,7 @@ The first step was to make the data as shown above go from wide (a typically ver
 Second was to control how many labels would be displayed on the each segment per bar.<br>
 Third was turning spend categories into a factor variable for easier sorting, matching Tom's sorting/order of bars.<br>
 Forth was creating a tibble/dataframe for tooltips; this will activate upon hover and will be specially useful for small-width segments as data label won't be explicitly displayed.<br>
-Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend to go over the bar plot. <br>
+Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend (p1) to go over the bar plot (p2). <br>
 Finally, this consolidated both plots into one, before being rendered via `{ggiraph}` for interactivity. 
 
 :::
