@@ -968,7 +968,7 @@ p2 <- data |>
   ) +
   # add caption for p2
   labs(
-    caption = "<span style='color:#232323; font-weight:bold;'>In US Dollars, adjusted for purchasing power and inflation. Excludes 2020-22.</span>  <br>
+    caption = "<span style='color:#232323; font-weight:plain;'>In US Dollars, adjusted for purchasing power and inflation. Excludes 2020-22.</span>  <br>
   <span style='color:#939291; font-weight:bold;'>Chart: Tom Calver | The Times and The Sunday Times</span>"
   ) +
   theme(
@@ -983,8 +983,8 @@ p2 <- data |>
       size = 10,
       hjust = 0,
       lineheight = 1.2,
-      face = 'plain',
-      margin = margin(t = 20, r = 20, l = -15)
+      margin = margin(t = 20, r = 20, l = -15),
+      face = 'plain'
     ),
   ) +
   annotate(
@@ -1170,6 +1170,10 @@ I found flag SVG urls using 'https://static.dwcdn.net/css/flag-icons/flags/4x3/'
 are the respective country abbreviations which are looped through below.
 
 ```{r}
+#|echo: false
+#|message: false
+#|warning: false
+
 theme_set_custom()
 # generate the data
 p3_prep <-
@@ -1341,7 +1345,94 @@ p3 <-
 p3
 ```
 
+Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 10 more countries within fairly similar plot panel dimensions while not sacrificing 10 times the readability. <br>
+A couple of things I couldn't replicate perfectly is the centering on the country labels, but that may be a limitation from `{ggtext}` as it doesn't fully support all types of css tags including align center since I tried multiple ways to achieve that - to no avail.<br>
+Finally, while I was able to embed link to the source cited in the caption (Zaruli et al.); it would have taken more work (more than I deemed necessary) to make said link clickable.
 
+## Barely Beds
+#### Dataset 
+This below shows the dataset for the barely bed section of the article; by far the easiest to replicate.<br>
+It shows hospital beds availability across countries, normalized by considering no. of beds per 1,000 people.
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+
+barely_beds |> 
+  gt_nyt_custom(
+    title = 'Barely Beds Dataset'
+  )
+```
+
+
+#### Data Visualization
+Not the most exciting visualization but sometimes, you just need a good old bar plot !
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+
+theme_set_custom()
+
+barely_beds <- 
+  barely_beds |> 
+  select(
+    country = Country,  Beds_per_1000 = Beds
+    ) |> 
+  mutate(
+    country = factor(country, levels = rev(country)),
+    bar_color_code = if_else(country != 'UK', '#264250', '#7fb1e2'),
+    label_color_code = if_else(country != 'UK', 'white', 'black'),
+    font_face = if_else(country != 'UK', 'bold', 'plain')
+  ) 
+
+p4 <- ggplot(barely_beds, aes(x = country, y = Beds_per_1000, fill = bar_color_code)) +
+	geom_col(width = .8) +
+	scale_fill_identity() + 
+	coord_flip() +
+	labs(x = NULL, y = NULL) + 
+	theme(
+		axis.line.x = element_blank(), axis.line.y = element_blank(),
+		axis.text.x = element_blank(), axis.ticks = element_blank(),
+		axis.text.y = element_text(size = 8, hjust = 0, colour = 'black')
+	) + 
+	scale_y_discrete(expand = expansion(mult = c(0, 0.1))) +
+	geom_label(
+		aes(label = Beds_per_1000), 
+		label.size = NA, 
+		size = 4,
+		fill = NA, 
+		hjust = 1, 
+		vjust = .6,
+		nudge_x = .1, 
+		fontface = barely_beds$font_face,
+		colour = barely_beds$label_color_code
+		) + 
+	labs(
+		caption = "<span style='color:#939292; font-weight:bold; text-align: left; white-space: nowrap;'>Chart: The Times and The Sunday Times • Source: OECD.</span>"
+	) +
+	theme(
+		plot.caption = element_markdown(
+			size = 8,
+			hjust = -.225,
+			family = "Roboto", 
+			face = 'bold'
+		)
+	) + 
+	ggtitle(
+	  label = md("**Barely beds**"),
+	  subtitle = "Hospital beds per 1,000 people"
+	  ) + 
+	theme(
+		plot.title = element_markdown(size = 8, hjust = -.1265),
+		plot.subtitle = element_markdown(size = 8, hjust = -.155),
+		plot.margin = margin(l = 5, t = 0, r = 10, b = 10)
+	) 
+p4
+
+```
 
 
 
