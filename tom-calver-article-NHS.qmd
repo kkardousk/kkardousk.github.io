@@ -55,9 +55,9 @@ execute:
 editor: visual
 ---
 
-## Health Service and General Prelude {.text-justify}
+## _Health Service and General Prelude_ {.text-justify}
 
-**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also not efficiently, among other reasons.<br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in to author's name.<br>
+**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also inefficiently,  <br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in to author's name.<br>
 If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
@@ -75,7 +75,7 @@ If you like to download the data, feel free to use urls [here](#metadata).
 5.  Combined two sorted datasets: year + hex columns, and year + country columns to create a properly aligned mapping, joined facts data (with scores/values) on newly created mapped long datasets (converted from wide- almost always much harder to work with) to then finalize the dataset for visualization. More detail on 'finalized the dataset' can be found in the comments of the actual code. <br>
 Prepared the final clean dataset for interactive plotting with ggiraph.
 
-## Health Service Satisfaction
+## **Health Service Satisfaction**
 
 ```{r}
 #|echo: false
@@ -108,6 +108,7 @@ library(ggiraph)
 library(gfonts)
 library(showtext)
 library(ggborderline)
+library(patchwork)
 library(shiny)
 library(gt)
 library(rsvg)
@@ -842,7 +843,7 @@ _Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates
 Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
-## Value for Money
+## **Value for Money**
 #### Data Sample 
 Below is a sample of data showing the relationship between healthcare spending and life expectancy across seven countries—five of them European, with the US and Japan representing the West and East, respectively.<br>
 
@@ -867,12 +868,15 @@ value_for_money |>
     )
 ```
 
+::: {.text-justify}
+
 #### Data Visualization 
 **Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years); but that's the only negative thing I have to say honestly about this plot.<br>
 So sother than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br>
 One thing I couldn't quite replicate is the idea is the 'go to back' country labels of non-hovered elements, which I can't really explain since the data_id is not shared from country to country and each country is unique; so while values of non hovered countries fade maximally into the white background (so this part works); country labels fail to do so; this might be a bug from the package and I might open an issue through github to shed light on said bug.<br>
 I also like the <span style="background-color: #e94f55; color: white; padding: 2px 2px; border-radius: 2px;">**red**</span> highlighting action that red fills "UK"in the title with the white color font in bold. It provides instantly where the country of focus should/will be. In R, one way to apply that customization is by using `element_markdown()` function from the `{ggtext}` package - which can read in css as argument, in this case to wrap the word "UK" in css to indicate both color, fill, and font face.<br>
 Overall, I believe below plot remains highly faithful to the original.
+::: 
 
 ```{r}
 #|echo: false
@@ -1087,7 +1091,7 @@ girafe(
 
 ```
 
-## Room to Improve
+## **Room to Improve**
 #### Dataset 
 Unlike previous sections, below is the _full_ dataset (only 13 rows by 3 column) showing the room to improve for countries; the potential of each country's health service to improve _without the need to increase current spend_; this piece/section of the article borrows from [Zarulli et al](https://pmc.ncbi.nlm.nih.gov/articles/PMC8270475/).<br>
 
@@ -1165,10 +1169,10 @@ room_to_improve |>
     title = 'Room to Improve Dataset with added and rendered flags'
   )
 ```
-
+::: {.text-justify}
 I found flag SVG urls using 'https://static.dwcdn.net/css/flag-icons/flags/4x3/' and then only appended at the end
 are the respective country abbreviations which are looped through below.
-
+::: 
 ```{r}
 #|echo: false
 #|message: false
@@ -1272,7 +1276,7 @@ p3 <-
   geom_label(
     data = p3_data_prep |> filter(progress == 'Current'),
     aes(label = value, hjust = 1.2),
-    family = "roboto",
+    family = "Roboto",
     size = 4,
     fill = 'white', 
     label.size = NA,
@@ -1281,13 +1285,13 @@ p3 <-
   geom_text(
     data = p3_data_prep |> filter(progress == 'Potential'),
     aes(label = value, hjust = -.3),
-    family = "roboto", 
+    family = "Roboto", 
     size = 4,
     fontface = 'bold'
   ) +
   geom_text(
     aes(x = 78.7, y = 15, label = '\nCurrent\n'),
-    family = 'roboto',
+    family = 'Roboto',
     size = 4, 
     nudge_y = .75, 
     nudge_x = -.2, 
@@ -1308,10 +1312,10 @@ p3 <-
     labels = p3_data_prep |> filter(progress == "Current") |> pull(flag_html)
   ) +
   theme(
-    axis.text.y = element_markdown(family = "roboto", size = 10, hjust = 0, face = 'plain', colour = '#232323'),
-    axis.text.x = element_text(family = "roboto", size = 10, face = 'bold'),
-    axis.title.x = element_text(size = 12, family = "roboto condensed"),
-    axis.title.y = element_text(size = 12, family = "roboto condensed"),
+    axis.text.y = element_markdown(family = "Roboto", size = 10, hjust = 0, face = 'plain', colour = '#232323'),
+    axis.text.x = element_text(family = "Roboto", size = 10, face = 'bold'),
+    axis.title.x = element_text(size = 12, family = "Roboto Condensed"),
+    axis.title.y = element_text(size = 12, family = "Roboto Condensed"),
     panel.grid.minor.x = element_blank(),
     legend.position = 'none'
   ) +
@@ -1329,7 +1333,7 @@ p3 <-
     plot.caption = element_markdown(
       hjust = -.5,
       size = 9,
-      family = "roboto", 
+      family = "Roboto", 
       face = 'bold',
       margin = margin(t = 10)
     ),
@@ -1344,16 +1348,17 @@ p3 <-
 
 p3
 ```
-
+::: {.text-justify}
 Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 10 more countries within fairly similar plot panel dimensions while not sacrificing 10 times the readability. <br>
 A couple of things I couldn't replicate perfectly is the centering on the country labels, but that may be a limitation from `{ggtext}` as it doesn't fully support all types of css tags including align center since I tried multiple ways to achieve that - to no avail.<br>
 Finally, while I was able to embed link to the source cited in the caption (Zaruli et al.); it would have taken more work (more than I deemed necessary) to make said link clickable.
-
-## Barely Beds
+::: 
+## **Barely Beds**
 #### Dataset 
+::: {.text-justify}
 This below shows the dataset for the barely bed section of the article; by far the easiest to replicate.<br>
 It shows hospital beds availability across countries, normalized by considering no. of beds per 1,000 people.
-
+::: 
 ```{r}
 #|echo: false
 #|message: false
@@ -1361,7 +1366,8 @@ It shows hospital beds availability across countries, normalized by considering 
 
 barely_beds |> 
   gt_nyt_custom(
-    title = 'Barely Beds Dataset'
+    title = 'Barely Beds Dataset', 
+    subtitle = 'We can clearly see the dearth of hospital beds for the UK'
   )
 ```
 
@@ -1428,11 +1434,273 @@ p4 <- ggplot(barely_beds, aes(x = country, y = Beds_per_1000, fill = bar_color_c
 	theme(
 		plot.title = element_markdown(size = 8, hjust = -.1265),
 		plot.subtitle = element_markdown(size = 8, hjust = -.155),
-		plot.margin = margin(l = 5, t = 0, r = 10, b = 10)
-	) 
+		plot.margin = margin(l = 5, t = 0, r = 10, b = 10),
+		panel.grid = element_blank()
+	)
 p4
 
 ```
+## **Budget Breakdowns**
+#### Dataset
+::: {.text-justify}
+Below is a breakdown of how the budget is allocated across different cost categories in each country. There are eight categories in total, with Hospitals, unsurprisingly, accounting for the lion share in every country. The data has been normalized (same currency and per-person basis) for comparability. <br>
+The UK ranks second to last in terms of budget allocated to Medical goods and equipment, just ahead of Italy, which implies that UK's NHS is starved on a crucial budget. 
+:::
+
+```{r}
+budget_breakdowns |> 
+  mutate(
+    Ancillary = coalesce(Ancillary, 0)
+  ) |> 
+  mutate_if(is.numeric, as.integer) |> 
+  rename(country = Category) |> 
+  gt_nyt_custom(
+    title = "Budget Allocation on Health Services per person",
+    subtitle = "Ancillary spend for the US was NULL or NA, so I replaced it with 0 since all other spends have non-empty values, it's likely that there is no such spend for this category for the US"
+  ) |> 
+  tab_style(
+    style = cell_fill(color = '#fff5ec'), 
+    locations = cells_body(rows = 8)
+  ) |> 
+  fmt_currency(everything(), decimals = 0)
+```
+
+#### Data Wrangling & Visualization
+::: {.text-justify}
+The first step was to make the data as shown above go from wide (a typically very hard to work with structure) to long, so that each country name repeats 8 times, each time for a different spend category.<br>
+Second was to control how many labels would be displayed on the each segment per bar.<br>
+Third was turning spend categories into a factor variable for easier sorting, matching Tom's sorting/order of bars.<br>
+Forth was creating a tibble/dataframe for tooltips; this will activate upon hover and will be specially useful for small-width segments as data label won't be explicitly displayed.<br>
+Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend to go over the bar plot. <br>
+Finally, this consolidated both plots into one, before being rendered via `{ggiraph}` for interactivity. 
+
+:::
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+country_budget_breakdowns <-
+  budget_breakdowns |> 
+  pivot_longer(
+    -Category, 
+    names_to = 'spend_category',
+    values_to = 'budget'
+  ) |> 
+  select(country = 1, everything()) |> 
+  mutate(
+    spend_category = case_when(spend_category == 'Ambulance' ~ 'Community',
+                               spend_category == 'Medicines' ~ 'Medical Goods & Equip.',
+                               .default = spend_category),
+    spend_budget_factor = factor(spend_category, levels = rev(unique(spend_category))),
+    total_spend = sum(budget), .by = country
+  ) |> 
+  mutate(
+    # for data labels/budget, the original only prints out values > $914 or values for below budgets so i crate a variable for later reference/use
+    data_labels = case_when(
+      budget >= 915 ~ scales::dollar(budget),
+      (budget %in% c(782, 800, 804, 836, 860)) ~ scales::dollar(budget),
+      TRUE ~ ""
+    ),
+    spend_budget_factor = factor(spend_category, levels = c(
+      'Hospitals',
+      'Residential long-term care',
+      'Community',
+      'Ancillary',
+      'Medical Goods & Equip.',
+      'Preventive care',
+      'Admin and finance',
+      'Rest of economy')
+    )
+  ) |> 
+  arrange(desc(total_spend), spend_budget_factor) 
+
+tooltip_texts <- country_budget_breakdowns |>
+  group_by(country, spend_category) |>
+  summarise(
+    tooltip = paste0(
+      spend_category, "\n", 
+      paste0(country, ": ", scales::dollar(budget), collapse = "\n")
+    ),
+    .groups = "drop"
+  )
+
+country_budget_breakdowns <- country_budget_breakdowns |>
+  left_join(
+    tooltip_texts, 
+    join_by(country == country, spend_category == spend_category)
+  )
+
+p2 <- country_budget_breakdowns |> 
+  ggplot(
+    aes(
+      x = reorder(country, total_spend), 
+      y = as.numeric(as.character(budget)), 
+      fill = fct_rev(spend_budget_factor), 
+      data_id = spend_category
+    )
+  ) +
+  geom_col_interactive(
+    aes(
+      fill = fct_rev(spend_budget_factor),
+      data_id = spend_category,
+      tooltip = tooltip
+      )
+    ) +
+  geom_text_interactive(
+    aes(label = data_labels, y = budget + 40),
+    position = position_stack(vjust = 0),              
+    hjust = 0,                                        
+    color = "white",
+    size = 4,
+    family = "Roboto",
+    fontface = "bold"
+  ) +
+  scale_y_continuous(breaks = seq(0, 10e3, 2e3), position = 'right', labels = scales::dollar_format()) + 
+  coord_flip() + 
+  scale_x_discrete(position = "bottom") +
+  labs(x = NULL, y = NULL) + 
+  theme_classic() +
+  theme(
+    axis.line.x = element_blank(), 
+    axis.line.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x.top = element_text(family = 'Roboto', face = 'bold', size = 12, color = 'black'), 
+    axis.text.x = element_blank(),
+    legend.position = 'none'
+  ) +
+  scale_fill_manual_interactive(
+    values = c(
+      'Hospitals' = "#264250",
+      'Residential long-term care' = '#7fb1e2',
+      'Community' = '#61a961',
+      'Ancillary' = '#3392a5',
+      'Medical Goods & Equip.' = '#e0ab26',
+      'Preventive care' = '#dacfc2',
+      'Admin and finance' = '#b01622',
+      'Rest of economy' = '#95807a')
+  ) +
+  geom_hline_interactive(yintercept = seq(0, 10e3, 2e3), color = 'white', linewidth = 0.2, linetype = "solid") +
+  coord_flip(
+    ylim = c(0, 11000),
+    expand = FALSE,
+    clip = 'off'
+  ) + 
+  theme(
+    plot.margin = margin(l = 20, r = -20),
+    axis.text.y = element_text(
+      hjust = 0,                    
+      family = 'Roboto',
+      face = 'bold',
+      size = 12,
+      margin = margin(r = 10))
+  )
+
+legend_box <- 
+  tribble(
+    ~spend_category,  ~colors,
+    'Hospitals',  "#264250",
+    'Residential long-term care',  '#7fb1e2',
+    'Community',  '#61a961',
+    'Ancillary',  '#3392a5',
+    'Medical Goods & Equip.', '#e0ab26',
+    'Preventive care',  '#dacfc2',
+    'Admin and finance', '#b01622',
+    'Rest of economy', '#95807a'
+  )
+
+# function to create tiled legend to serve as first row of a two plot wrapper (stacked veritically)
+legend_tile_plot <- function(label, color) {
+  
+  ggplot() +
+    geom_rect_interactive(
+      aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1),  # 1x1 squares/tiles
+      fill = color,
+      data_id = label,
+      tooltip = label
+    ) +
+    # move labels to the right of tiles
+    annotate_interactive(
+      "text", 
+      x = 1.2, y = .6,  # position to the right of the box
+      label = label,
+      data_id = label,
+      hjust = 0,  # left-align text
+      size = 5,
+      color = 'black',
+      family = "Roboto",
+      face = "bold") +
+    coord_fixed(ratio = 1) +  
+    xlim(0, 20) +  # useful for lengthier words, such as 'Medical Goods & Equip.'
+    ylim(-1.4, 1.1) +
+    theme_void() +
+    theme(
+      plot.margin = margin(0, 0, 0, 0)  # reduce margins for better plot values fit 
+    )
+}
+
+legend_plots <- map2(
+  legend_box$spend_category, 
+  legend_box$colors,
+  legend_tile_plot
+)
+
+# reduce spacing within p1
+p1 <- wrap_plots(
+  legend_plots, 
+  nrow = 2, 
+  ncol = 4, 
+  heights = 1.2,
+  widths = .6
+) 
+
+# reduce spacing not within but between p1 and p2 using plot_layout heights
+girafe(
+  ggobj = (p1 / p2) + plot_layout(heights = c(0.4, 3), widths = c(1, 3)),  # reduced p1 height and widths
+  width_svg = 12, height_svg = 7,
+  options = list(
+    opts_tooltip(
+      css = "background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 14px;
+            font-family: Roboto;
+            font-weight: bold;
+            color: #232323;
+            text-align: left;
+            transform: translate(-50%, 20px);
+            transition: all 0.3 ease-in-out;"
+    ),
+    opts_hover(
+      css = "stroke-opacity: 1; fill-opacity: 1; opacity: 1; transition: all 0.3s ease-in-out;"
+    ),
+    opts_hover_inv(
+      css = "fill-opacity: 0.3 !important;
+            stroke-opacity: 0.3 !important;
+            opacity: 0.6 !important;
+            transition: all 0.2s ease-in-out;
+            color: white;
+            text { display: none !important; }"
+    )
+  )
+)
+
+
+```
+::: {.text-justify}
+Overall, I liked this plot - it took a fair amount of effort to replicate. The only part I wasn't a fan of was the y-axis scale from $0 to $10,000. It can be a bit misleading: for example, the U.S. hospital spend of around $3,400 falls below the $2,000 mark. I would have removed the intermediate axis (that goes from 0 to $10,000) ticks and kept only the $10,000 label to avoid this potential confusion.
+
+One feature I couldn't replicate was the hover interaction where small segments (like Ancillary spend) trigger the display of all corresponding values across countries. Achieving that would require a deeper dive into CSS -assuming `{ggiraph}` even supports that level of dynamic interaction. That said, for small segments like 'Residential long-term care', a few values are already visible without interaction, which gives a reasonable sense of the scale for the rest. For all those reasons, I didn’t think the extra complexity was worth the additional time investment.
+
+Thanks for taking the time to read this and hopefully, if nothing else, you have enjoyed it, more to come !
+:::
+
+
+
+
+
 
 
 
