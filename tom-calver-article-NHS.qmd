@@ -1471,7 +1471,7 @@ The first step was to make the data as shown above go from wide (a typically ver
 Second was to control how many labels would be displayed on the each segment per bar.<br>
 Third was turning spend categories into a factor variable for easier sorting, matching Tom's sorting/order of bars.<br>
 Forth was creating a tibble/dataframe for tooltips; this will activate upon hover and will be specially useful for small-width segments as data label won't be explicitly displayed.<br>
-Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend (p1) to go over the bar plot (p2). <br>
+Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend (p1) to go over the bar plot. <br>
 Finally, this consolidated both plots into one, before being rendered via `{ggiraph}` for interactivity. 
 
 :::
@@ -1690,7 +1690,7 @@ girafe(
 
 ```
 ::: {.text-justify}
-Overall, I liked this plot - it took a fair amount of effort to replicate. The only part I wasn't a fan of was the y-axis scale from $0 to $10,000. It can be a bit misleading: for example, the U.S. hospital spend of around $3,400 falls below the $2,000 mark. I would have removed the intermediate axis (that goes from 0 to $10,000) ticks and kept only the $10,000 label to avoid this potential confusion.
+Overall, I liked this plot - it took a fair amount of effort to replicate. The only part I wasn't a fan of was the y-axis scale from $0 to $10,000. It can be a bit misleading: for example, the U.S. hospital spend of around 3,400 falls below the $2,000 mark. I would have removed the intermediate axis (that goes from 0 to $10,000) ticks and kept only the $10,000 label to avoid this potential confusion. Another difference where I actually deviated from the plot is the structure of the legend; where Tom uses one block across which you will find boxes along with their respective spend categories from left to right whereas I decided to just go for 2x4 where each row contains 4 spend categories (total of 8). I think this hopefully gives clearer separation and I think can be more than often useful especially for even number of categories like it's the case in here.
 
 One feature I couldn't replicate was the hover interaction where small segments (like Ancillary spend) trigger the display of all corresponding values across countries. Achieving that would require a deeper dive into CSS -assuming `{ggiraph}` even supports that level of dynamic interaction. That said, for small segments like 'Residential long-term care', a few values are already visible without interaction, which gives a reasonable sense of the scale for the rest. For all those reasons, I didn’t think the extra complexity was worth the additional time investment.
 
