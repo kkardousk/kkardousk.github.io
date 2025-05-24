@@ -29,7 +29,7 @@ format:
     code-link: true # requires both downlit and xml2 to be downloaded
     code-fold: true
     code-summary: '<i class="bi-code-slash"></i> Show the code'
-    code-overflow: wrap
+    # code-overflow: wrap
     code-tools:
       toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
     css: styles.css
@@ -57,7 +57,7 @@ editor: visual
 
 ## Health Service and General Prelude {.text-justify}
 
-**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean, among other reasons.<br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in to author's name.<br>
+**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also not efficiently, among other reasons.<br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in to author's name.<br>
 If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
@@ -82,89 +82,62 @@ Prepared the final clean dataset for interactive plotting with ggiraph.
 #|message: false
 #|warning: false
 #|include: false
-
-invisible({
-  # install pacman if it's not already installed
-  if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-  # install.packages("gdtools", type = "source")
-  
-  ## NOTE; potential (might not be needed) steps on mac for registering then loading Roboto font into Quarto below
-  
-  ## from terminal/shell
-  # brew install cairo fontconfig freetype pkg-config
-  # export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/opt/homebrew/share/pkgconfig"
-  # export PKG_CFLAGS="-I/opt/homebrew/include"
-  # export PKG_LIBS="-L/opt/homebrew/lib"
-  
-  ## then from Rstudio
-  # install.packages("gdtools", type = "source")
-
-  pacman::p_load(
-    xml2,
-    downlit,
-    gdtools,
-    tidyverse,
-    quarto,
-    chromote,
-    here,
-    tidycensus,
-    janitor,
-    purrr,
-    ggtext,
-    ggshadow,
-    ggiraph,
-    gfonts,
-    showtext,
-    ggborderline,
-    shiny,
-    gt,
-    rsvg,
-    magick,
-    stringr,
-    ggimage
-  )
-  showtext::showtext_auto(enable = TRUE) 
+# check if the required package 'emo' is installed;
+# if not, it might mean your renv environment is not fully restored.
+# running `renv::restore()` will install all necessary packages
+# to ensure consistent package versions for building this quarto document,
+# effectively 'containerizing' your project and protecting it from future package changes.
+if (!requireNamespace("emo", quietly = TRUE)) {
+  message("\nIt looks like your environment might not be restored.\nRun `renv::restore()` to install required packages.\n")
 }
-)
-# 
-# font_paths <- c(
-#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Regular.ttf',
-#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto-Bold.ttf',
-#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Regular.ttf',
-#   'renv/library/macos/R-4.5/aarch64-apple-darwin20/Roboto/static/Roboto_Condensed-Bold.ttf'
-# )
-# 
-# # roboto regular + bold
-# sysfonts::font_add(
-#   family = "Roboto Condensed",
-#   regular = font_paths[1],
-#   bold = font_paths[2]
-# )
-# 
-# # roboto condensed regular + bold
-# sysfonts::font_add(
-#   family = "Roboto Condensed",
-#   regular = font_paths[3],
-#   bold = font_paths[4]
-# )
-# 
-# # used for most things within ggplot so we can assign them as default themes set
 
-# showtext::showtext_auto(enable = TRUE)
-font_add_google("Roboto", "Roboto")
-font_add_google("Roboto Condensed", "Roboto Condensed")
-showtext_auto()
+# load packages
+library(xml2)
+library(downlit)
+library(gdtools)
+library(tidyverse)
+library(quarto)
+library(chromote)
+library(here)
+library(tidycensus)
+library(janitor)
+library(purrr)
+library(ggtext)
+library(ggshadow)
+library(ggiraph)
+library(gfonts)
+library(showtext)
+library(ggborderline)
+library(shiny)
+library(gt)
+library(rsvg)
+library(magick)
+library(stringr)
+library(ggimage)
+library(emo)
 
-theme_set(
-  theme_minimal() +
-    theme(
-      text = element_text(family = "Roboto", size = 11),
-      plot.title = element_text(family = "Roboto", face = "bold", size = 16),
-      plot.subtitle = element_text(family = "Roboto", size = 12),
-      axis.text = element_text(family = "Roboto", size = 10),
-      axis.title = element_text(family = "Roboto Condensed", size = 11)
-    )
-)
+
+theme_set_custom <- function() {
+  
+  # load google fonts 
+  sysfonts::font_add_google("Roboto", "Roboto")
+  sysfonts::font_add_google("Roboto Condensed", "Roboto Condensed")
+  showtext::showtext_auto()
+
+  # apply ggplot2 theme; can always be overwritten
+  ggplot2::theme_set(
+    ggplot2::theme_minimal() +
+      ggplot2::theme(
+        text = element_text(family = "Roboto", size = 11),
+        plot.title = element_text(family = "Roboto", face = "bold", size = 16),
+        plot.subtitle = element_text(family = "Roboto", size = 12),
+        axis.text = element_text(family = "Roboto", size = 10),
+        axis.title = element_text(family = "Roboto Condensed", size = 11)
+      )
+  )
+}
+
+theme_set_custom()
 
 ```
 
@@ -869,7 +842,6 @@ _Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates
 Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
-
 ## Value for Money
 #### Data Sample 
 Below is a sample of data showing the relationship between healthcare spending and life expectancy across seven countries—five of them European, with the US and Japan representing the West and East, respectively.<br>
@@ -896,8 +868,11 @@ value_for_money |>
 ```
 
 #### Data Visualization 
-**Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years).<br>
-
+**Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years); but that's the only negative thing I have to say honestly about this plot.<br>
+So sother than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br>
+One thing I couldn't quite replicate is the idea is the 'go to back' country labels of non-hovered elements, which I can't really explain since the data_id is not shared from country to country and each country is unique; so while values of non hovered countries fade maximally into the white background (so this part works); country labels fail to do so; this might be a bug from the package and I might open an issue through github to shed light on said bug.<br>
+I also like the <span style="background-color: #e94f55; color: white; padding: 2px 2px; border-radius: 2px;">**red**</span> highlighting action that red fills "UK"in the title with the white color font in bold. It provides instantly where the country of focus should/will be. In R, one way to apply that customization is by using `element_markdown()` function from the `{ggtext}` package - which can read in css as argument, in this case to wrap the word "UK" in css to indicate both color, fill, and font face.<br>
+Overall, I believe below plot remains highly faithful to the original.
 
 ```{r}
 #|echo: false
@@ -905,21 +880,7 @@ value_for_money |>
 #|warning: false
 #|include: false
 
-font_add_google("Roboto", "Roboto")
-font_add_google("Roboto Condensed", "Roboto Condensed")
-showtext_auto()
-
-
-theme_set(
-  theme_minimal() +
-    theme(
-      text = element_text(family = "Roboto", size = 11),
-      plot.title = element_text(family = "Roboto", face = "bold", size = 16),
-      plot.subtitle = element_text(family = "Roboto", size = 12),
-      axis.text = element_text(family = "Roboto", size = 10),
-      axis.title = element_text(family = "Roboto Condensed", size = 11)
-    )
-)
+theme_set_custom()
 
 data <- 
   value_for_money |> 
@@ -1125,6 +1086,261 @@ girafe(
 )
 
 ```
+
+## Room to Improve
+#### Dataset 
+Unlike previous sections, below is the _full_ dataset (only 13 rows by 3 column) showing the room to improve for countries; the potential of each country's health service to improve _without the need to increase current spend_; this piece/section of the article borrows from [Zarulli et al](https://pmc.ncbi.nlm.nih.gov/articles/PMC8270475/).<br>
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+  
+# map(room_to_improve$Country |> word(1) |> str_remove_all('\\:')[-5], emo::ji)
+
+room_to_improve |> 
+  gt_nyt_custom(
+    title = 'Room to Improve Dataset', 
+    subtitle = str_glue(
+    "Notice the first column consists of country names preceded by emoji shortcodes per country so that for instance
+    Spain can have ", md(emo::ji('es')), " as a prefix"
+    )
+  )
+```
+
+#### Data Wrangling
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+
+theme_set_custom()
+
+# first isolate country names from first column values (using regex), then join on jis (emoji dataset) and filter to 
+# subgroup == 'country-flag', then re-join (sef join) to capture only countries of interest's flag emojis
+room_to_improve <- 
+  room_to_improve |>
+  mutate(
+    country_names = room_to_improve$Country |> 
+      word(2, sep = "[a-z]\\: ") 
+  ) |>  
+  inner_join(
+    jis |> 
+      filter(
+        subgroup == 'country-flag'
+        ) |> 
+      select(emoji, name, aliases) |> 
+      unnest(aliases) |> 
+      mutate_if(is.character, str_to_lower) |> 
+      distinct() |> 
+      inner_join(
+        tibble(
+          room_to_improve$Country |> 
+            word(2, sep = "[a-z]\\: ") |>
+            str_to_lower() |> 
+            enframe(name = NULL, value = 'name') |>
+            select(name) 
+            )
+      ) |> 
+      mutate(
+        country_names = str_to_title(name)
+      ) 
+  ) |> 
+  select(-c(aliases, name, Country)) |> 
+  distinct()
+
+```
+::: {.text-justify}
+Below is how the rendering looks like, now unfortunately, and because the plot uses Roboto throughout, the flag emojis weren’t rendering correctly. Also because flags are compound glyphs (made from regional indicators), and most R graphics devices don’t support fonts like "Apple Color Emoji" that can display them properly.
+
+So since ggplot2 doesn't allow font fallback within axis labels, I switched to embedding SVG flag images using element_markdown() and <img> tags instead. This is better anyways in the sense that SVG's are by design more scalable (in dimensions/sizing) and can be a good input/template/boiler plate for me and for you in the event embedding flag images into a future script/project is needed.
+
+:::
+
+```{r}
+room_to_improve |> 
+  gt_nyt_custom(
+    title = 'Room to Improve Dataset with added and rendered flags'
+  )
+```
+
+I found flag SVG urls using 'https://static.dwcdn.net/css/flag-icons/flags/4x3/' and then only appended at the end
+are the respective country abbreviations which are looped through below.
+
+```{r}
+theme_set_custom()
+# generate the data
+p3_prep <-
+  tribble(
+    ~Current,  ~Potential,  ~Country,
+    78.9,      84.1,       "United States",
+    80.9,      84.1,       "Germany",
+    78.1,      80.9,       "Poland",
+    81.1,      83.8,       "United Kingdom",
+    81.6,      84.1,       "Ireland",
+    81.4,      83.8,       "Finland",
+    82.0,      84.1,       "Norway",
+    82.3,      84.1,       "France",
+    82.4,      84.1,       "Sweden",
+    81.4,      82.6,       "Portugal",
+    83.0,      84.1,       "Australia",
+    83.0,      83.2,       "Italy",
+    81.7,      81.7,       "Greece",
+    83.1,      83.1,       "Spain",
+    84.1,      84.1,       "Japan"
+  ) |>
+  select(last_col(), everything()) |>
+  # order gets lost when pivoting longer so we create a integer sequence and force rank/arrange that way
+  mutate(seq = 1:15)
+
+# create country abb names (fetched from one of the html nodes within the original plot) and build urls/per flag
+country_abbs <- c('us', 'de', 'pl', 'gb', 'ie', 'fi', 'no', 'fr', 'se', 'pt', 'au', 'it', 'gr', 'es', 'jp')
+flag_urls <- str_glue("https://static.dwcdn.net/css/flag-icons/flags/4x3/{country_abbs}.svg")
+
+# loop thru svg's and convert to png's
+flag_paths <- map(
+  flag_urls, function(url) {
+    
+    svg_path <- tempfile(fileext = ".svg")
+    png_path <- tempfile(fileext = ".png")
+    
+    download.file(url, svg_path, mode = "wb")
+    rsvg::rsvg_png(svg_path, png_path)
+    
+    return(png_path)
+  }
+)
+flag_paths <- setNames(flag_paths, country_abbs)
+
+# add the 2 additional columns back to p3
+p3_data <- p3_prep |>
+  bind_cols(
+    flag_paths |> unlist() |> stack() |> rename(flag_pngs = values, country_abbs = ind)
+  ) |>
+  select(Country, country_abbs, Current, Potential, flag_pngs)
+
+# also add html code straight into p3_data but first abbreviate country names
+p3_data <-
+  p3_data |>
+  # abbreviated United States and United Kingdom because i noticed the blanks/two or more words can throw off element markdown, especially
+  # when embedding svg's; while not perfectly replicating here, in the context of country names, 'US' and 'UK' are universally reconized, especially
+  # if flag images are appended to them
+  mutate(
+    Country = if_else(
+      Country == 'United Kingdom', 'UK',
+      if_else(Country == 'United States', 'US', Country)
+    ),
+    flag_html = paste0("<img src='", flag_pngs, "' width='25' height='15'> <span style='font-family: Roboto;'>", " ", " ", Country, "</span>")
+  )
+
+# we have to turb this from wide to long; to get a tracking per country (current -> potential)
+p3_data_prep <-
+  p3_data |>
+  # order gets lost when pivoting longer so we create a integer sequence and force rank/arrange that way
+  mutate(seq = 1:15) |>
+  pivot_longer(
+    -c(seq, Country, country_abbs, flag_pngs, flag_html), names_to = 'progress'
+  ) |>
+  mutate(
+    # add color codes (different for UK compared to rest)
+    # for greece, default arrow shows a recession, but in Tom's plot, it's '>', it's the same value for current and for potential for Greece, so we
+    # artificially add + 0.001 to the Greek score for potential for force '>' arrow direction
+    # value = if_else(Country == 'Greece' & progress == 'Potential', value + 0.0001, value),
+    hex_codes = if_else(Country == 'UK', '#73a3d3', '#264250'), # UK gets its own color
+    arrow_end_angle = if_else(Country %in% c('Spain', 'Japan'), 90, 70)) |>
+    arrange(desc(seq)) # for some reason, below plot was reversing order, so we reverse order here so that plot arranges countries properly
+
+# prepare plot caption
+plot_caption <- "<span style='color:#939292; font-weight:bold;'>Chart: The Times and The Sunday Times | Source: <span style='color:#254251; text-decoration:underline;'>Zarulli et al.</span></span>"
+
+# since arrow() wouldn't natively recognized arrow_end_angle,
+# we create an variable in the global env. to call it within arrow() later on
+p3 <- 
+  p3_data_prep |>
+  ggplot(aes(y = fct_reorder(Country, -seq), x = value, color = hex_codes)) +
+  geom_path(
+    arrow = arrow(type = "open", angle = c(rep(90, 3), rep(60, 27)), length = unit(5, 'pt')),
+    linewidth = 1,
+    lineend = 'round'
+  ) +
+  geom_label(
+    data = p3_data_prep |> filter(progress == 'Current'),
+    aes(label = value, hjust = 1.2),
+    family = "roboto",
+    size = 4,
+    fill = 'white', 
+    label.size = NA,
+    fontface = 'bold'
+  ) +
+  geom_text(
+    data = p3_data_prep |> filter(progress == 'Potential'),
+    aes(label = value, hjust = -.3),
+    family = "roboto", 
+    size = 4,
+    fontface = 'bold'
+  ) +
+  geom_text(
+    aes(x = 78.7, y = 15, label = '\nCurrent\n'),
+    family = 'roboto',
+    size = 4, 
+    nudge_y = .75, 
+    nudge_x = -.2, 
+    color = '#232323',
+    margin = margin(t = -10, b = 5)
+  ) +
+  geom_text(
+    aes(x = 84.1, y = 15, label = '\nPotential\n'),
+    family = 'roboto',
+    size = 4, 
+    nudge_y = .75,
+    nudge_x = .1, 
+    color = '#232323',
+    margin = margin(t = -10, b = 5)
+  ) +
+  scale_color_identity() +
+  scale_y_discrete(
+    labels = p3_data_prep |> filter(progress == "Current") |> pull(flag_html)
+  ) +
+  theme(
+    axis.text.y = element_markdown(family = "roboto", size = 10, hjust = 0, face = 'plain', colour = '#232323'),
+    axis.text.x = element_text(family = "roboto", size = 10, face = 'bold'),
+    axis.title.x = element_text(size = 12, family = "roboto condensed"),
+    axis.title.y = element_text(size = 12, family = "roboto condensed"),
+    panel.grid.minor.x = element_blank(),
+    legend.position = 'none'
+  ) +
+  labs(x = NULL, y = NULL) +
+  geom_segment(
+    aes(x = 78.85, xend = 78.85, y = 15.25, yend = 15.4),
+    color = "grey70", linewidth = .2, inherit.aes = FALSE
+  ) +
+  geom_segment(
+    aes(x = 84.1, xend = 84.1, y = 15.25, yend = 15.4),
+    color = 'grey70', linewidth = .2, inherit.aes = FALSE
+  ) +
+  labs(caption = plot_caption) +
+  theme(
+    plot.caption = element_markdown(
+      hjust = -.5,
+      size = 9,
+      family = "roboto", 
+      face = 'bold',
+      margin = margin(t = 10)
+    ),
+    axis.text.x = element_text(margin = margin(t = 10, b = 10))
+  ) + 
+  coord_cartesian(
+  xlim = c(77, 85),
+  expand = FALSE,
+  clip = 'off'
+  ) + 
+  scale_x_continuous(breaks = seq(78, 84, 2)) 
+
+p3
+```
+
 
 
 
