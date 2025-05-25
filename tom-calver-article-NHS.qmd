@@ -57,7 +57,7 @@ editor: visual
 
 ## _Health Service and General Prelude_ {.text-justify}
 
-**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also inefficiently,  <br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in to author's name.<br>
+**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also inefficiently,  <br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in the author's name.<br>
 If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
@@ -817,17 +817,17 @@ girafe(
         0 0 4px rgba(255, 255, 255, 1);
         border-radius: none;
         transform: translate(-50%, 20px);
-        transition: all 0.2s ease-in-out;",
+        transition: all 0.3s ease-in-out;",
         delay_mouseover = 300,
         delay_mouseout = 200
         ),
         opts_hover(
-          css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1;",
-          nearest_distance = 30,
+          css = "stroke-width: 3; stroke-opacity: 0.9; fill-opacity: 0.9; opacity: 1; transition: all 0.3s ease-in-out;",
+          nearest_distance = 10,
           reactive = FALSE
         ),
         opts_hover_inv(
-          css = "stroke-width: .2; stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;"
+          css = "stroke-width: .2; stroke-opacity: 0.2; fill-opacity: 0.2; opacity: 0.4;transition: all 0.3s ease-in-out;"
         )
     )
 )
@@ -835,11 +835,11 @@ girafe(
 ::: {.text-justify}
 **Notes on Above Plot:** This graph looks deceptively simple at first glance; but was in fact by far the hardest to replicate out of all five. <br> 
 
-_Hallow Circles/Markers_: I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current `{ggiraph}` framework (I might be wrong) doesn't natively support said functionality.<br>
+_Hollow Circles/Markers_: I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current `{ggiraph}` framework (I might be wrong) doesn't natively support said functionality.<br>
 
 _White Glow around Curve Borders_: Another feature I wanted to implement/match with Tom's original is the subtle white glow around the curves. Two functions (at least) derived from packages allow for this; `geom_glowline()` & `geom_borderline()` from the `{ggshadow}` & `{ggborderline}` packages, respectively; both of which 'get disabled' when being called in a `{ggiraph}` framework.<br>
 
-_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points shown); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
+_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points shown); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
 Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
@@ -872,7 +872,7 @@ value_for_money |>
 
 #### Data Visualization 
 **Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years); but that's the only negative thing I have to say honestly about this plot.<br>
-So sother than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br>
+So other than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br>
 One thing I couldn't quite replicate is the idea is the 'go to back' country labels of non-hovered elements, which I can't really explain since the data_id is not shared from country to country and each country is unique; so while values of non hovered countries fade maximally into the white background (so this part works); country labels fail to do so; this might be a bug from the package and I might open an issue through github to shed light on said bug.<br>
 I also like the <span style="background-color: #e94f55; color: white; padding: 2px 2px; border-radius: 2px;">**red**</span> highlighting action that red fills "UK"in the title with the white color font in bold. It provides instantly where the country of focus should/will be. In R, one way to apply that customization is by using `element_markdown()` function from the `{ggtext}` package - which can read in css as argument, in this case to wrap the word "UK" in css to indicate both color, fill, and font face.<br>
 Overall, I believe below plot remains highly faithful to the original.
@@ -1331,7 +1331,7 @@ p3 <-
   labs(caption = plot_caption) +
   theme(
     plot.caption = element_markdown(
-      hjust = -.5,
+      hjust = -.45,
       size = 9,
       family = "Roboto", 
       face = 'bold',
@@ -1349,7 +1349,7 @@ p3 <-
 p3
 ```
 ::: {.text-justify}
-Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 10 more countries within fairly similar plot panel dimensions while not sacrificing 10 times the readability. <br>
+Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this case per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 5 more countries within fairly similar plot panel dimensions while not sacrificing 5 times the readability. <br>
 A couple of things I couldn't replicate perfectly is the centering on the country labels, but that may be a limitation from `{ggtext}` as it doesn't fully support all types of css tags including align center since I tried multiple ways to achieve that - to no avail.<br>
 Finally, while I was able to embed link to the source cited in the caption (Zaruli et al.); it would have taken more work (more than I deemed necessary) to make said link clickable.
 ::: 
@@ -1395,48 +1395,48 @@ barely_beds <-
   ) 
 
 p4 <- ggplot(barely_beds, aes(x = country, y = Beds_per_1000, fill = bar_color_code)) +
-	geom_col(width = .8) +
-	scale_fill_identity() + 
-	coord_flip() +
-	labs(x = NULL, y = NULL) + 
-	theme(
-		axis.line.x = element_blank(), axis.line.y = element_blank(),
-		axis.text.x = element_blank(), axis.ticks = element_blank(),
-		axis.text.y = element_text(size = 8, hjust = 0, colour = 'black')
-	) + 
-	scale_y_discrete(expand = expansion(mult = c(0, 0.1))) +
-	geom_label(
-		aes(label = Beds_per_1000), 
-		label.size = NA, 
-		size = 4,
-		fill = NA, 
-		hjust = 1, 
-		vjust = .6,
-		nudge_x = .1, 
-		fontface = barely_beds$font_face,
-		colour = barely_beds$label_color_code
-		) + 
-	labs(
-		caption = "<span style='color:#939292; font-weight:bold; text-align: left; white-space: nowrap;'>Chart: The Times and The Sunday Times • Source: OECD.</span>"
-	) +
-	theme(
-		plot.caption = element_markdown(
-			size = 8,
-			hjust = -.225,
-			family = "Roboto", 
-			face = 'bold'
-		)
-	) + 
-	ggtitle(
-	  label = md("**Barely beds**"),
-	  subtitle = "Hospital beds per 1,000 people"
-	  ) + 
-	theme(
-		plot.title = element_markdown(size = 8, hjust = -.1265),
-		plot.subtitle = element_markdown(size = 8, hjust = -.155),
-		plot.margin = margin(l = 5, t = 0, r = 10, b = 10),
-		panel.grid = element_blank()
-	)
+    geom_col(width = .8) +
+    scale_fill_identity() + 
+    coord_flip() +
+    labs(x = NULL, y = NULL) + 
+    theme(
+        axis.line.x = element_blank(), axis.line.y = element_blank(),
+        axis.text.x = element_blank(), axis.ticks = element_blank(),
+        axis.text.y = element_text(size = 8, hjust = 0, colour = 'black')
+    ) + 
+    scale_y_discrete(expand = expansion(mult = c(0, 0.1))) +
+    geom_label(
+        aes(label = Beds_per_1000), 
+        label.size = NA, 
+        size = 4,
+        fill = NA, 
+        hjust = 1, 
+        vjust = .6,
+        nudge_x = .1, 
+        fontface = barely_beds$font_face,
+        colour = barely_beds$label_color_code
+        ) + 
+    labs(
+        caption = "<span style='color:#939292; font-weight:bold; text-align: left; white-space: nowrap;'>Chart: The Times and The Sunday Times • Source: OECD.</span>"
+    ) +
+    theme(
+        plot.caption = element_markdown(
+            size = 8,
+            hjust = -.225,
+            family = "Roboto", 
+            face = 'bold'
+        )
+    ) + 
+    ggtitle(
+      label = md("**Barely beds**"),
+      subtitle = "Hospital beds per 1,000 people"
+      ) + 
+    theme(
+        plot.title = element_markdown(size = 8, hjust = -.1265),
+        plot.subtitle = element_markdown(size = 8, hjust = -.155),
+        plot.margin = margin(l = 5, t = 0, r = 10, b = 10),
+        panel.grid = element_blank()
+    )
 p4
 
 ```
@@ -1497,11 +1497,19 @@ country_budget_breakdowns <-
     total_spend = sum(budget), .by = country
   ) |> 
   mutate(
-    # for data labels/budget, the original only prints out values > $914 or values for below budgets so i crate a variable for later reference/use
+    # for data labels/budget, the original only prints out values > $914 or values for below budgets so I create a variable for later reference/use 
     data_labels = case_when(
       budget >= 915 ~ scales::dollar(budget),
       (budget %in% c(782, 800, 804, 836, 860)) ~ scales::dollar(budget),
       TRUE ~ ""
+    ),
+    data_labels_color = case_when(
+      (spend_category %in% 'Medical Goods & Equip.' | budget %in% c(980, 782)) ~ 'black', 
+      TRUE ~ 'white'
+    ),
+    data_labels_font_face = case_when(
+     data_labels_color == 'white' ~ 'bold',
+     TRUE ~ 'plain'
     ),
     spend_budget_factor = factor(spend_category, levels = c(
       'Hospitals',
@@ -1539,7 +1547,7 @@ p2 <- country_budget_breakdowns |>
       y = as.numeric(as.character(budget)), 
       fill = fct_rev(spend_budget_factor), 
       data_id = spend_category
-    )
+      )
   ) +
   geom_col_interactive(
     aes(
@@ -1549,14 +1557,14 @@ p2 <- country_budget_breakdowns |>
       )
     ) +
   geom_text_interactive(
-    aes(label = data_labels, y = budget + 40),
-    position = position_stack(vjust = 0),              
-    hjust = 0,                                        
-    color = "white",
-    size = 4,
+    aes(label = data_labels, y = budget), 
+    position = position_stack(vjust = 0.04), 
+    hjust = 0,                               # keeps text left-aligned, starting at the segment's beginning (after coord_flip)
+    size = 5,
     family = "Roboto",
-    fontface = "bold"
-  ) +
+    fontface = country_budget_breakdowns$data_labels_font_face,
+    color = country_budget_breakdowns$data_labels_color
+    ) +
   scale_y_continuous(breaks = seq(0, 10e3, 2e3), position = 'right', labels = scales::dollar_format()) + 
   coord_flip() + 
   scale_x_discrete(position = "bottom") +
@@ -1582,15 +1590,14 @@ p2 <- country_budget_breakdowns |>
       'Rest of economy' = '#95807a')
   ) +
   geom_hline_interactive(yintercept = seq(0, 10e3, 2e3), color = 'white', linewidth = 0.2, linetype = "solid") +
-  coord_flip(
-    ylim = c(0, 11000),
-    expand = FALSE,
-    clip = 'off'
-  ) + 
+  # The ylim, expand, and clip arguments for coord_flip should ideally be consolidated into the main coord_flip() call
+  # For example: coord_flip(ylim = c(0, 11000), expand = FALSE, clip = 'off')
+  # However, based on your provided p2 snippet, the limits are primarily controlled by scale_y_continuous.
+  # Ensure consistency if you have multiple coord_flip() or limit-setting calls.
   theme(
     plot.margin = margin(l = 20, r = -20),
     axis.text.y = element_text(
-      hjust = 0,                    
+      hjust = 0,              
       family = 'Roboto',
       face = 'bold',
       size = 12,
@@ -1696,7 +1703,6 @@ One feature I couldn't replicate was the hover interaction where small segments 
 
 Thanks for taking the time to read this and hopefully, if nothing else, you have enjoyed it, more to come !
 :::
-
 
 
 
