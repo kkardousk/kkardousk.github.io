@@ -1,0 +1,206 @@
+---
+title: |
+  <div class="custom-title-block">
+    <span style="color:#000000; font-size:1em;">Replication of below article's Data and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.7em;">"Has International Travel to the U.S. Really Collapsed?</span><br>
+    <span style="color:#666666; font-size:0.5em; white-space: nowrap;">
+      By <a href="https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html" 
+      target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados"</a>
+    </span><br>
+    <span style="font-size:0.7em; color:#333333;">
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    # code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: true
+  freeze: auto
+editor: visual
+---
+
+##  {.text-justify}
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+# check if the required package 'emo' is installed;
+# if not, it might mean your renv environment is not fully restored.
+# running `renv::restore()` will install all necessary packages
+# to ensure consistent package versions for building this quarto document,
+# effectively 'containerizing' your project and protecting it from future package changes.
+if (!requireNamespace("emo", quietly = TRUE)) {
+  message("\nIt looks like your environment might not be restored.\nRun `renv::restore()` to install required packages.\n")
+}
+
+# load packages
+library(xml2)
+library(downlit)
+library(gdtools)
+library(tidyverse)
+library(quarto)
+library(chromote)
+library(here)
+library(tidycensus)
+library(janitor)
+library(purrr)
+library(ggtext)
+library(ggshadow)
+library(ggiraph)
+library(gfonts)
+library(showtext)
+library(ggborderline)
+library(grid)
+library(patchwork)
+library(shiny)
+library(gt)
+library(rsvg)
+library(magick)
+library(stringr)
+library(ggimage)
+library(emo)
+
+
+font_add(family = "franklin-medium", regular = "renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf") 
+
+theme_set_custom <- function() {
+  
+  # load google fonts 
+  sysfonts::font_add_google("Libre Franklin", "franklin") # libre franklin is a solid free alternative to an otherwise proprietary nyt-franklin
+  # local font; for rare cases where requiring midway bettween plain and bold
+  sysfonts::font_add(family = "franklin-medium", regular = "renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf") # this is a closer match to plot subtitles for first visual
+  showtext::showtext_auto()
+
+  # apply ggplot2 theme; can always be overwritten
+  ggplot2::theme_set(
+    ggplot2::theme_minimal()
+    )
+}
+
+theme_set_custom()
+
+```
+## _International Travel Into the US Prelude_ {.text-justify}
+**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br>
+The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br>
+Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed. 
+
+If you like to give the original article a read, you can find it [here](https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html).
+
+**Overall Strategy for building first plot:** One way to recreate the first visual; which shows in a report-card style the % change in flight bookings into the US comparing (Jan 1st through April 26, 2024) to (same period this year), and looking at 1) overall (International), 2) European, 3) Asian, and 4) Canadian inbound travel; is to generate 4 tiles with a subtle vertical tick/separator between each of those said 4 percentages. The time frame of visits for both years covers Summer; which allows for 'apples to apples' comparisons but also focuses on an upcoming period of the year - very near future, meaning that said bookings are more likely than not to be definitive for a vast majority of them. 
+Below I share code and output for said method.
+
+```{r, fig.width = 9, fig.height = 3}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: true
+
+theme_set_custom()
+
+p1_tribble <- tribble(
+  ~perc_change, ~label, ~region, ~fill, ~width_cm, ~ length_cm, 
+  '-1.5%', 'International arrivals\n at U.S. airports', 'International','#969696', 170 / 300 * 2.54, 80 / 300 * 2.54, # converting into actual cm, controlling for resolution set (300 or print quality)
+  '-2%', 'Summer flight\n bookings from Europe', 'Europe', '#969696', 130 / 300 * 2.54, 77 / 300 * 2.54,
+  '+4%', 'Summer flight\n bookings from Asia', 'Asia', '#2b9d6c', 130 / 300 * 2.54, 77/ 300 * 2.54,
+  '-21%', 'Summer flight\n bookings from Canada', 'Canada', '#d65f00', 164 / 300 * 2.54, 77 / 300 * 2.54
+)
+
+# Modified function to accept and use the 'label' for the title
+tile_plot_rounded <- function(perc_change, label_text, fill, width_cm, length_cm, scaler = 3) { # 3 was best here
+  library(grid) 
+  
+  ggplot() +
+    ggtitle(label_text) + # set the label as the plot sub-title
+    annotation_custom(
+      grob = roundrectGrob(
+        width = unit(width_cm * scaler, "cm"),    
+        height = unit(length_cm * scaler, "cm"), 
+        r = unit(0.1, "npc"),  # corner radius, the higher the values the more prononcoumced the roundedness
+        gp = gpar(fill = fill, col = NA)
+      ),
+      xmin = 0, xmax = 6, ymin = 0, ymax = 3
+    ) +
+    annotate(
+    "text", 
+      x = 3, y = 1.5,
+      hjust = 0.5, vjust = 0.5,
+      size = 10, # text size for perc_change
+      label = perc_change,
+      color = 'white', 
+      family = 'franklin',
+      fontface = 'bold'
+    ) +
+    xlim(0, 6) + ylim(0, 3) +
+    coord_fixed(ratio = 1) + 
+    theme_void() +
+    theme(
+      plot.margin = margin(4, 2, 2, 2), # small margins add around each plot for more subtitile room
+      plot.title = element_text(hjust = 0.5, size = 14, family = 'franklin-medium', margin = margin(b = 5)) 
+    )
+}
+# loop through labels, fills, and dimensions, and including 'label' for the title
+tile_plots <- pmap(
+  list(
+    perc_change = p1_tribble$perc_change,
+    label_text = p1_tribble$label, 
+    fill = p1_tribble$fill,
+    width_cm = p1_tribble$width_cm,
+    length_cm = p1_tribble$length_cm
+  ),
+  tile_plot_rounded 
+)
+
+# Arrange plots in one row
+p1 <- wrap_plots(
+  tile_plots, nrow = 1
+) 
+
+p_final <- p1 + 
+  plot_annotation(
+    title = 'Travel compared with last year',
+    theme = theme(plot.title = element_text(size = 20, family = 'franklin', face = "bold", hjust = 0.5, margin = margin(t = -10, b = 10)))
+  )
+p_final
+```
+
+
+

@@ -22,11 +22,19 @@ In a nutshell, I share code and thoughts while replicating data and data visuali
 ## Recent Projects
 
 ::: {.project-card}
-### **Is NHS Good Value? (Replication)** {.project-title}
+### **Is NHS Good Value?** {.project-title}
 
 Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
 
 [View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
+:::
+
+::: {.project-card}
+### **Has International Travel Into the U.S declined ?** {.project-title}
+
+Replication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al
+
+[View Project](holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
 
 <!-- more projections go here once i engage in more work on this -->
