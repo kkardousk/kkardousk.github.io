@@ -410,14 +410,13 @@ caption_styled_div <- htmltools::tags$div(
   caption_html_content
 )
 
-# This parent div will stack them vertically and can be used to constrain overall width.
+# parent div will stack them vertically and can be used to constrain overall width.
 overall_final_layout <- htmltools::tags$div(
-  style = "width: 100%; max-width: 1900px; margin: 0 auto; padding-bottom: 1px;", # Constrain total width, center on page, add bottom padding
+  style = "width: 100%; max-width: 1900px; margin: 0 auto; padding-bottom: 1px;",
   tables_row_layout,
   caption_styled_div
 )
-
-# To display in a Quarto/R Markdown document, ensure this is the last object evaluated in the chunk:
+# final output
 overall_final_layout
 ```
 ::::
