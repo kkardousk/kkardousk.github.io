@@ -136,6 +136,7 @@ theme_set_custom()
 
 ```
 
+## **Travel Score Cards**
 ```{r, fig.width = 9, fig.height = 3}
 #|echo: false
 #|message: false
@@ -213,8 +214,7 @@ p_final <- p1 +
 p_final
 
 ```
-
-
+## **International arrivals at major U.S. airports** {.text-justify}
 Placeholder for plot 2- line plots for Q1 2024 vs Q1 2025 in Intl. arrivals at major US airports
 
 
@@ -256,7 +256,7 @@ individual_country_changes <-
 
 ```
 
-## **Confidence by Warning Signs** {.text-justify}
+## **Confidence, but Warning Signs** {.text-justify}
 For the below visualization, I opted to use gt() from `{gt}` package as it naturally comes to mind when trying to build 'great tables', yes pun intended. A few things to mention here to explain my thought process along with pointing out a couple of minor things that slightly fell short from original. <br>s
 First, one thing that stands out is that 
 
@@ -422,4 +422,10 @@ overall_final_layout
 ```
 ::::
 
+
+## **A Canadian boycott** {.text-justify}
+
+
+
+## **Big drops along the border** {.text-justify}
 
