@@ -256,6 +256,11 @@ individual_country_changes <-
 
 ```
 
+## **Confidence by Warning Signs** {.text-justify}
+For the below visualization, I opted to use gt() from `{gt}` package as it naturally comes to mind when trying to build 'great tables', yes pun intended. A few things to mention here to explain my thought process along with pointing out a couple of minor things that slightly fell short from original. <br>s
+First, one thing that stands out is that 
+
+
 ::: {.full-width-block}
 ```{r}
 #|echo: false
@@ -280,7 +285,7 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
         x_num <- as.numeric(x)
         max_val <- max(abs(x_num), na.rm = TRUE)
         if(max_val == 0) max_val <- 1 
-        widths_for_glue <- abs(x_num) / max_val * if (dir_to_pass_in_fn == 2) 8 else 100 # default scaling may look misleaading for 'no change' countries, so massively reduced here
+        widths_for_glue <- abs(x_num) / max_val * if (dir_to_pass_in_fn == 2) 8 else 100 # default scaling may look misleaading for 'no change' countries, so massively reduced here otherwise center table values get way inflated for what they are ([-2; 1])
         
         # loop thru values of perc_change column and isolate each element so that it can pass thru str_glue() without length(x) > 1 error from if/else statement
         purrr::map_chr(seq_along(x_num), function(x) {
@@ -289,7 +294,7 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
           
           if(dir_to_pass_in_fn == 2) {
             direction_to_go <- if(val < 0) "right" else "left"
-            translate_offset <- if(val <= -.02) "20%" else "0" # translate back to the origin for values >= -.02 (this gets applied only for no-change countries/middle table)
+            translate_offset <- if(val <= -2) "20%" else "0" # translate back to the origin for values >= -.02 (this gets applied only for no-change countries/middle table)
             str_glue(
               '<div style="display: flex; align-items: center; justify-content: center;">
                  <div style="position: relative; width: 100%; height: 8px;">
@@ -301,13 +306,14 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
                  </div>
                </div>'
             )
-          } else {
-            direction_to_go <- if (val <= -0.02) "right" else "left"
+          }  # for below, we treat direction 1 (very negative change) and 2 (very positive) virtually the same, only former goes from center to left while latter from center to right
+          else {
+            direction_to_go <- if(direction == 1) "right" else "left"
             str_glue(
-              '<div style="display: flex; align-items: center; justify-content: flex-end;">
+              '<div style="display: flex; align-items: center; justify-content: center;">
                  <div style="position: relative; width: 50%; height: 8px;">
-                   <div style="position: absolute; {direction_to_go}: 0; top: -4px; width: 2px; height: 16px; background: #ccc;"></div>
-                   <div style="position: absolute; {direction_to_go}: 2px; top: 0; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>
+                   <div style="position: absolute; left: 50%; top: -4px; width: 2px; height: 16px; background: #ccc; transform: translateX(-1px);"></div>
+                   <div style="position: absolute; {direction_to_go}: 50%; top: -4px; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>
                  </div>
                </div>'
             )
@@ -316,7 +322,7 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
       }
     ) |>
     cols_align(
-      align = if (direction == 2) "center" else "right",
+      align = "center",
       columns = perc_change
     ) |> 
     tab_style(
@@ -330,8 +336,8 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
     cols_label(
       country = md("**Country**"),
       perc_change = "",
-      perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Change vs. 2024</strong></span>")
-    ) |> 
+perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Change vs. 2024</strong></span>")    
+) |> 
     opt_table_font(
       font = c("franklin-medium"),
       weight = 500
@@ -345,9 +351,9 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
       column_labels.border.bottom.color = "white",
     ) |> 
     cols_width(
-    country ~ pct(10),
+    country ~ pct(50),
     perc_change ~ pct(50),
-    perc_change_num ~ pct(80)
+    perc_change_num ~ pct(50)
     ) 
 }
 
@@ -378,14 +384,42 @@ tbl3 <- gt_table_custom_(hex = '#2b9d6c', direction = 3) |>
     heading.padding = px(6)
   )
 
-# HTML layout metho seems cleanest using htmltools
-layout <- htmltools::tags$div(
-  # The style for this div will make it take the full width of .full-width-block
-  style = "display: flex; justify-content: space-between; align-items: flex-start; gap: 50px; width: 100%;", 
-  htmltools::tags$div(style = "flex: 1;", tbl1), # Each table's container will take 1/3 of the available space
-  htmltools::tags$div(style = "flex: 1;", tbl2),
-  htmltools::tags$div(style = "flex: 1;", tbl3)
+tables_row_layout <- htmltools::tags$div(
+  style = "display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; width: 100%; padding: 0 10px;",
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl1), 
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl2),
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl3)
 )
-layout
+
+caption_text <- "<span style='color:#707070;'>Source: Airlines Reporting Corporation &bull; Data covers flight bookings made between Feb. 1 and April 13 for travel between Memorial Day and Labor Day, compared to the same period last year.</span>"
+caption_html_content <- HTML(caption_text) 
+left_padding_value <- "20px" # adding some padding so that caption moves slightl to the right to match original's caption poisiton 
+
+caption_styled_div <- htmltools::tags$div(
+  style = paste(
+    "width: 50%;",  # overall visual span
+    "max-width: 1000px;", # optional cap the max width of the caption
+    "margin: 5px auto 0 auto;", 
+    "text-align: left;",
+    "font-family: 'franklin-medium', 'Libre Franklin', Arial, sans-serif;", # prioritize 'franklin-medium'
+    "font-weight: 500;",                                                 
+    "font-size: 0.85em;", 
+    "line-height: 1.1;",
+    paste0("padding-left: ", left_padding_value, ";") 
+  ),
+  caption_html_content
+)
+
+# This parent div will stack them vertically and can be used to constrain overall width.
+overall_final_layout <- htmltools::tags$div(
+  style = "width: 100%; max-width: 1900px; margin: 0 auto; padding-bottom: 1px;", # Constrain total width, center on page, add bottom padding
+  tables_row_layout,
+  caption_styled_div
+)
+
+# To display in a Quarto/R Markdown document, ensure this is the last object evaluated in the chunk:
+overall_final_layout
 ```
 ::::
+
+
