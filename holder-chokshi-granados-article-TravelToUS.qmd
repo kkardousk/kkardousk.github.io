@@ -1,13 +1,13 @@
 ---
 title: |
-  <div class="custom-title-block">
-    <span style="color:#000000; font-size:1em;">Replication of below article's Data and Visualizations</span><br>
-    <span style="color:#333333; font-size:0.7em;">"Has International Travel to the U.S. Really Collapsed?</span><br>
-    <span style="color:#666666; font-size:0.5em; white-space: nowrap;">
+  <div class="custom-title-block" style="font-size: 1.2em;">
+    <span style="color:#000000;">Replication of below article's Data and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.8em;">"Has International Travel to the U.S. Really Collapsed?"</span><br>
+    <span style="color:#666666; font-size:0.7em; white-space: nowrap;">
       By <a href="https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html" 
-      target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados"</a>
+      target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados</a>
     </span><br>
-    <span style="font-size:0.7em; color:#333333;">
+    <span style="font-size:0.8em; color:#333333;">
       Karim K. Kardous
       <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
         <i class='bi bi-envelope'></i>
@@ -55,7 +55,16 @@ execute:
 editor: visual
 ---
 
-##  {.text-justify}
+
+## _International Travel Into the US Prelude_ {.text-justify}
+**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br>
+The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br>
+Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed. 
+
+If you like to give the original article a read, you can find it [here](https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html).
+
+**Overall Strategy for building first plot:** One way to recreate the first visual; which shows in a report-card style the % change in flight bookings into the US comparing (Jan 1st through April 26, 2024) to (same period this year), and looking at 1) overall (International), 2) European, 3) Asian, and 4) Canadian inbound travel; is to generate 4 tiles with a subtle vertical tick/separator between each of those said 4 percentages. The time frame of visits for both years covers Summer; which allows for 'apples to apples' comparisons but also focuses on an upcoming period of the year - very near future, meaning that said bookings are more likely than not to be definitive for a vast majority of them.
+
 
 ```{r}
 #|echo: false
@@ -91,6 +100,8 @@ library(ggborderline)
 library(grid)
 library(patchwork)
 library(shiny)
+library(rvest)
+library(htmltools)
 library(gt)
 library(rsvg)
 library(magick)
@@ -103,30 +114,27 @@ font_add(family = "franklin-medium", regular = "renv/library/macos/R-4.5/aarch64
 
 theme_set_custom <- function() {
   
-  # load google fonts 
-  sysfonts::font_add_google("Libre Franklin", "franklin") # libre franklin is a solid free alternative to an otherwise proprietary nyt-franklin
-  # local font; for rare cases where requiring midway bettween plain and bold
-  sysfonts::font_add(family = "franklin-medium", regular = "renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf") # this is a closer match to plot subtitles for first visual
+  # loading google Fonts
+  sysfonts::font_add_google("Libre Franklin", "franklin")
+  sysfonts::font_add(
+    family = "franklin-medium", 
+    regular = "renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf"
+  )
   showtext::showtext_auto()
 
-  # apply ggplot2 theme; can always be overwritten
+  # applying ggplot2 theme
   ggplot2::theme_set(
-    ggplot2::theme_minimal()
-    )
+    ggplot2::theme_minimal(base_family = "franklin") +
+      ggplot2::theme(
+        panel.background = ggplot2::element_rect(fill = "#F9F9F9", color = NA),
+        plot.background = ggplot2::element_rect(fill = "#F9F9F9", color = NA)
+      )
+  )
 }
 
 theme_set_custom()
 
 ```
-## _International Travel Into the US Prelude_ {.text-justify}
-**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br>
-The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br>
-Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed. 
-
-If you like to give the original article a read, you can find it [here](https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html).
-
-**Overall Strategy for building first plot:** One way to recreate the first visual; which shows in a report-card style the % change in flight bookings into the US comparing (Jan 1st through April 26, 2024) to (same period this year), and looking at 1) overall (International), 2) European, 3) Asian, and 4) Canadian inbound travel; is to generate 4 tiles with a subtle vertical tick/separator between each of those said 4 percentages. The time frame of visits for both years covers Summer; which allows for 'apples to apples' comparisons but also focuses on an upcoming period of the year - very near future, meaning that said bookings are more likely than not to be definitive for a vast majority of them. 
-Below I share code and output for said method.
 
 ```{r, fig.width = 9, fig.height = 3}
 #|echo: false
@@ -199,7 +207,7 @@ p_final <- p1 +
     caption = 'Sources: U.S. Customs and Border Protection and the Airlines Reporting Corporation',
     theme = theme(
       plot.title = element_text(size = 20, family = 'franklin', face = "bold", hjust = 0.5, margin = margin(t = -10, b = 10)),
-      plot.caption = element_text(size = 9, family = 'franklin-medium', colour = '#727272', hjust = 0.15)
+      plot.caption = element_text(size = 9, family = 'franklin-medium', face = 'bold', colour = '#727272', hjust = 0.15)
       )
   ) 
 p_final
@@ -207,4 +215,177 @@ p_final
 ```
 
 
+Placeholder for plot 2- line plots for Q1 2024 vs Q1 2025 in Intl. arrivals at major US airports
 
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: true
+
+## p3; table to embed in gt() 
+# read in the correspoinding table node
+url <- 'https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html'
+raw_table <- 
+  rvest::read_html(url) |> 
+  html_element(css = '.svelte-5z6yzk') |> 
+  html_table() |> 
+  select(country = 1, perc_change = 2) |> 
+  filter(perc_change != '')
+
+# processing the tibble
+individual_country_changes <- 
+  raw_table |> 
+  mutate(
+    perc_change_num = parse_number(perc_change),
+    left_right_ended = if_else(perc_change_num <= -.02, 'left', 'right'),
+    # below also going to be used to section off the table into 3 columns
+    change_direction = case_when(
+      between(perc_change_num, -2, 1) ~ 'stalled',
+      perc_change_num < 0 ~ 'decreased',
+      .default = 'increased') 
+  ) |> 
+  mutate(
+    groupings = case_when(
+      n() == 11 ~ 1,
+      n() ==  6 ~ 2,
+      .default = 3),
+    .by = change_direction
+    ) 
+
+```
+
+::: {.full-width-block}
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+#|results: 'asis' 
+
+gt_table_custom_ <- function(hex, direction, title = NULL) {
+  
+  title_ <- title
+  hex_to_pass_in_fn <- hex
+  dir_to_pass_in_fn <- direction
+  
+  individual_country_changes |> 
+    filter(groupings == {{direction}}) |> 
+    select(1:3) |> 
+    gt() |> 
+    text_transform(
+      locations = cells_body(columns = perc_change_num),
+      fn = function(x) {
+        x_num <- as.numeric(x)
+        max_val <- max(abs(x_num), na.rm = TRUE)
+        if(max_val == 0) max_val <- 1 
+        widths_for_glue <- abs(x_num) / max_val * if (dir_to_pass_in_fn == 2) 8 else 100 # default scaling may look misleaading for 'no change' countries, so massively reduced here
+        
+        # loop thru values of perc_change column and isolate each element so that it can pass thru str_glue() without length(x) > 1 error from if/else statement
+        purrr::map_chr(seq_along(x_num), function(x) {
+          width <- widths_for_glue[x]
+          val <- x_num[x]
+          
+          if(dir_to_pass_in_fn == 2) {
+            direction_to_go <- if(val < 0) "right" else "left"
+            translate_offset <- if(val <= -.02) "20%" else "0" # translate back to the origin for values >= -.02 (this gets applied only for no-change countries/middle table)
+            str_glue(
+              '<div style="display: flex; align-items: center; justify-content: center;">
+                 <div style="position: relative; width: 100%; height: 8px;">
+                   <div style="position: absolute; left: 50%; top: -4px; width: 2px; height: 16px; background: #ccc;"></div>
+                   <div style="position: absolute; {direction_to_go}: 50%; top: 0; 
+                               background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; 
+                               transform: translateX({translate_offset}); 
+                               border-radius: 3px;"></div>
+                 </div>
+               </div>'
+            )
+          } else {
+            direction_to_go <- if (val <= -0.02) "right" else "left"
+            str_glue(
+              '<div style="display: flex; align-items: center; justify-content: flex-end;">
+                 <div style="position: relative; width: 50%; height: 8px;">
+                   <div style="position: absolute; {direction_to_go}: 0; top: -4px; width: 2px; height: 16px; background: #ccc;"></div>
+                   <div style="position: absolute; {direction_to_go}: 2px; top: 0; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>
+                 </div>
+               </div>'
+            )
+          }
+        })
+      }
+    ) |>
+    cols_align(
+      align = if (direction == 2) "center" else "right",
+      columns = perc_change
+    ) |> 
+    tab_style(
+      style = cell_text(color = hex),
+      locations = cells_body(columns = perc_change)
+    ) |> 
+    tab_style(
+      style = css("white-space" = "nowrap"),
+      locations = cells_body(columns = country)
+      ) |> 
+    cols_label(
+      country = md("**Country**"),
+      perc_change = "",
+      perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Change vs. 2024</strong></span>")
+    ) |> 
+    opt_table_font(
+      font = c("franklin-medium"),
+      weight = 500
+    ) |> 
+    tab_options(
+      heading.align = "left",
+      table.width = pct(100), 
+      table.border.top.style = "hidden",             
+      column_labels.border.bottom.style = "solid",
+      column_labels.border.bottom.width = px(1),
+      column_labels.border.bottom.color = "white",
+    ) |> 
+    cols_width(
+    country ~ pct(10),
+    perc_change ~ pct(50),
+    perc_change_num ~ pct(80)
+    ) 
+}
+
+# generate and assign tables below 
+tbl1 <- gt_table_custom_(hex = '#d65f00', direction = 1) |> 
+  tab_header(
+    title = md("**Where U.S.-bound summer flight bookings have <span style='color: #d65f00;'> decreased </span>...**")
+    ) |> 
+    tab_options(
+    heading.padding = px(8.7)
+  )
+
+tbl2 <- gt_table_custom_(hex = '#666666', direction = 2) |> 
+  tab_header(
+    title = md("<span style='color: #666666;'>**... stayed about the same ...**</span>"),
+    subtitle = md("<span style='color: #FFFFFF;'>adding artificial padding.**</span>")
+  ) |> 
+    tab_options(
+    heading.padding = px(6)
+  )
+
+tbl3 <- gt_table_custom_(hex = '#2b9d6c', direction = 3) |> 
+    tab_header(
+    title = md("**... and <span style='color: #2b9d6c;'>increased</span>.**"),
+    subtitle = md("<span style='color: #FFFFFF;'>adding artificial.** padding</span>")
+  ) |> 
+    tab_options(
+    heading.padding = px(6)
+  )
+
+# HTML layout metho seems cleanest using htmltools
+layout <- htmltools::tags$div(
+  # The style for this div will make it take the full width of .full-width-block
+  style = "display: flex; justify-content: space-between; align-items: flex-start; gap: 50px; width: 100%;", 
+  htmltools::tags$div(style = "flex: 1;", tbl1), # Each table's container will take 1/3 of the available space
+  htmltools::tags$div(style = "flex: 1;", tbl2),
+  htmltools::tags$div(style = "flex: 1;", tbl3)
+)
+layout
+```
+::::

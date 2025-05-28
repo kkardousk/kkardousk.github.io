@@ -202,3 +202,13 @@ footer {
   font-size: 0.9rem;
   color: #6c757d;
 }
+.full-width-block {
+  width: 50vw; /* Span the full viewport width */
+  max-width: 50vw; /* Ensure it doesn't get constrained by other max-width rules */
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%); /* Center the block on the page */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  padding-left: 15px;  /* Optional: some padding so content isn't at the very edge of the screen */
+  padding-right: 15px; /* Optional: adjust as needed */
+}
