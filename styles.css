@@ -214,7 +214,36 @@ th, td {
 }
 /* Force TOC to stay beneath all overlapping content */
 .toc {
-    z-index: -1 !important;
-    position: absolute !important;
+    z-index: 10 !important;
+    position: relative !important;
+}
+/*
+   Add these styles to your custom CSS file.
+   This combines the previous solution with z-index for stacking order.
+*/
+
+/* Sidebar styling (sticky, max-height, scroll, and z-index) */
+.sidebar { /* Or your specific sidebar selector, e.g., #quarto-sidebar */
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 20px; /* Adjust this value based on your header or desired offset from the top */
+  max-height: 85vh; /* Limits the sidebar height to 85% of the viewport height */
+  overflow-y: auto; /* Adds a scrollbar to the sidebar if its content exceeds max-height */
+  align-self: start; /* Useful if the sidebar is in a flex container */
+  z-index: 1; /* Set a stacking order for the sidebar (lower) */
 }
 
+/* Main content area styling (Quarto outputs) */
+/* Common Quarto ID for the main content area. Adjust if your theme uses a different selector. */
+#quarto-document-content {
+  position: relative; /* Establishes a stacking context. Crucial for z-index to work reliably. */
+  z-index: 2; /* Set a higher stacking order than the sidebar */
+  /*
+     If your main content area or specific output elements (like tables or divs)
+     have transparent backgrounds, the sidebar might still be visually "seen through" them,
+     even if it's technically underneath.
+     You can assign a background color here if needed, though it's often inherited
+     from the body or a parent container.
+     e.g., background-color: #f9f9f9; (matching your body's background)
+  */
+}

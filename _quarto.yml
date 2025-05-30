@@ -25,6 +25,8 @@ website:
             text: About
           - href: tom-calver-article-NHS.qmd
             text: "Is NHS Good Value? (Replication)"
+          - href: holder-chokshi-granados-article-TravelToUS.qmd
+            text: "Intl. Travel Into the US (Replication)"
       # Uncomment when ready
       # - section: "Projects"
       #   contents:
