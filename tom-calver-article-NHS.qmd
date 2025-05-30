@@ -1,8 +1,8 @@
 ---
 title: |
   <div class="custom-title-block">
-    <span style="color:#000000; font-size:1em;">Replication of below article's Data and Visualizations</span><br>
-    <span style="color:#333333; font-size:0.7em;">"We keep pumping money into the NHS. Is it good value?</span><br>
+    <span style="color:#000000; font-size:1em;">Replication of below article's Data <br>and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.7em; white-space: nowrap">"We keep pumping money into the NHS.<br> Is it good value?</span><br>
     <span style="color:#666666; font-size:0.5em;">
       By <a href="https://www.thetimes.com/comment/columnists/article/we-keep-pumping-money-into-the-nhs-is-it-good-value-blq8bxc39" 
       target="_blank" style="color:#000000; text-decoration:underline;">Tom Calver"</a>

@@ -2,12 +2,12 @@
 title: |
   <div class="custom-title-block" style="font-size: 1.2em;">
     <span style="color:#000000;">Replication of below article's Data and Visualizations</span><br>
-    <span style="color:#333333; font-size:0.8em;">"Has International Travel to the U.S. Really Collapsed?"</span><br>
+    <span style="color:#333333; font-size:0.8em; white-space: nowrap">"Has International Travel <br> to the U.S. Really Collapsed?"</span><br>
     <span style="color:#666666; font-size:0.7em;">
       By <a href="https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html" 
       target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados</a>
     </span><br>
-    <span style="font-size:0.8em; color:#333333;">
+    <span style="font-size:0.8em; color:#333333; white-space: nowrap">
       Karim K. Kardous
       <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
         <i class='bi bi-envelope'></i>
@@ -41,8 +41,8 @@ format:
     link-external-icon: false
     link-external-newwindow: true
     fontsize: 1.1em
-    linestretch: 0
-    linespace: 0
+    linestretch: 1
+    linespace: 1
     html-math-method: katex
     linkcolor: '#D35400'
 execute:
