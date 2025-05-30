@@ -3,7 +3,7 @@ title: |
   <div class="custom-title-block" style="font-size: 1.2em;">
     <span style="color:#000000;">Replication of below article's Data and Visualizations</span><br>
     <span style="color:#333333; font-size:0.8em;">"Has International Travel to the U.S. Really Collapsed?"</span><br>
-    <span style="color:#666666; font-size:0.7em; white-space: nowrap;">
+    <span style="color:#666666; font-size:0.7em;">
       By <a href="https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html" 
       target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados</a>
     </span><br>
@@ -55,16 +55,13 @@ execute:
 editor: visual
 ---
 
+## *International Travel Into the US Prelude* {.text-justify}
 
-## _International Travel Into the US Prelude_ {.text-justify}
-**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br>
-The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br>
-Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed. 
+**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br> The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br> Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed.
 
 If you like to give the original article a read, you can find it [here](https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html).
 
 **Overall Strategy for building first plot:** One way to recreate the first visual; which shows in a report-card style the % change in flight bookings into the US comparing (Jan 1st through April 26, 2024) to (same period this year), and looking at 1) overall (International), 2) European, 3) Asian, and 4) Canadian inbound travel; is to generate 4 tiles with a subtle vertical tick/separator between each of those said 4 percentages. The time frame of visits for both years covers Summer; which allows for 'apples to apples' comparisons but also focuses on an upcoming period of the year - very near future, meaning that said bookings are more likely than not to be definitive for a vast majority of them.
-
 
 ```{r}
 #|echo: false
@@ -137,6 +134,7 @@ theme_set_custom()
 ```
 
 ## **Travel Score Cards**
+
 ```{r, fig.width = 9, fig.height = 3}
 #|echo: false
 #|message: false
@@ -214,9 +212,12 @@ p_final <- p1 +
 p_final
 
 ```
-## **International arrivals at major U.S. airports** {.text-justify}
-Placeholder for plot 2- line plots for Q1 2024 vs Q1 2025 in Intl. arrivals at major US airports
 
+## **International arrivals at major U.S. airports**
+
+::: text-justify
+Placeholder for plot 2- line plots for Q1 2024 vs Q1 2025 in Intl. arrivals at major US airports
+:::
 
 ```{r}
 #|echo: false
@@ -228,7 +229,7 @@ Placeholder for plot 2- line plots for Q1 2024 vs Q1 2025 in Intl. arrivals at m
 # read in the correspoinding table node
 url <- 'https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html'
 raw_table <- 
-  rvest::read_html(url) |> 
+  read_html(url) |> 
   html_element(css = '.svelte-5z6yzk') |> 
   html_table() |> 
   select(country = 1, perc_change = 2) |> 
@@ -257,11 +258,15 @@ individual_country_changes <-
 ```
 
 ## **Confidence, but Warning Signs** {.text-justify}
-For the below visualization, I opted to use gt() from `{gt}` package as it naturally comes to mind when trying to build 'great tables', yes pun intended. A few things to mention here to explain my thought process along with pointing out a couple of minor things that slightly fell short from original. <br>s
-First, one thing that stands out is that 
 
+For the below visualization, I opted to use gt() from `{gt}` package as it naturally comes to mind when trying to build 'great tables', yes pun intended. A few things to mention here to explain my thought process. <br>
 
-::: {.full-width-block}
+-   Clearly the tables go over the left/right margins of the article layout in the original. While our dimensions may allow for all 3 tables to fit side by side, for replication purposes, we 'push out' the margins or reduce them to make them all 3 tables fit side by side.<br>
+-   Second, one other thing that stands out is the clear customization of the third column, the percent change actual values, where a target bar plot of some sort is drawn. To replicate that, one way (potentially only way) is to use `text_transform()`, in tandem with a custom function using `fn` argument that will incorporate mostly css code. This allows for greater customization down to the minutiae.<br>
+-   Said last column is also centered and anchored using a small vertical tick (this is most visible in the middle plot where values alternate between negative (left) and positive (right) of tick. <br>
+-   From the tick each value is gauged on their max for that table, to get a sense of proportionality and make sure each bar's no. of pixels proportionally match to the greatest (absolute) value per table.
+
+::: full-width-block
 ```{r}
 #|echo: false
 #|message: false
@@ -298,7 +303,7 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
             str_glue(
               '<div style="display: flex; align-items: center; justify-content: center;">
                  <div style="position: relative; width: 100%; height: 8px;">
-                   <div style="position: absolute; left: 50%; top: -4px; width: 2px; height: 16px; background: #ccc;"></div>
+                   <div style="position: absolute; left: 50%; top: -4px; bottom: 4px;width: 2px; height: 16px; background: #ccc;"></div>
                    <div style="position: absolute; {direction_to_go}: 50%; top: 0; 
                                background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; 
                                transform: translateX({translate_offset}); 
@@ -312,8 +317,8 @@ gt_table_custom_ <- function(hex, direction, title = NULL) {
             str_glue(
               '<div style="display: flex; align-items: center; justify-content: center;">
                  <div style="position: relative; width: 50%; height: 8px;">
-                   <div style="position: absolute; left: 50%; top: -4px; width: 2px; height: 16px; background: #ccc; transform: translateX(-1px);"></div>
-                   <div style="position: absolute; {direction_to_go}: 50%; top: -4px; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>
+                   <div style="position: absolute; left: 50%; top: -8px; width: 2px; height: 16px; background: #ccc; transform: translateX(-1px);"></div>
+                   <div style="position: absolute; {direction_to_go}: 50%; top: -4px; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>  
                  </div>
                </div>'
             )
@@ -419,12 +424,167 @@ overall_final_layout <- htmltools::tags$div(
 # final output
 overall_final_layout
 ```
-::::
+:::
 
+<br>
+
+Unlike the line graphs from earlier, showing the Intl. Arrivals, where the graph was embedded as an image, here I was able to extract the actual data using the tag id pointing out to the table using [Selector Gadget](https://g.co/kgs/zQmpZoP) - a free reliable Chrome Extension that can be used to identify either the CSS selector or Xpath of site elements - *in tandem* with `{rvest}` to read in the embedded data from said selector into a tibble.<br> Note that within `{gtExtras}`, there already is an New York Times custom theme table using `gtExtras::gt_theme_nytimes()`, but did not closely match the style of the headers or the overall style of the tables; but it's good to know if you are working with your own d¬ata (not replicating another piece), and you're just ready to use a starter template or its boilerplate to at least test how it looks, if nothing else. <br> Overall, I think this is a fairly solid replication of the tables from the original, a piece I've enjoyed creating as it involved fairly advanced customization - overall it was deceptively simple to re-create, but worth it. <br> **One thing to call out** however is that these tables are optimized for desktop viewing due to their 100% width formatting. Mobile users may experience cramped display issues.
 
 ## **A Canadian boycott** {.text-justify}
 
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
 
+theme_set_custom()
+
+car_xing_ca_us_borders_py <- read_csv('/Users/kardouskarrim/Desktop/car_crossing_ca_us_borders.csv') |>
+  distinct()
+
+car_xing_ca_us_borders_cy <- read_csv('/Users/kardouskarrim/Desktop/car_crossing_ca_us_borders2.csv') |> 
+  distinct()
+
+# i am testing with below filters 
+# 1st, 2nd filter should only focus on Canadian nationals and or residents (article focuses on Canadian sentiment; with use of strong word such as boycott, so assuming we should look into Canada returns only, not Intl. returns from US into Canada)
+# 3nd filter -> 'Vehicles' is a major group (when 'automobiles' and 'motorcycles' are subgroups) so filtering to 'Vehicles' so that not to inflate the counts, but the plot caption in the original article mentions 'by automobile' so we filter t
+# 4rd filter same idea as in 2nd but here -> 'Travellers' is a major group after a quick calculation for one day as an example where all values for that day sumn up to 'Travellers' value 
+
+filtered_to_canadian_cy <-
+  car_xing_ca_us_borders_cy |> 
+  filter(
+    `Traveller characteristics` == 'Canadian resident visitors returning to Canada' & `Vehicle licence plate` == 'Canadian-plated vehicles entering Canada' & GEO == 'Canada' &
+    `Vehicle type` == 'Automobiles' & `Traveller type` == 'Travellers'
+    ) |> 
+  # above combination of filters is giving me exactly 1 record per day (without any aggregations/roll ups) and it also gives me 116 days (Jan 1 through to Apr 26th, so we stick to those filters; likely correct)
+  select(
+    crossing_date = 1,
+    travel_characteristic = 6,
+    travel_type = 7, 
+    vehicle_ttl = ncol(car_xing_ca_us_borders_cy) - 4
+    ) 
+
+# same with py (or prior year)
+filtered_to_canadian_py <- 
+  car_xing_ca_us_borders_py |> 
+    filter(
+    `Traveller characteristics` == 'Canadian resident visitors returning to Canada' & `Vehicle licence plate` == 'Canadian-plated vehicles entering Canada' & GEO == 'Canada' &
+    `Vehicle type` == 'Automobiles' & `Traveller type` == 'Travellers'
+    ) |> 
+  select(
+    crossing_date = 1,
+    travel_characteristic = 6,
+    travel_type = 7, 
+    vehicle_ttl = ncol(car_xing_ca_us_borders_py) - 4
+    ) |> # 117 days for py since it was leap year, so we filter out feb 29th to have a day over day comparison
+  filter(crossing_date != '2024-02-29')
+  
+# combining both sets 
+car_xing_change <- 
+  filtered_to_canadian_cy |> 
+  select(1, last_col()) |> 
+  arrange(crossing_date) |> 
+  bind_cols(
+    filtered_to_canadian_py |> 
+      arrange(crossing_date) |> 
+      select(ly_ttls = last_col())
+  ) |> 
+  mutate(
+    change = vehicle_ttl - ly_ttls,
+    change_perc = (vehicle_ttl - ly_ttls) / ly_ttls
+    ) |> 
+    filter(crossing_date < '2025-04-10') |> 
+  # add a rolling 7 day avg
+  mutate(
+    rolling_avg_7day = zoo::rollmean(change_perc, k = 7, fill = NA, na.rm = TRUE)
+    ) |> 
+  filter(!is.na(rolling_avg_7day))
+
+# first two months get abbreviated followed by a dot, while last two don't get abbreviated
+month_custom_labeller <- 
+  map_chr(
+  .x = car_xing_change |> 
+    pull(crossing_date) |> 
+    lubridate::month() |> 
+    unique() |> 
+    sort(), 
+  .f = function(x) 
+    case_when(
+      x > 2 ~ month(x, label = TRUE, abbr = FALSE),
+      .default = paste0(month(x, label = TRUE, abbr = TRUE), '.')
+      )
+  )
+  
+caption_text <- "<span style='color:#707070;'>Sources: Statistics Canada/K. Kardous Note: Data shows journeys by Canadian residents returning to Canada from the<br> U.S. by automobile. A 7-day rolling average is shown.</span>"
+
+car_xing_change |> 
+    mutate(
+        y_pos = pmax(rolling_avg_7day, 0),  # positive values only; this caps at 0 for < 0 so to create essentially two seperate series (one pos. and one negative)
+        y_neg = pmin(rolling_avg_7day, 0)   # negative values only
+    ) |> 
+  ggplot(aes(x = crossing_date)) + 
+  geom_area(aes(y = y_pos), fill = '#2b9d6c', outline.type = 'lower') +
+  geom_area(aes(y = y_neg), fill = '#d65f00', outline.type = 'lower') +
+  geom_hline(yintercept = 0) + 
+  labs(
+    x = NULL, 
+    y = NULL,
+    caption = caption_text
+    ) + 
+  scale_y_continuous(
+    labels = scales::percent
+    ) + 
+  scale_x_date(
+    breaks = seq(as.Date('2025-01-01'), as.Date('2025-04-09'), 'm'),
+    labels = month_custom_labeller
+    ) +
+  # arrow and text for negative region
+  annotate(
+    geom = "segment",
+    x = as.Date('2025-04-04'),    
+    xend = as.Date('2025-04-04'), 
+    y = -0.02,                    
+    yend = -0.1,                 
+    colour = "black",             
+    arrow = arrow(length = unit(0.1, "cm"), angle = 50, type = 'open'),
+    linewidth = .35
+  ) + 
+  annotate(
+    geom = 'text',
+    x = as.Date('2025-04-02'),
+    y = -0.06,
+    label = 'Less travel\nthan last year', 
+    hjust = 1,
+  ) +
+  # arrow and text for positive region
+    annotate(
+    geom = "segment",
+    x = as.Date('2025-04-04'),    
+    xend = as.Date('2025-04-04'), 
+    y = 0.025,                    
+    yend = 0.1,                 
+    colour = "black",             
+    arrow = arrow(length = unit(0.1, "cm"), angle = 50, type = 'open'),
+    linewidth = .35
+  ) +
+    annotate(
+    geom = 'text',
+    x = as.Date('2025-04-02'),
+    y = 0.06,
+    label = 'More travel\nthan last year', 
+    hjust = 1
+    ) + 
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.caption = element_markdown(
+      size = 8, hjust = 0, 
+      margin = margin(l = -20, r = 10, t = 10, b = -5)
+      ),
+    axis.text = element_text(family = 'franklin-medium', face = 'bold'),
+    axis.text.x = element_text(hjust = -.9)
+  ) 
+```
 
 ## **Big drops along the border** {.text-justify}
-

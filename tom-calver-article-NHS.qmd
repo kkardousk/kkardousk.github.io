@@ -55,10 +55,9 @@ execute:
 editor: visual
 ---
 
-## _Health Service and General Prelude_ {.text-justify}
+## *Health Service and General Prelude* {.text-justify}
 
-**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also inefficiently,  <br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in the author's name.<br>
-If you like to download the data, feel free to use urls [here](#metadata).
+**About the data/article in a nutshell:** Tom uses a combination of sources to make his point → while not a bottom 'performer'; especially compared to the US, UK's National Health Service (NHS) did not wait for the COVID crisis to show its limits and harbor increasing consumer dissatisfaction.<br> That downward trend can be traced back to the early 2010's; and that comes from the service running lean - too lean - but also inefficiently, <br> For more detail on the sources, feel free to visit the actual article with link embedded at the top of the page in the author's name.<br> If you like to download the data, feel free to use urls [here](#metadata).
 
 **Overall Strategy for building first plot:** The data for first plot is smoothed out/interpolated data; this is usually done to 'well smooth' the data and delineate clearer trends over time; in this case select European countries' survey takers' scores on their overall satisfaction level towards their respective countries' public health services (ESS - European Social Survey).<br> In this case, there is an additional reason the author smoothed the data; it is to 'complete' the years given that the ESS is done once every two years; note that I am assuming here but it's not an outrageous assumption to make. So in order to match that smoothing, I go with `geom_smooth()` from `{ggplot2}` and keep `span` at default; after a few iterations; the data points (for non survey years) match highly to what Tom displays in the first graph.<br> Finally, since the graph is interactive, I use `{ggiraph}` package to emulate said interactivity; a JS based R package that lets you add tooltips/hover/highlight upon hover/downplay non-hovered, etc. all the usual things one expects from an interactive plot; without having to build a Shiny app; which for this exercise/first plot (and the rest); would be like building a Gatling gun to aim at an ant.
 
@@ -72,8 +71,7 @@ If you like to download the data, feel free to use urls [here](#metadata).
 
 4.  Implemented a solution by sorting satisfaction scores per year, which helped group values by country through proximity of their scores. This approach works well since the values are interpolated through smoothing, making them very close to one another from row to row. This might not work in other cases, but it does here.
 
-5.  Combined two sorted datasets: year + hex columns, and year + country columns to create a properly aligned mapping, joined facts data (with scores/values) on newly created mapped long datasets (converted from wide- almost always much harder to work with) to then finalize the dataset for visualization. More detail on 'finalized the dataset' can be found in the comments of the actual code. <br>
-Prepared the final clean dataset for interactive plotting with ggiraph.
+5.  Combined two sorted datasets: year + hex columns, and year + country columns to create a properly aligned mapping, joined facts data (with scores/values) on newly created mapped long datasets (converted from wide- almost always much harder to work with) to then finalize the dataset for visualization. More detail on 'finalized the dataset' can be found in the comments of the actual code. <br> Prepared the final clean dataset for interactive plotting with ggiraph.
 
 ## **Health Service Satisfaction**
 
@@ -142,9 +140,10 @@ theme_set_custom()
 
 ```
 
-While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations. 
+While above took care of importing required libraries and setting general options such as plot theme and text font to be used; below is the start of data related tasks; from initial pull, to wrangling, to finally output the visualizations.
 
 #### Data Pull
+
 ```{r}
 #|echo: false
 #|message: false
@@ -245,7 +244,7 @@ gt_nyt_custom <- function(x, title = '', subtitle = '', first_10_rows_only = TRU
 }
 ```
 
-#### Metadata
+#### Metadata {#metadata}
 
 ```{r}
 #|echo: false
@@ -271,7 +270,8 @@ all_data |>
   ) 
 ```
 
-#### Data Sample 
+#### Data Sample
+
 ```{r}
 # reveal data sample for year 2004 as an example
 all_data |> 
@@ -285,6 +285,7 @@ all_data |>
 ```
 
 #### Data Wrangling
+
 ```{r}
 #|echo: false
 #|message: false
@@ -733,7 +734,8 @@ p_interactive <- p +
   ) 
 ```
 
-#### Data Visualization 
+#### Data Visualization
+
 ```{r}
 #|echo: false
 #|message: false
@@ -832,19 +834,21 @@ girafe(
     )
 )
 ```
-::: {.text-justify}
-**Notes on Above Plot:** This graph looks deceptively simple at first glance; but was in fact by far the hardest to replicate out of all five. <br> 
 
-_Hollow Circles/Markers_: I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current `{ggiraph}` framework (I might be wrong) doesn't natively support said functionality.<br>
+::: text-justify
+**Notes on Above Plot:** This graph looks deceptively simple at first glance; but was in fact by far the hardest to replicate out of all five. <br>
 
-_White Glow around Curve Borders_: Another feature I wanted to implement/match with Tom's original is the subtle white glow around the curves. Two functions (at least) derived from packages allow for this; `geom_glowline()` & `geom_borderline()` from the `{ggshadow}` & `{ggborderline}` packages, respectively; both of which 'get disabled' when being called in a `{ggiraph}` framework.<br>
+*Hollow Circles/Markers*: I'm not sure what software Tom uses to render the interactive plots, but it was much harder than expected to replicate the persistent hollow circle marker that moves along each curve and 'links' the tooltip to the marker using a small vertical tick. It wasn't for a lack of trying but I believe current `{ggiraph}` framework (I might be wrong) doesn't natively support said functionality.<br>
 
-_Hovering on a Curve vs. a Point_: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points shown); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br>
-Having said all that, I believe the rest remains faithful to the original throughout.
+*White Glow around Curve Borders*: Another feature I wanted to implement/match with Tom's original is the subtle white glow around the curves. Two functions (at least) derived from packages allow for this; `geom_glowline()` & `geom_borderline()` from the `{ggshadow}` & `{ggborderline}` packages, respectively; both of which 'get disabled' when being called in a `{ggiraph}` framework.<br>
+
+*Hovering on a Curve vs. a Point*: Upon hovering on a curve, original attenuates the points that make up the curve to a maximum, to only display the curve (devoid of any points shown); mine, while making other curves go far in the background, doesn't completely eliminate the points that make up the said hovered curve because both points and curve roll up to the same `data_id`; an added layer from the `{ggplot2}` extension in `{ggiraph}` which links in this case said points to the curve (and country labels together).<br> There might be a way for that uncoupling (between points and their curves) to happen after the fact, after the hover; but after trying arduously, I did not find it. Feel free to reach out or do a pull request to suggest an improvement (here or otherwise). <br> Having said all that, I believe the rest remains faithful to the original throughout.
 :::
 
 ## **Value for Money**
-#### Data Sample 
+
+#### Data Sample
+
 Below is a sample of data showing the relationship between healthcare spending and life expectancy across seven countries—five of them European, with the US and Japan representing the West and East, respectively.<br>
 
 The data excludes spending from 2020 to 2022 (but includes 2023), as the author believes COVID-related expenditures would distort the results. This seems reasonable, although one could argue that the distortion would affect all countries similarly. Still, since changes in life expectancy tend to progress at a snail's pace, including a short-term global health crisis like the pandemic would not make sense.
@@ -868,15 +872,11 @@ value_for_money |>
     )
 ```
 
-::: {.text-justify}
+::: text-justify
+#### Data Visualization
 
-#### Data Visualization 
-**Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years); but that's the only negative thing I have to say honestly about this plot.<br>
-So other than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br>
-One thing I couldn't quite replicate is the idea is the 'go to back' country labels of non-hovered elements, which I can't really explain since the data_id is not shared from country to country and each country is unique; so while values of non hovered countries fade maximally into the white background (so this part works); country labels fail to do so; this might be a bug from the package and I might open an issue through github to shed light on said bug.<br>
-I also like the <span style="background-color: #e94f55; color: white; padding: 2px 2px; border-radius: 2px;">**red**</span> highlighting action that red fills "UK"in the title with the white color font in bold. It provides instantly where the country of focus should/will be. In R, one way to apply that customization is by using `element_markdown()` function from the `{ggtext}` package - which can read in css as argument, in this case to wrap the word "UK" in css to indicate both color, fill, and font face.<br>
-Overall, I believe below plot remains highly faithful to the original.
-::: 
+**Notes on the plot:** Overall, I really liked this plot, and its replication. If I am being nitpicky, I am not a fan of the US values going outside of the plot panel (for older years; first three years); but that's the only negative thing I have to say honestly about this plot.<br> So other than that, I think this is a powerful visualization that has the merit, among others, to clearly display essentially how well/intelligently does a country allocate funds do health as a service. <br> One thing I couldn't quite replicate is the idea is the 'go to back' country labels of non-hovered elements, which I can't really explain since the data_id is not shared from country to country and each country is unique; so while values of non hovered countries fade maximally into the white background (so this part works); country labels fail to do so; this might be a bug from the package and I might open an issue through github to shed light on said bug.<br> I also like the [**red**]{style="background-color: #e94f55; color: white; padding: 2px 2px; border-radius: 2px;"} highlighting action that red fills "UK"in the title with the white color font in bold. It provides instantly where the country of focus should/will be. In R, one way to apply that customization is by using `element_markdown()` function from the `{ggtext}` package - which can read in css as argument, in this case to wrap the word "UK" in css to indicate both color, fill, and font face.<br> Overall, I believe below plot remains highly faithful to the original.
+:::
 
 ```{r}
 #|echo: false
@@ -1092,8 +1092,10 @@ girafe(
 ```
 
 ## **Room to Improve**
-#### Dataset 
-Unlike previous sections, below is the _full_ dataset (only 13 rows by 3 column) showing the room to improve for countries; the potential of each country's health service to improve _without the need to increase current spend_; this piece/section of the article borrows from [Zarulli et al](https://pmc.ncbi.nlm.nih.gov/articles/PMC8270475/).<br>
+
+#### Dataset
+
+Unlike previous sections, below is the *full* dataset (only 13 rows by 3 column) showing the room to improve for countries; the potential of each country's health service to improve *without the need to increase current spend*; this piece/section of the article borrows from [Zarulli et al](https://pmc.ncbi.nlm.nih.gov/articles/PMC8270475/).<br>
 
 ```{r}
 #|echo: false
@@ -1156,11 +1158,11 @@ room_to_improve <-
   distinct()
 
 ```
-::: {.text-justify}
+
+::: text-justify
 Below is how the rendering looks like, now unfortunately, and because the plot uses Roboto throughout, the flag emojis weren’t rendering correctly. Also because flags are compound glyphs (made from regional indicators), and most R graphics devices don’t support fonts like "Apple Color Emoji" that can display them properly.
 
-So since ggplot2 doesn't allow font fallback within axis labels, I switched to embedding SVG flag images using element_markdown() and <img> tags instead. This is better anyways in the sense that SVG's are by design more scalable (in dimensions/sizing) and can be a good input/template/boiler plate for me and for you in the event embedding flag images into a future script/project is needed.
-
+So since ggplot2 doesn't allow font fallback within axis labels, I switched to embedding SVG flag images using element_markdown() and <img /> tags instead. This is better anyways in the sense that SVG's are by design more scalable (in dimensions/sizing) and can be a good input/template/boiler plate for me and for you in the event embedding flag images into a future script/project is needed.
 :::
 
 ```{r}
@@ -1169,10 +1171,11 @@ room_to_improve |>
     title = 'Room to Improve Dataset with added and rendered flags'
   )
 ```
-::: {.text-justify}
-I found flag SVG urls using 'https://static.dwcdn.net/css/flag-icons/flags/4x3/' and then only appended at the end
-are the respective country abbreviations which are looped through below.
-::: 
+
+::: text-justify
+I found flag SVG urls using 'https://static.dwcdn.net/css/flag-icons/flags/4x3/' and then only appended at the end are the respective country abbreviations which are looped through below.
+:::
+
 ```{r}
 #|echo: false
 #|message: false
@@ -1348,17 +1351,19 @@ p3 <-
 
 p3
 ```
-::: {.text-justify}
-Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this case per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 5 more countries within fairly similar plot panel dimensions while not sacrificing 5 times the readability. <br>
-A couple of things I couldn't replicate perfectly is the centering on the country labels, but that may be a limitation from `{ggtext}` as it doesn't fully support all types of css tags including align center since I tried multiple ways to achieve that - to no avail.<br>
-Finally, while I was able to embed link to the source cited in the caption (Zaruli et al.); it would have taken more work (more than I deemed necessary) to make said link clickable.
-::: 
+
+::: text-justify
+Overall, I like this type of plot (typically called arrow plots); which more often than not shows spread between one value to another (so 2 values total) per group; in this case per country. The reason I like it is because it scales very well; meaning in this case we could have 'gotten away' with adding 5 more countries within fairly similar plot panel dimensions while not sacrificing 5 times the readability. <br> A couple of things I couldn't replicate perfectly is the centering on the country labels, but that may be a limitation from `{ggtext}` as it doesn't fully support all types of css tags including align center since I tried multiple ways to achieve that - to no avail.<br> Finally, while I was able to embed link to the source cited in the caption (Zaruli et al.); it would have taken more work (more than I deemed necessary) to make said link clickable.
+:::
+
 ## **Barely Beds**
-#### Dataset 
-::: {.text-justify}
-This below shows the dataset for the barely bed section of the article; by far the easiest to replicate.<br>
-It shows hospital beds availability across countries, normalized by considering no. of beds per 1,000 people.
-::: 
+
+#### Dataset
+
+::: text-justify
+This below shows the dataset for the barely bed section of the article; by far the easiest to replicate.<br> It shows hospital beds availability across countries, normalized by considering no. of beds per 1,000 people.
+:::
+
 ```{r}
 #|echo: false
 #|message: false
@@ -1371,8 +1376,8 @@ barely_beds |>
   )
 ```
 
-
 #### Data Visualization
+
 Not the most exciting visualization but sometimes, you just need a good old bar plot !
 
 ```{r}
@@ -1440,11 +1445,13 @@ p4 <- ggplot(barely_beds, aes(x = country, y = Beds_per_1000, fill = bar_color_c
 p4
 
 ```
+
 ## **Budget Breakdowns**
+
 #### Dataset
-::: {.text-justify}
-Below is a breakdown of how the budget is allocated across different cost categories in each country. There are eight categories in total, with Hospitals, unsurprisingly, accounting for the lion share in every country. The data has been normalized (same currency and per-person basis) for comparability. <br>
-The UK ranks second to last in terms of budget allocated to Medical goods and equipment, just ahead of Italy, which implies that UK's NHS is starved on a crucial budget. 
+
+::: text-justify
+Below is a breakdown of how the budget is allocated across different cost categories in each country. There are eight categories in total, with Hospitals, unsurprisingly, accounting for the lion share in every country. The data has been normalized (same currency and per-person basis) for comparability. <br> The UK ranks second to last in terms of budget allocated to Medical goods and equipment, just ahead of Italy, which implies that UK's NHS is starved on a crucial budget.
 :::
 
 ```{r}
@@ -1466,15 +1473,11 @@ budget_breakdowns |>
 ```
 
 #### Data Wrangling & Visualization
-::: {.text-justify}
-The first step was to make the data as shown above go from wide (a typically very hard to work with structure) to long, so that each country name repeats 8 times, each time for a different spend category.<br>
-Second was to control how many labels would be displayed on the each segment per bar.<br>
-Third was turning spend categories into a factor variable for easier sorting, matching Tom's sorting/order of bars.<br>
-Forth was creating a tibble/dataframe for tooltips; this will activate upon hover and will be specially useful for small-width segments as data label won't be explicitly displayed.<br>
-Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend (p1) to go over the bar plot. <br>
-Finally, this consolidated both plots into one, before being rendered via `{ggiraph}` for interactivity. 
 
+::: text-justify
+The first step was to make the data as shown above go from wide (a typically very hard to work with structure) to long, so that each country name repeats 8 times, each time for a different spend category.<br> Second was to control how many labels would be displayed on the each segment per bar.<br> Third was turning spend categories into a factor variable for easier sorting, matching Tom's sorting/order of bars.<br> Forth was creating a tibble/dataframe for tooltips; this will activate upon hover and will be specially useful for small-width segments as data label won't be explicitly displayed.<br> Fifth step was to include a separate plot which serves as a legend that will stack (vertically) on main bar plot. This allows for easier customization and since it's written using a function to generate each box (per category) along with labels to the right of each bar, it makes it more modular/generalizeable to other scripts in the future where needed. I used `{pathwork}` (p1 / p2) in this case meaning legend (p1) to go over the bar plot. <br> Finally, this consolidated both plots into one, before being rendered via `{ggiraph}` for interactivity.
 :::
+
 ```{r}
 #|echo: false
 #|message: false
@@ -1696,15 +1699,11 @@ girafe(
 
 
 ```
-::: {.text-justify}
-Overall, I liked this plot - it took a fair amount of effort to replicate. The only part I wasn't a fan of was the y-axis scale from $0 to $10,000. It can be a bit misleading: for example, the U.S. hospital spend of around 3,400 falls below the $2,000 mark. I would have removed the intermediate axis (that goes from 0 to $10,000) ticks and kept only the $10,000 label to avoid this potential confusion. Another difference where I actually deviated from the plot is the structure of the legend; where Tom uses one block across which you will find boxes along with their respective spend categories from left to right whereas I decided to just go for 2x4 where each row contains 4 spend categories (total of 8). I think this hopefully gives clearer separation and I think can be more than often useful especially for even number of categories like it's the case in here.
+
+::: text-justify
+Overall, I liked this plot - it took a fair amount of effort to replicate. The only part I wasn't a fan of was the y-axis scale from \$0 to \$10,000. It can be a bit misleading: for example, the U.S. hospital spend of around 3,400 falls below the \$2,000 mark. I would have removed the intermediate axis (that goes from 0 to \$10,000) ticks and kept only the \$10,000 label to avoid this potential confusion. Another difference where I actually deviated from the plot is the structure of the legend; where Tom uses one block across which you will find boxes along with their respective spend categories from left to right whereas I decided to just go for 2x4 where each row contains 4 spend categories (total of 8). I think this hopefully gives clearer separation and I think can be more than often useful especially for even number of categories like it's the case in here.
 
 One feature I couldn't replicate was the hover interaction where small segments (like Ancillary spend) trigger the display of all corresponding values across countries. Achieving that would require a deeper dive into CSS -assuming `{ggiraph}` even supports that level of dynamic interaction. That said, for small segments like 'Residential long-term care', a few values are already visible without interaction, which gives a reasonable sense of the scale for the rest. For all those reasons, I didn’t think the extra complexity was worth the additional time investment.
 
 Thanks for taking the time to read this and hopefully, if nothing else, you have enjoyed it, more to come !
 :::
-
-
-
-
-
