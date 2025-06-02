@@ -351,6 +351,7 @@ perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Ch
     tab_options(
       heading.align = "left",
       table.width = pct(100), 
+      heading.padding = px(10),
       table.border.top.style = "hidden",             
       column_labels.border.bottom.style = "solid",
       column_labels.border.bottom.width = px(1),
@@ -367,28 +368,18 @@ perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Ch
 tbl1 <- gt_table_custom_(hex = '#d65f00', direction = 1) |> 
   tab_header(
     title = md("**Where U.S.-bound summer flight bookings have <span style='color: #d65f00;'> decreased </span>...**")
-    ) |> 
-    tab_options(
-    heading.padding = px(8.7)
   )
-
 tbl2 <- gt_table_custom_(hex = '#666666', direction = 2) |> 
   tab_header(
     title = md("<span style='color: #666666;'>**... stayed about the same ...**</span>")
     # subtitle = md("<span style='color: #FFFFFF;'>adding artificial padding.**</span>")
-  ) |> 
-    tab_options(
-    heading.padding = px(9.2)
-  )
+  ) 
 
 tbl3 <- gt_table_custom_(hex = '#2b9d6c', direction = 3) |> 
     tab_header(
     title = md("**... and <span style='color: #2b9d6c;'>increased</span>.**")
     # subtitle = md("<span style='color: #FFFFFF;'>adding artificial.** padding</span>")
-  ) |> 
-    tab_options(
-    heading.padding = px(9.2)
-  )
+  ) 
 
 tables_row_layout <- htmltools::tags$div(
   style = "display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; width: 100%; padding: 0 10px;",
