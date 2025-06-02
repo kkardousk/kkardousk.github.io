@@ -723,6 +723,7 @@ port_coords <- tribble(
 #     port_coords
 #   ) |>
 #   summarise(
+
 #     na_prop = 1 - mean(is.na(latitude))
 #     ) # currently only a 10% match rate from online searches, so let's explore tidygeoder package to get more granular
 # and see if we can extend the matching to at least 60-70% then we can at least go from there
