@@ -1,2 +1,5 @@
 /.quarto/
 .Rproj.user
+echo "*_cache/" >> .gitignore
+echo "*_files/" >> .gitignore
+echo "*.rdb" >> .gitignore
