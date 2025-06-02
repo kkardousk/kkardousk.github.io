@@ -50,7 +50,7 @@ execute:
   warning: false
   message: false
   info: false
-  cache: true
+  cache: false
   freeze: auto
 editor: visual
 ---
@@ -612,7 +612,7 @@ library(rnaturalearthdata)
 theme_set_custom()
 # steps to recreate last plot/map displaying drops in border crossings between Canada and US
 # tested it on 1 example/1 port with Only ports with at least 1,000 crossings in March 2025
-# and the resultsmatch the visual to a percentage + or -
+# and the results match the visual to a percentage + or -
 ## go to below lins for 2024
 # https://www150.statcan.gc.ca/t1/tbl1/en/cv!recreate.action?pid=2410005301&selectedNodeIds=1D146,2D3,2D18,2D41,2D42,2D75,2D91&checkedLevels=2D1&refPeriods=20240301,20240301&dimensionLayouts=layout2,layout3,layout2,layout2&vectorDisplay=false
 ## go to below link for 2025
