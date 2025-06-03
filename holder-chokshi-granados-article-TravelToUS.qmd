@@ -755,8 +755,6 @@ library(sf)
 library(rnaturalearthdata)
 theme_set_custom()
 
-
-
 invisible(
   {
     validate_border_crossings <- function(geocoded_df, max_km_from_49th = 200) {
@@ -974,13 +972,13 @@ create_projected_triangles <- function(data, height_scalar = 1) {
     
     # triangle vertices - purely vertical orientation
     if (perc_change < 0) {
-      # downward pointing triangle only for a couple of instances
+      # downward pointing triangle for vast majority of cases
       vertices <- data.frame(
         x = c(x - base_width, x + base_width, x, x - base_width),
         y = c(y, y, y - height, y)
       )
     } else {
-      # upward pointing triangle; vast majority of cases
+      # upward pointing triangle; only for a couple of instances
       vertices <- data.frame(
         x = c(x - base_width, x + base_width, x, x - base_width),
         y = c(y, y, y + height, y)
@@ -1036,24 +1034,24 @@ crossings_data_for_join <-
 
 # perform the join with error checking
 triangle_sf <- triangle_sf |>
-    left_join(crossings_data_for_join, by = "geo") |>
-    # handle any missing values
-    mutate(
-      crossings_raw_change = coalesce(crossings_raw_change, 0)
-    ) |>
-    # normalize raw changes for alpha scaling
-    mutate(
-      abs_raw_change = abs(crossings_raw_change),
-      # normalize to 0-1 range for alpha values, with safeguard for division by zero
-      max_abs_change = if (n() > 0 && any(!is.na(abs_raw_change))) max(abs_raw_change, na.rm = TRUE) else 0,
-      normalized_raw_change = if_else(
-        max_abs_change > 0,
-        abs_raw_change / max_abs_change,
-        0),
-      # create alpha values: min 0.2 for very small changes, max 0.8 for largest changes
-      alpha_value = 0.2 + (normalized_raw_change * 0.8)
-    ) |>
-    select(-max_abs_change)
+  left_join(crossings_data_for_join, by = "geo") |>
+  # handle any missing values
+  mutate(
+    crossings_raw_change = coalesce(crossings_raw_change, 0)
+  ) |>
+  # normalize raw changes for alpha scaling
+  mutate(
+    abs_raw_change = abs(crossings_raw_change),
+    # normalize to 0-1 range for alpha values, with safeguard for division by zero
+    max_abs_change = if (n() > 0 && any(!is.na(abs_raw_change))) max(abs_raw_change, na.rm = TRUE) else 0,
+    normalized_raw_change = if_else(
+      max_abs_change > 0,
+      abs_raw_change / max_abs_change,
+      0),
+    # create alpha values: min 0.2 for very small changes, max 0.8 for largest changes
+    alpha_value = 0.2 + (normalized_raw_change * 0.8)
+  ) |>
+  select(-max_abs_change)
 
 
 # transform countries first
@@ -1235,21 +1233,76 @@ call_outs_tibble <-
   )
 
 # add legend elements to the plot
+legend_box <- pmin(
+  triangle_sf$alpha_value, .7
+  ) |> 
+  sort() |>
+  enframe() |> 
+  mutate(
+    normalized_values_01 = (value - min(value)) / (max(value) - min(value)),
+    color_bins = case_when(
+      normalized_values_01 <= .25 ~ '#e3cabd-10', 
+      normalized_values_01 <= .50 ~ '#e0b69e-20',
+      normalized_values_01 <= .75 ~ '#db956a-30',
+      normalized_values_01 <=  1  ~ '#d76c21-40%',
+      TRUE ~ '#c7d8d0'
+      ),
+    labels = paste0('-', word(color_bins, -1, sep = '-')),
+    color_bins = word(color_bins, 1, sep = '-')
+  ) |> 
+  select(color_bins, labels) |> 
+  distinct() |> 
+  ggplot(aes(x = labels, y = .5, fill = I(color_bins))) +
+  geom_tile() +
+  # coord_equal(ylim = c(1, 0), clip = 'on', expand = FALSE) +
+  labs(
+    # title = 'Big drops along the border',
+    x = NULL, 
+    y = 'Percentage change vs. last year'
+    ) + 
+  # ggtitle(label = '<b>Big drops along the border<b>') +
+  theme(
+    axis.title.y  = element_text(angle = 0, size = 7, vjust = .5, face = 'bold'),
+    axis.text.x = element_text(size = 7, face = 'bold'),# vjust = .5, hjust = -1, 
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = 'none',
+    plot.margin = margin(t = 8)
+  )
+
 final_plot <-
   main_plot_with_qrt_circles +
   geom_textbox(
     data = call_outs_tibble,
     aes(x = x, y = y, label = label, hjust = hjust, vjust = vjust),
-    family = 'franklin',
+    family = 'Libre Franklin',
     width = unit(0.2, "npc"),
     fill = NA,
     size = c(3, 2.5),
     color = 'black',
     box.colour = NA,
     orientation = "upright"
-  ) +
-  ggtitle('**Big drops along the border**')
+  ) 
 
-final_plot
+final_plot_with_legend <- final_plot +
+  annotation_custom(
+    grob = ggplotGrob(legend_box),
+    xmin = -2e6, xmax = 3e6,
+    ymin = 2.5e6, ymax = 2.8e6  
+  )
+
+final_plot_with_legend +   
+  geom_text(
+    aes(x = 0, y = 2.85e6, label = "Big drops along the border"),
+    family = 'franklin',
+    size = 4,
+    fontface = 'bold',
+    color = 'black',
+    hjust = 0.35,
+    vjust = 0.5
+  )
 
 ```
