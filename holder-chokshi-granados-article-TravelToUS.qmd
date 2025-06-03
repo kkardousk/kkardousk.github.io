@@ -786,7 +786,6 @@ invisible(
         )
     }
     
-    # apply to your full dataset
     validated_coords <- validate_border_crossings(geocode_arcgis, max_km_from_49th = 300)
     # using above threshold to sorta account for US 'curvature' into Canada, especially on the North-East region,
     # as the border is not jsut one latitude/'horizontal' line
@@ -1301,7 +1300,7 @@ final_plot_with_legend +
     size = 4,
     fontface = 'bold',
     color = 'black',
-    hjust = 0.35,
+    hjust = 0.3,
     vjust = 0.5
   )
 
