@@ -630,11 +630,11 @@ theme_set_custom()
 
 # let's try to recreate those figures now that we have loaded the full datasets
 map_data_ca_xings <- 
-  read.csv('/Users/kardouskarrim/Desktop/2024_ca_us_ttl_xing_main_ports.csv') |> 
+  read.csv('2024_ca_us_ttl_xing_main_ports.csv') |> 
   # mutate(year = 2025) |> 
   clean_names() |> 
   bind_rows(
-    read_csv('/Users/kardouskarrim/Desktop/2025_ca_us_ttl_xing_main_ports.csv') |> 
+    read_csv('2025_ca_us_ttl_xing_main_ports.csv') |> 
       # mutate(year = 2024) |> 
       clean_names()
   ) |> 
@@ -654,9 +654,9 @@ invisible(
     count(ref_year, geo, crossings = value) |> 
     summarise(
       perc_change_niagara_busiest_2ports = (
-        sum(ifelse(ref_year == 2025, crossings, 0)) - sum(ifelse(ref_year == 2024, crossings, 0))
+        sum(if_else(ref_year == 2025, crossings, 0)) - sum(if_else(ref_year == 2024, crossings, 0))
       ) / 
-        sum(ifelse(ref_year == 2024, crossings, 0))
+        sum(if_else(ref_year == 2024, crossings, 0))
     ) # 41% decline - article says 42%; close enough; some values, especially for 2025 may have been preliminary and may have been slightly adjusted 
   }
 )
@@ -678,9 +678,9 @@ perc_change_by_port <- function(x, port_name){
     filter(crossings >= 1000) |> 
     summarise(
       perc_change = (
-        sum(ifelse(ref_year == 2025, crossings, 0)) - sum(ifelse(ref_year == 2024, crossings, 0))
+        sum(if_else(ref_year == 2025, crossings, 0)) - sum(if_else(ref_year == 2024, crossings, 0))
       ) / 
-        sum(ifelse(ref_year == 2024, crossings, 0)),
+        sum(if_else(ref_year == 2024, crossings, 0)),
       .by = geo
     ) |> 
     filter(geo != 'Canada' & !is.na(perc_change) & between(abs(perc_change), 0, 1)) |> 
@@ -755,90 +755,94 @@ library(sf)
 library(rnaturalearthdata)
 theme_set_custom()
 
+
+
 invisible(
   {
     validate_border_crossings <- function(geocoded_df, max_km_from_49th = 200) {
-    
-    # Canada rough bounds
-    canada_lat <- c(41.5, 84.0)
-    canada_lon <- c(-141.0, -52.0)
-    
-    # simple distance to 49th parallel (main border)
-    distance_to_49th <- function(lat) abs(lat - 49.0) * 111  # ~111 km per degree latitude
-    
-    geocode_arcgis |>
-      filter(!is.na(lat), !is.na(long)) |>
-      mutate(
-        within_canada = lat >= canada_lat[1] & 
-          lat <= canada_lat[2] &
-          long >= canada_lon[1] & 
-          long <= canada_lon[2],
-        
-        km_from_49th = distance_to_49th(lat),
-        
-        is_valid = within_canada & km_from_49th <= max_km_from_49th,
-        
-        status = case_when(
-          !within_canada ~ "outside canada bounds",
-          km_from_49th > max_km_from_49th ~ paste0("too far out (", round(km_from_49th), "km)"),
-          TRUE ~ "valid"
-        )
-      )
-  }
-
-  # apply to your full dataset
-  validated_coords <- validate_border_crossings(geocode_arcgis, max_km_from_49th = 300)
-  # using above threshold to sorta account for US 'curvature' into Canada, especially on the North-East region, 
-  # as the border is not jsut one latitude/'horizontal' line 
-  valid_coords <- 
-    validated_coords |> 
-    filter(is_valid) |>
-    select(geo = address, lat, long) # this has moved from 10 matches up to 96 out of 140 ~ 70% match rate
-  # looking at no. of spikes in the article, 96 spikes should hopefully cover most if not all location of spikes in
-  # the article, which from visual insepction, looks like around 50 are draw/plotted on the Canada/US map/border
-  
-  # combine all tibbles into one with perc_changes
-  spike_prep <- port_names_with_perc_changes |> 
-    left_join(
-      port_coords, 
-      join_by(geo == geo)
-    ) |> 
-    left_join(
-      valid_coords |> 
+      
+      # canada rough bounds
+      canada_lat <- c(41.5, 84.0)
+      canada_lon <- c(-141.0, -52.0)
+      
+      # simple distance to 49th parallel (main border)
+      distance_to_49th <- function(lat) abs(lat - 49.0) * 111  # ~111 km per degree latitude
+      
+      geocoded_df |> # geocode_arcgis was here, changed to geocoded_df
+        filter(!is.na(lat), !is.na(long)) |>
         mutate(
-          geo = str_remove(geo, ' Canada US border')
-        ),
-      join_by(geo == geo)
-    ) |> 
-    mutate(
-      latitude = coalesce(latitude, lat),
-      longitude = coalesce(longitude, long)
-    ) |>
-    filter(!is.na(latitude)) |> 
-    select(geo:longitude) 
+          within_canada = lat >= canada_lat[1] &
+            lat <= canada_lat[2] &
+            long >= canada_lon[1] &
+            long <= canada_lon[2],
+          
+          km_from_49th = distance_to_49th(lat),
+          
+          is_valid = within_canada & km_from_49th <= max_km_from_49th,
+          
+          status = case_when(
+            !within_canada ~ "outside canada bounds",
+            km_from_49th > max_km_from_49th ~ paste0("too far out (", round(km_from_49th), "km)"),
+            TRUE ~ "valid"
+          )
+        )
+    }
+    
+    # apply to your full dataset
+    validated_coords <- validate_border_crossings(geocode_arcgis, max_km_from_49th = 300)
+    # using above threshold to sorta account for US 'curvature' into Canada, especially on the North-East region,
+    # as the border is not jsut one latitude/'horizontal' line
+    valid_coords <-
+      validated_coords |>
+      filter(is_valid) |>
+      select(geo = address, lat, long) # this has moved from 10 matches up to 96 out of 140 ~ 70% match rate
+    # looking at no. of spikes in the article, 96 spikes should hopefully cover most if not all location of spikes in
+    # the article, which from visual insepction, looks like around 50 are draw/plotted on the Canada/US map/border
+    
+    # combine all tibbles into one with perc_changes
+    # spike_prep is defined but not explicitly used later, spike_prep_sf is the key one
+    spike_prep <- port_names_with_perc_changes |>
+      filter(geo != 'British Columbia') |> # filter out BC early
+      left_join(
+        port_coords,
+        join_by(geo == geo)
+      ) |>
+      left_join(
+        valid_coords |>
+          mutate(
+            geo = str_remove(geo, ' Canada US border')
+          ),
+        join_by(geo == geo)
+      ) |>
+      mutate(
+        latitude = coalesce(latitude, lat),
+        longitude = coalesce(longitude, long)
+      ) |>
+      filter(!is.na(latitude)) |>
+      select(geo:longitude)
   }
 )
-## starting the work on the map 
+## starting the work on the map
 
 # get map data
 invisible({
-  countries <- 
+  countries <-
     ne_countries(scale = "medium", returnclass = "sf") %>%
     filter(name %in% c("United States of America", "Canada"))
 })
 invisible(capture.output({
   # get great lakes
   lakes <- ne_download(
-    scale = "medium", 
-    type = "lakes", 
-    category = "physical", 
+    scale = "medium",
+    type = "lakes",
+    category = "physical",
     returnclass = "sf"
-    ) %>%
+  ) %>%
     filter(
       name %in% c(
-        "Lake Ontario", "Lake Erie", "Lake Huron", 
+        "Lake Ontario", "Lake Erie", "Lake Huron",
         "Lake Michigan", "Lake Superior")
-    )})
+    ) })
 )
 
 # crop to focus area - remove alaska
@@ -847,7 +851,7 @@ map_bounds <- list(
   ymin = 41, ymax = 52
 )
 # filter out Alaska from US (longitude > -140 is roughly Alaska)
-continental_us_canada <- 
+continental_us_canada <-
   countries |>
   mutate(
     # create geometries without Alaska
@@ -862,41 +866,42 @@ continental_us_canada <-
   filter(!st_is_empty(geometry))
 
 # combine all tibbles into one with perc_changes
-spike_prep_sf <- 
-  port_names_with_perc_changes |> 
+spike_prep_sf <-
+  port_names_with_perc_changes |>
+  filter(geo != 'British Columbia') |> # filter out "British Columbia" here
   left_join(
-    port_coords, 
+    port_coords,
     join_by(geo == geo)
-  ) |> 
+  ) |>
   left_join(
-    valid_coords |> 
+    valid_coords |>
       mutate(
         geo = str_remove(geo, ' Canada US border')
       ),
     join_by(geo == geo)
-  ) |> 
+  ) |>
   mutate(
     latitude = coalesce(latitude, lat),
     longitude = coalesce(longitude, long)
   ) |>
-  filter(!is.na(latitude)) |> 
-  select(geo:longitude) |> 
+  filter(!is.na(latitude)) |>
+  select(geo:longitude) |> # Make sure perc_change is carried through if it exists in port_names_with_perc_changes
   st_as_sf(
-    coords = c("longitude", "latitude"), 
-    crs = 4326, agr = "constant", 
+    coords = c("longitude", "latitude"),
+    crs = 4326, agr = "constant",
     remove = FALSE
-  ) 
+  )
 
 # generating regions for easier filtering of spikes
-crossing_data <- 
-  spike_prep_sf |> 
+crossing_data <-
+  spike_prep_sf |> # This now uses the BC-filtered data
   filter(
     abs(perc_change) <= .50 & longitude >= -122.76 & #exclude far west/Vancouver area and start at Douglas
-      !geo %in% c('Kelowna', 'Calgary Area', 'Calgary', 'Regina', '') 
-  ) |> 
+      !geo %in% c('Kelowna', 'Calgary Area', 'Calgary', 'Regina', '')
+  ) |>
   mutate(
     perc_change = if_else(between(perc_change, -.39, -.23), perc_change / 10, perc_change)
-  ) |> 
+  ) |>
   # filter to match article criteria - only significant declines
   filter(
     abs(perc_change) <= .45
@@ -905,46 +910,49 @@ crossing_data <-
   mutate(
     region = case_when(
       longitude < -115 ~ "west_coast",
-      longitude >= -115 & longitude < -100 ~ "prairie", 
+      longitude >= -115 & longitude < -100 ~ "prairie",
       longitude >= -100 & longitude < -85 ~ "central",
       longitude >= -85 ~ "east",
       TRUE ~ "other"
     ),
-    normalized_heights = abs(perc_change) / max(abs(perc_change))
+    normalized_heights = if (n() > 0 && any(!is.na(perc_change))) abs(perc_change) / max(abs(perc_change), na.rm = TRUE) else 0 # handle empty or all NA cases
   )
 
+
 # select representative spikes by region to match article count (~40-50 total)
-selected_spikes <- 
-  crossing_data |> 
-  filter(latitude <= 49.5 & longitude < -65) |> 
-  group_by(region) |> 
+selected_spikes <-
+  crossing_data |>
+  filter(latitude <= 49.5 & longitude < -65) |>
+  group_by(region) |>
   arrange(perc_change) |> # most negative first
   mutate(
     no = as.integer(case_when(
       region == "west_coast" ~ 12,
-      region == "prairie" ~ 8, 
+      region == "prairie" ~ 8,
       region == "central" ~ 6,
       region == "east" ~ 15,
       TRUE ~ 3)
     )
-  ) |> 
-  ungroup() |> 
-  slice(.by = region, 1:no) |> 
-  select(-no) |> 
+  ) |>
+  ungroup() |>
+  slice(.by = region, 1:no[1]) |> # Use no[1] to ensure it's scalar if regions have different 'no'
+  select(-no) |>
   bind_rows(
-    # pull select positive changes 
-    crossing_data |> 
-      filter(perc_change > 0) |> 
-      filter(longitude < -65) 
+    # pull select positive changes
+    crossing_data |>
+      filter(perc_change > 0) |>
+      filter(longitude < -65)
   )
 
+
 # transform points to projected coordinate system; original is more elliptic in shape rather than a 'straight' plane
-selected_spikes_projected <- 
-  selected_spikes |>
+selected_spikes_projected <-
+  selected_spikes |> # This is now BC-filtered
+  # filter(geo != 'British Columbia') |> # already filtered
   st_transform(crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
 
 # extract projected coordinates
-selected_spikes_coords <- 
+selected_spikes_coords <-
   selected_spikes_projected |>
   mutate(
     proj_x = st_coordinates(geometry)[, 1],
@@ -955,13 +963,14 @@ selected_spikes_coords <-
 # create triangles using projected coordinates
 create_projected_triangles <- function(data, height_scalar = 1) {
   
-  height_mult <<- height_scalar
+  # height_mult <<- height_scalar # Avoid using global assignment if possible
+  local_height_mult <- height_scalar
   # function to create a triangle for each point using projected coordinates
-  create_triangle <- function(x, y, perc_change, normalized_heights, height_mult) {
+  create_triangle <- function(x, y, perc_change, normalized_heights, current_height_mult) {
     
     # base width and height in projected units (meters)
     base_width <- 8e4  # 80km base width
-    height <- abs(normalized_heights) * height_scalar * 4e5  # scale height based on normalized perc change
+    height <- abs(normalized_heights) * current_height_mult * 4e5  # scale height based on normalized perc change
     
     # triangle vertices - purely vertical orientation
     if (perc_change < 0) {
@@ -982,16 +991,16 @@ create_projected_triangles <- function(data, height_scalar = 1) {
   }
   
   # create triangles for each point
-  triangles <- 
+  triangles <-
     data |>
     rowwise() |>
     mutate(
-      triangle_geom = list(create_triangle(proj_x, proj_y, perc_change, normalized_heights))
+      triangle_geom = list(create_triangle(proj_x, proj_y, perc_change, normalized_heights, local_height_mult))
     ) |>
     ungroup()
   
   # convert to sf object with triangle geometries
-  triangle_sf <- 
+  triangle_sf <-
     triangles |>
     mutate(
       geometry = st_sfc(triangle_geom, crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
@@ -1002,7 +1011,50 @@ create_projected_triangles <- function(data, height_scalar = 1) {
 }
 
 # create triangle geometries using projected coordinates
+# ensure selected_spikes_coords is not empty before calling
 triangle_sf <- create_projected_triangles(selected_spikes_coords, height_scalar = 2.5)
+
+# add no. of crossing as well to base color fill on, low raw no. of crossings/change get ligher orange color, vs. darker for higher ones
+# so spike height becomes a factor % change while color that of the raw no. change
+
+# create the crossings data with error checking
+crossings_data_for_join <-
+  map_data_ca_xings |>
+  mutate(
+    ref_year = word(ref_date, 1, sep = '\\-')
+  ) |>
+  filter(
+    traveller_type == 'Travellers' &
+      str_detect(traveller_characteristics, 'Canadian residents')
+  ) |>
+  reframe(
+    crossings_raw_change = sum(if_else(ref_year == "2025", value, 0)) - # ensure year is character for comparison if ref_year is character
+      sum(if_else(ref_year == "2024", value, 0)),
+    .by = geo
+  ) |>
+  filter(!is.na(crossings_raw_change))
+
+# perform the join with error checking
+triangle_sf <- triangle_sf |>
+    left_join(crossings_data_for_join, by = "geo") |>
+    # handle any missing values
+    mutate(
+      crossings_raw_change = coalesce(crossings_raw_change, 0)
+    ) |>
+    # normalize raw changes for alpha scaling
+    mutate(
+      abs_raw_change = abs(crossings_raw_change),
+      # normalize to 0-1 range for alpha values, with safeguard for division by zero
+      max_abs_change = if (n() > 0 && any(!is.na(abs_raw_change))) max(abs_raw_change, na.rm = TRUE) else 0,
+      normalized_raw_change = if_else(
+        max_abs_change > 0,
+        abs_raw_change / max_abs_change,
+        0),
+      # create alpha values: min 0.2 for very small changes, max 0.8 for largest changes
+      alpha_value = 0.2 + (normalized_raw_change * 0.8)
+    ) |>
+    select(-max_abs_change)
+
 
 # transform countries first
 countries_proj <- countries |>
@@ -1051,7 +1103,7 @@ gradient_data <- expand.grid(x = x_seq, y = y_seq) |>
     # distance from horizontal center line
     dist_from_horizontal_center = abs(y_normalized),
     # apply smooth transition function
-    vertical_fade = pmin(dist_from_horizontal_center^0.7, 1),
+    vertical_fade = pmin(dist_from_horizontal_center^0.6, 1), # the higher the exponent, the 'faster' the fade; away from center, capts at 1
     # create color values: #e0e0e0 at center fading to white at edges
     # convert #e0e0e0 (224, 224, 224) to white (255, 255, 255)
     red_value = 224 + (255 - 224) * vertical_fade,
@@ -1060,9 +1112,9 @@ gradient_data <- expand.grid(x = x_seq, y = y_seq) |>
     # create hex color
     color_hex = rgb(red_value, green_value, blue_value, maxColorValue = 255),
     # only apply gradient within countries, white elsewhere
-    final_color = ifelse(within_countries, color_hex, "white"),
+    final_color = if_else(within_countries, color_hex, "white"),
     # alpha - fully opaque within countries, transparent outside
-    alpha_value = if_else(within_countries, 1.0, 0.0)
+    alpha_value = if_else(within_countries, 1.0, 0.0) # this is for gradient_data alpha, not spikes
   )
 
 # create a mask for areas within the bounding box
@@ -1083,51 +1135,51 @@ main_plot <- ggplot() +
               fill = "white") +
   # add the vertical gradient within countries only
   geom_raster(data = gradient_data |> filter(within_countries),
-              aes(x = x, y = y, fill = final_color, alpha = alpha_value)) +
+              aes(x = x, y = y, fill = final_color, alpha = alpha_value)) + # alpha here is for gradient
   # use identity scales for the custom colors
   scale_fill_identity() +
-  scale_alpha_identity() +
+  scale_alpha_identity() + # this will apply to gradient's alpha, and later legend rect's alpha
   # add country boundaries
   geom_sf(data = countries_proj,
           fill = NA, color = "white", linewidth = 0.3) +
   # Great Lakes
   geom_sf(data = lakes_proj,
           fill = "white", color = "white", linewidth = 0.1) +
-  # triangle spikes
+  # triangle spikes with alpha based on raw change magnitude
   geom_sf(
-    data = triangle_sf,
-    aes(color = ifelse(perc_change < 0, "negative", "positive")),
-    fill = '#d65f00', size = 0.8, alpha = 0.5
+    data = triangle_sf, 
+    aes(fill = if_else(perc_change < 0, I('#d65f00'), I('#2b9d6c'))), 
+    size = 0.8,
+    alpha = pmin(triangle_sf$alpha_value, .7)
   ) +
+  scale_fill_identity() + 
   # triangle color scale
-  scale_color_manual(
-    values = c("negative" = "#d65f00", "positive" = "#2b9d6c"),
-    guide = "none"
-  ) +
+  # scale_color_manual(
+  #   values = c("negative" = "#d65f00", "positive" = "#2b9d6c"),
+  #   guide = "none"
+  # ) +
   # coordinate system
   coord_sf(
     xlim = c(-4e6, 4e6),
     ylim = c(-1.75e6, 2.1e6),
     expand = FALSE,
     clip = 'off'
-  ) + 
+  ) +
   # clean theme
   theme_void() +
   theme(
+    plot.title = element_markdown(hjust = 0.5, size = 14, family = 'franklin', margin = margin(t = -10, b = 10)),
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA),
-    legend.position = 'none'
-  ) 
-
-# final touchups/call outs
-# display the enhanced plot
+    legend.position = 'none' # ggplot's auto legend is off, we are making a manual one
+  )
 
 # function to create the 1/4 circles for Douglas and Niagara Falls callouts
 draw_quarter_circles <- function(start, end, radius = 400e3, x_offset = 0, y_offset = 0){
   
   # get angles and coords for a quarter of a acircle
-  angles <- seq(start, end, length.out = 1e6)
-  radius <- radius
+  angles <- seq(start, end, length.out = 1000) # reduced length.out for efficiency
+  # radius <- radius # already an argument
   x_coords <- radius * cos(angles)
   y_coords <- radius * sin(angles)
   
@@ -1140,49 +1192,51 @@ draw_quarter_circles <- function(start, end, radius = 400e3, x_offset = 0, y_off
   
   # draw said 1/4 circles
   path <- geom_path(
-    data = quarter_circle_data, aes(x = x_coords_with_offset, y = y_coords_with_offset)
+    data = quarter_circle_data, aes(x = x, y = y) # simplified aes
   )
   
   return(path)
-  
 }
 
-theme_set_custom()
+theme_set_custom() 
+
 # draw 1/4 circles
-main_plot_with_qrt_circles <- 
+main_plot_with_qrt_circles <-
   main_plot +
-    geom_text(
-        aes(x = -150e3,
-            y = -550e3,  label = 'UNITED STATES'),
-        family = 'franklin',
-        size = 6,
-        color = '#a3a3a3'
-    ) + 
-     geom_text(
-        aes(x = -200e3,
-            y = 950e3,  label = 'CANADA'),
-        family = 'franklin',
-        size = 6,
-        color = '#a3a3a3'
-    ) +
+  geom_text(
+    aes(x = -150e3,
+        y = -550e3,  label = 'UNITED STATES'),
+    family = 'franklin',
+    size = 6,
+    color = '#a3a3a3'
+  ) +
+  geom_text(
+    aes(x = -200e3,
+        y = 950e3,  label = 'CANADA'),
+    family = 'franklin',
+    size = 6,
+    color = '#a3a3a3'
+  ) +
   # douglas 1/4 circle
   draw_quarter_circles(start = pi, end = 3 * pi/2, x_offset = -150e3 * 11.2, y_offset = -550e3 + 100e4) +
   # niagara 1/4 circle
-  draw_quarter_circles(start = 0, end = pi/2, x_offset = -150e3 * -11.5, y_offset = -550e3 - 50e4) 
+  draw_quarter_circles(start = 0, end = pi/2, x_offset = -150e3 * -11.5, y_offset = -550e3 - 50e4)
 
-call_outs_tibble <- 
+call_outs_tibble <-
   tibble(
     label = c(
-      "<b>90,000 fewer<br> people crossed at<br> Douglas</b> in March<br>2025, a 43<br>percent decline.",
+      "<b>~90,000 fewer<br> people crossed at<br> Douglas</b> in March<br>2025, a 43<br>percent decline.",
       "<b>Nearly 102,000 fewer <br> people crossed at <br>Niagara Falls,</b> a 41 <br> percent decline."
     ),
-    x = c(-150e3 * 15, -150e3 * -14),  
+    x = c(-150e3 * 15, -150e3 * -14),
     y = c(-550e3 + 100e4, -550e3 - 75e4),
     hjust = c(.5, 0.05),
     vjust = c(0, 0.6)
-    )
+  )
 
-main_plot_with_qrt_circles + 
+# add legend elements to the plot
+final_plot <-
+  main_plot_with_qrt_circles +
   geom_textbox(
     data = call_outs_tibble,
     aes(x = x, y = y, label = label, hjust = hjust, vjust = vjust),
@@ -1193,7 +1247,9 @@ main_plot_with_qrt_circles +
     color = 'black',
     box.colour = NA,
     orientation = "upright"
-  )
+  ) +
+  ggtitle('**Big drops along the border**')
 
+final_plot
 
 ```
