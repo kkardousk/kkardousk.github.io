@@ -407,7 +407,7 @@ caption_styled_div <- htmltools::tags$div(
   caption_html_content
 )
 
-# parent div will stack them vertically and can be used to constrain overall width.
+# parent div will stack them vertically and can be used to constrain overall width
 overall_final_layout <- htmltools::tags$div(
   style = "width: 100%; max-width: 1900px; margin: 0 auto; padding-bottom: 1px;",
   tables_row_layout,
