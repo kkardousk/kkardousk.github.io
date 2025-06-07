@@ -48,10 +48,12 @@ execute:
 editor: visual
 ---
 
-## **Initial Setup** 
-:::{.text-justify}
-I start by configuring the Python environment using {reticulate}, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.
+## **Initial Setup**
+
+::: text-justify
+I start by configuring the Python environment using `{reticulate}`, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.
 :::
+
 ```{r}
 #| echo: true
 #| message: false
@@ -73,14 +75,16 @@ invisible(
 )
 ```
 
-:::{.text-justify}
+::: text-justify
 With this chunk executed, R is now ready to run Python code from the designated virtual environment with the necessary libraries installed.
 :::
 
 ## **Image Configuration and Setup using matplotlib & [Pillow](https://pypi.org/project/pillow/)**
-:::{.text-justify}
-To overcome issues with displaying Pillow images directly in Quarto, I used matplotlib.pyplot to render and show images in the document. This section defines utility functions for drawing images programmatically, including a basic black board, a chessboard, and an inversion-based pattern. Otherwise, you'd likely have to set figure parameters such as dimensions, axes, etc. for every image input, so I create the below function to reduce/eliminate this redundancy. 
+
+::: text-justify
+To overcome issues with displaying Pillow images directly in Quarto, I used matplotlib.pyplot to render and show images in the document. This section defines utility functions for drawing images programmatically, including a basic black board, a chessboard, and an inversion-based pattern. Otherwise, you'd likely have to set figure parameters such as dimensions, axes, etc. for every image input, so I create the below function to reduce/eliminate this redundancy.
 :::
+
 ```{python}
 #| echo: true
 #| message: false
@@ -154,13 +158,15 @@ draw_figure(
   )
 
 ```
-:::{.text-justify}
+
+::: text-justify
 The closer you get to the center, the more stretched and squished things become visually (that's if you really zoom it). This also explains why some areas look pixelated - the image doesn’t have enough detail at this size to show everything smoothly so next resolution is improved.
 :::
 
 ## **Improving Output Resolution**
-:::{.text-justify}
-To reduce the pixelation, especially towards the center of the image, I increase both the image dimensions and the square size; essentially increase resolution. 
+
+::: text-justify
+To reduce the pixelation, especially towards the center of the image, I increase both the image dimensions and the square size; essentially increase resolution.
 :::
 
 ```{python}
@@ -173,12 +179,14 @@ draw_figure(
   title = 'Improved Resoltion (x2)'
   )
 ```
-:::{.text-justify}
+
+::: text-justify
 Doubling the dimensions already leads to significant visual improvement. The lift in clarity is again epscially visible towards the center/origin where distortion is most intense/visible.
 :::
 
 ## **Improving Output Resolution (by a factor of 10)**
-Increasing resolution tenfold didn't slow down render time that much so I go for it and it does look like we win in the trade. 
+
+Increasing resolution tenfold didn't slow down render time that much so I go for it and it does look like we win in the trade.
 
 ```{python}
 draw_figure(
@@ -187,11 +195,8 @@ draw_figure(
   height = 512 * 10, 
   square = 256 * 10, 
   R = 256 * 10, 
-  title = 'Final Inversion - Improved Resoltion (x10)'
+  title = 'Final Inversion - Improved Resolution (x10)'
   )
 ```
 
 Overall, I thought it was interesting, aesthetically if nothing else, to see how with a few lines of code, fairly intricate and cool-looking images get created. Thanks for reading !
-
-
-
