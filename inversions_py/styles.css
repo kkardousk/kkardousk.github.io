@@ -82,7 +82,7 @@ a:hover {
 #quarto-sidebar .toc .nav-link.active,
 .quarto-sidebar .toc .nav-link.active {
   color: #ffa65c !important;
-  font-weight: bold;
+  
 }
 
 /* Sidebar styling */

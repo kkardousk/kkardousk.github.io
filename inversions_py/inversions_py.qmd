@@ -50,7 +50,7 @@ editor: visual
 
 ## **Initial Setup** 
 :::{.text-justify}
-some text...
+I start by configuring the Python environment using {reticulate}, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.
 :::
 ```{r}
 #| echo: true
@@ -73,10 +73,13 @@ invisible(
 )
 ```
 
-## **Image configuration and setup using [Pillow](https://pypi.org/project/pillow/)**
 :::{.text-justify}
+With this chunk executed, R is now ready to run Python code from the designated virtual environment with the necessary libraries installed.
+:::
 
-Unfortunately, PIL and Image from pillow don't seem work too well in tandem with Quarto when rendering images, I'd have to first save the images 'locally' first to then show them in html output, so here matplotlib's pyplot is also used/loaded to bypass the local save first
+## **Image Configuration and Setup using matplotlib & [Pillow](https://pypi.org/project/pillow/)**
+:::{.text-justify}
+To overcome issues with displaying Pillow images directly in Quarto, I used matplotlib.pyplot to render and show images in the document. This section defines utility functions for drawing images programmatically, including a basic black board, a chessboard, and an inversion-based pattern. Otherwise, you'd likely have to set figure parameters such as dimensions, axes, etc. for every image input, so I create the below function to reduce/eliminate this redundancy. 
 :::
 ```{python}
 #| echo: true
@@ -87,7 +90,7 @@ import matplotlib.pyplot as plt
 import math
 
 # build a function to ease the plotting, reusable boilerplate basically with option to add additional arguments
-def draw_figure(width=500, height=500, draw_func=None, title='Custom Board', figsize=(4, 4), background='white', **kwargs):
+def draw_figure(width=512, height=512, draw_func=None, title='Custom Board', figsize=(4, 4), background='white', **kwargs):
     
     board = Image.new('RGB', (width, height), background) 
     # apply function if provided
@@ -100,30 +103,94 @@ def draw_figure(width=500, height=500, draw_func=None, title='Custom Board', fig
     plt.title(title)
     plt.show()
     
+  
 def solid_unicolor_board(board, width, height):
   
   for x in range(width):
     for y in range(height):
       board.putpixel( (x, y), (0, 0, 0))
-      
 
 # define chess board pattern
-def chess_pattern(board, width, height, square=100, **kwargs):
+def chess_pattern(board, width, height, square = 64, **kwargs):
   
   for x in range(width):
     for y in range(height):
       cx = x // square # or you can use math.floor(x / square) if index doesn't jstart at 0 
       cy = y // square
       color = ((cx + cy) % 2) * 255
-      board.putpixel((x, y), (color, color, color))
+      board.putpixel((x, y), (color, color, color)) # black and white
+      
+# define an inversion 
+def inversion_pattern(board, width, height, R = 256, square = 64, **kwargs):
 
+  for x in range(width):
+    for y in range(height):
+      x0 = x - width / 2 + .5  # define a center for x and one for y with offsets by half a pixel as technically the center is at .5, .5
+      y0 = y - height / 2 + .5
+      f = R**2 / (x0**2 + y0**2) # inverse factor or the radius squared divided by distance to center; addition to avoid zero division
+      x1 = x0 * f
+      y1 = y0 * f
+      cx = math.floor(x1 / square)
+      cy = math.floor(y1 / square)
+      color = ((cx + cy) % 2) * 255
+      board.putpixel((x, y), (color, color, 0)) # black and yellow  
 
-draw_figure(draw_func = solid_unicolor_board, title = 'Solid Black Board')
-draw_figure(draw_func = chess_pattern, title = 'Chess Board')
+# outputting results/images
+draw_figure(
+  draw_func = solid_unicolor_board,
+  title = 'Solid Black Board'
+  )
+
+draw_figure(
+  draw_func = chess_pattern, 
+  title = 'Chess Board'
+  )
+  
+draw_figure(
+  draw_func = inversion_pattern, 
+  square = 256, 
+  title = 'Initial inversion Board'
+  )
 
 ```
-
 :::{.text-justify}
-some text...
-::: 
+The closer you get to the center, the more stretched and squished things become visually (that's if you really zoom it). This also explains why some areas look pixelated — the image doesn’t have enough detail at this size to show everything smoothly so next resolution is improved.
+:::
+
+## **Improving Output Resolution**
+:::{.text-justify}
+To reduce the pixelation, especially towards the center of the image, I increase both the image dimensions and the square size; essentially increase resolution. 
+:::
+
+```{python}
+draw_figure(
+  draw_func = inversion_pattern, 
+  width = 512 * 2, 
+  height = 512 * 2, 
+  square = 256 * 2, 
+  R = 256 * 2, 
+  title = 'Initial inversion attempt'
+  )
+```
+:::{.text-justify}
+Doubling the dimensions already leads to significant visual improvement. The lift in clarity is again epscially visible towards the center/origin where distortion is most intense/visible.
+:::
+
+## **Improving Output Resolution (by a factor of 10)**
+Increasing resolution tenfold didn't slow down render time that much so I go for it and it does look like we win in the trade. 
+
+```{python}
+draw_figure(
+  draw_func = inversion_pattern, 
+  width = 512 * 10, 
+  height = 512 * 10, 
+  square = 256 * 10, 
+  R = 256 * 10, 
+  title = 'Initial inversion attempt'
+  )
+```
+
+Overall, I thought it was interesting, aesthetically if nothing else, to see how with a few lines of code, fairly intricate and cool-looking images get created. Thanks for reading !
+
+
 
