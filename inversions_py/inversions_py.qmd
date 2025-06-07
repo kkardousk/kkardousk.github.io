@@ -133,7 +133,8 @@ def inversion_pattern(board, width, height, R = 256, square = 64, **kwargs):
       cx = math.floor(x1 / square)
       cy = math.floor(y1 / square)
       color = ((cx + cy) % 2) * 255
-      board.putpixel((x, y), (color, color, 0)) # black and yellow  
+      # board.putpixel((x, y), (color, color, 0)) # black and yellow  
+      board.putpixel((x, y), (color, color, color)) # black and white  
 
 # outputting results/images
 draw_figure(
@@ -154,7 +155,7 @@ draw_figure(
 
 ```
 :::{.text-justify}
-The closer you get to the center, the more stretched and squished things become visually (that's if you really zoom it). This also explains why some areas look pixelated — the image doesn’t have enough detail at this size to show everything smoothly so next resolution is improved.
+The closer you get to the center, the more stretched and squished things become visually (that's if you really zoom it). This also explains why some areas look pixelated - the image doesn’t have enough detail at this size to show everything smoothly so next resolution is improved.
 :::
 
 ## **Improving Output Resolution**
