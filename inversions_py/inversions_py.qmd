@@ -170,7 +170,7 @@ draw_figure(
   height = 512 * 2, 
   square = 256 * 2, 
   R = 256 * 2, 
-  title = 'Initial inversion attempt'
+  title = 'Improved Resoltion (x2)'
   )
 ```
 :::{.text-justify}
@@ -187,7 +187,7 @@ draw_figure(
   height = 512 * 10, 
   square = 256 * 10, 
   R = 256 * 10, 
-  title = 'Final Inversion'
+  title = 'Final Inversion - Improved Resoltion (x10)'
   )
 ```
 
