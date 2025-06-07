@@ -1,0 +1,19 @@
+{
+  "hash": "2ebe657027179c20129d88e8557788cf",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: |\n  <div class=\"custom-title-block\" style=\"text-align: center;\">\n    <span style=\"color:#2c3e50; font-size: 1.4em; font-weight: bold;\">Exploring Inversions in Python</span><br>\n    <span style=\"font-size: 1em;\">Karim K. Kardous</span><br>\n    <a href=\"mailto:kardouskarim@gmail.com\" style=\"margin: 0 6px; font-size: 0.9em;\">\n      <i class=\"bi bi-envelope\"></i>\n    </a>\n    <a href=\"https://github.com/kkardousk\" style=\"margin: 0 6px; font-size: 0.9em;\">\n      <i class=\"bi bi-github\"></i>\n    </a>\n  </div>\nformat:  \n  html:\n    toc: true\n    toc-depth: 4\n    toc-expand: true\n    toc-title: 'Jump To'\n    number-depth: 2\n    fig-format: retina\n    fig-dpi: 300\n    code-link: true # requires both downlit and xml2 to be downloaded\n    code-fold: true\n    code-summary: '<i class=\"bi-code-slash\"></i> Show the code'\n    # code-overflow: wrap\n    code-tools:\n      toggle: true  # adds \"Show All / Hide All\"; also allows for all code copy (at once as quarto doc)\n    css: styles.css\n    highlight-style: github-dark\n    df-print: paged\n    page-layout: article\n    embed-resources: true\n    smooth-scroll: true\n    link-external-icon: false\n    link-external-newwindow: true\n    fontsize: 1.1em\n    linestretch: 0\n    linespace: 0\n    html-math-method: katex\n    linkcolor: '#D35400'\nexecute:\n  echo: true\n  warning: false\n  message: false\n  info: false\n  cache: false\n  freeze: auto\neditor: visual\npython: \"py_venv/bin/python3.9\"\n---\n\n\n\n\n## **Initial Setup** \n:::{.text-justify}\nsome text...\n:::\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('pillow'), envname = \"py_venv\", pip = TRUE)\n  })\n)\n```\n:::\n\n\n\n\n## **Image configuration and setup using [Pillow](https://pypi.org/project/pillow/)** {.text-justify}\n:::{.text-justify}\nsome text...\n:::\n\n\n\n::: {.cell}\n\n```{.python .cell-code}\nimport math\nimport PIL\nfrom PIL import Image # you can also use from matplotlib.image import imread; perfectly fine but your code if you go for this would have to be adapted, fairly sign.\n\n# square to match a chess board; at least the shape part\nwidth = 500\nheight = 500\n\nboard = Image.new('RGB', (width, height))\n# board.show()\n```\n:::\n\n\n\n\n:::{.text-justify}\nsome text...\n:::\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {
+      "include-in-header": [
+        "<link href=\"../site_libs/pagedtable-1.1/css/pagedtable.css\" rel=\"stylesheet\" />\n<script src=\"../site_libs/pagedtable-1.1/js/pagedtable.js\"></script>\n"
+      ]
+    },
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

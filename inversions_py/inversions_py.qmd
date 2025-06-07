@@ -1,0 +1,129 @@
+---
+title: |
+  <div class="custom-title-block" style="text-align: center;">
+    <span style="color:#2c3e50; font-size: 1.4em; font-weight: bold;">Exploring Inversions in Python</span><br>
+    <span style="font-size:.5em;">Karim K. Kardous</span><br>
+    <a href="mailto:kardouskarim@gmail.com" style="margin: 0 6px; font-size: 0.9em;">
+      <i class="bi bi-envelope"></i>
+    </a>
+    <a href="https://github.com/kkardousk" style="margin: 0 6px; font-size: 0.9em;">
+      <i class="bi bi-github"></i>
+    </a>
+  </div>
+format:  
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    # code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: auto
+editor: visual
+---
+
+## **Initial Setup** 
+:::{.text-justify}
+some text...
+:::
+```{r}
+#| echo: true
+#| message: false
+
+library(reticulate)
+invisible(
+  capture.output({
+    Sys.setenv(RETICULATE_PYTHON = "py_venv/bin/python3.9")
+    reticulate::use_python("py_venv/bin/python3.9", required = TRUE)
+    })
+)
+
+invisible(
+  capture.output({
+  use_python("py_venv/bin/python3.9", required = TRUE)
+  py_config()
+  py_install(c('matplotlib', 'pillow'), envname = "py_venv", pip = TRUE)
+  })
+)
+```
+
+## **Image configuration and setup using [Pillow](https://pypi.org/project/pillow/)** {.text-justify}
+:::{.text-justify}
+
+Unfortunately, PIL and Image from pillow don't seem work too well in tandem with Quarto when rendering images, I'd have to first save the images 'locally' first to then show them in html output, so here matplotlib's pyplot is also used/loaded to bypass the local save first
+:::
+```{python}
+#| echo: true
+#| message: false
+
+from PIL import Image 
+import matplotlib.pyplot as plt
+import math
+
+# build a function to ease the plotting, reusable boilerplate basically with option to add additional arguments
+def draw_figure(width=500, height=500, draw_func=None, title='Custom Board', figsize=(4, 4), background='white', **kwargs):
+    
+    board = Image.new('RGB', (width, height), background) 
+    # apply function if provided
+    if draw_func:
+        draw_func(board, width, height, **kwargs)
+    
+    plt.figure(figsize=figsize)
+    plt.imshow(board)
+    plt.axis('off')
+    plt.title(title)
+    plt.show()
+    
+def solid_unicolor_board(board, width, height):
+  
+  for x in range(width):
+    for y in range(height):
+      board.putpixel( (x, y), (0, 0, 0))
+      
+
+# define chess board pattern
+def chess_pattern(board, width, height, square=100, **kwargs):
+  
+  for x in range(width):
+    for y in range(height):
+      cx = x // square # or you can use math.floor(x / square) if index doesn't jstart at 0 
+      cy = y // square
+      color = ((cx + cy) % 2) * 255
+      board.putpixel((x, y), (color, color, color))
+
+
+draw_figure(draw_func = solid_unicolor_board, title = 'Solid Black Board')
+draw_figure(draw_func = chess_pattern, title = 'Chess Board')
+
+```
+
+:::{.text-justify}
+some text...
+::: 
+
