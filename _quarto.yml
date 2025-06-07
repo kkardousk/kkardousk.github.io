@@ -27,12 +27,9 @@ website:
             text: "Is NHS Good Value? (Replication)"
           - href: holder-chokshi-granados-article-TravelToUS.qmd
             text: "Intl. Travel Into the US (Replication)"
-      # Uncomment when ready
-      # - section: "Projects"
-      #   contents:
-      #     - href: has-international-travel-to-the-us-really-collapsed.qmd
-      #       text: "Has International Travel to the U.S. Really Collapsed? (Replication)"
-  
+          - href: inversions_py/inversions_py.qmd
+            text: "Inversions and their interesting properties"
+   
   page-footer:
     left: "© 2025 Karim K. Kardous"
     right:

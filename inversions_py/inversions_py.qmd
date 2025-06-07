@@ -1,7 +1,7 @@
 ---
 title: |
   <div class="custom-title-block" style="text-align: center;">
-    <span style="color:#2c3e50; font-size: 1.4em; font-weight: bold;">Exploring Inversions in Python</span><br>
+    <span style="color:#2c3e50; font-size: 1.4em; font-weight: bold;">Exploring Inversions using Python</span><br>
     <span style="font-size:.5em;">Karim K. Kardous</span><br>
     <a href="mailto:kardouskarim@gmail.com" style="margin: 0 6px; font-size: 0.9em;">
       <i class="bi bi-envelope"></i>
@@ -73,7 +73,7 @@ invisible(
 )
 ```
 
-## **Image configuration and setup using [Pillow](https://pypi.org/project/pillow/)** {.text-justify}
+## **Image configuration and setup using [Pillow](https://pypi.org/project/pillow/)**
 :::{.text-justify}
 
 Unfortunately, PIL and Image from pillow don't seem work too well in tandem with Quarto when rendering images, I'd have to first save the images 'locally' first to then show them in html output, so here matplotlib's pyplot is also used/loaded to bypass the local save first

@@ -37,6 +37,14 @@ Replication of a data-driven article/analysis of the impact (if any) of Presiden
 [View Project](holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
 
+::: {.project-card}
+### **Cool looking Inversions** {.project-title}
+
+Here I explore some ways to draw cool looking objects, namely using inversions - inspired by Micmaths.
+
+[View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
+:::
+
 <!-- more projections go here once i engage in more work on this -->
 
 ## About This Site

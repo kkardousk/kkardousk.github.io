@@ -44,7 +44,7 @@
     "href": "index.html#recent-projects",
     "title": "Where Data Meets Curiosity",
     "section": "Recent Projects",
-    "text": "Recent Projects\n\nIs NHS Good Value?\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\nView Project\n\n\nHas International Travel Into the U.S declined ?\nReplication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al\nView Project",
+    "text": "Recent Projects\n\nIs NHS Good Value?\nReplication of a data-driven article/analysis of the UK’s healthcare systems among other countries; by British editor Tom Calver\nView Project\n\n\nHas International Travel Into the U.S declined ?\nReplication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al\nView Project\n\n\nCool looking Inversions\nHere I explore some ways to draw cool looking objects, namely using inversions - inspired by Micmaths.\nView Project",
     "crumbs": [
       "Navigation",
       "Home"
@@ -317,20 +317,32 @@
     "href": "inversions_py/inversions_py.html",
     "title": "\nExploring Inversions in PythonKarim K. Kardous     \n",
     "section": "",
-    "text": "some text…\n\n\n Show the codelibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('pillow'), envname = \"py_venv\", pip = TRUE)\n  })\n)"
+    "text": "some text…\n\n\n Show the codelibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('matplotlib', 'pillow'), envname = \"py_venv\", pip = TRUE)\n  })\n)",
+    "crumbs": [
+      "Navigation",
+      "Inversions and their interesting properties"
+    ]
   },
   {
     "objectID": "inversions_py/inversions_py.html#initial-setup",
     "href": "inversions_py/inversions_py.html#initial-setup",
     "title": "\nExploring Inversions in PythonKarim K. Kardous     \n",
     "section": "",
-    "text": "some text…\n\n\n Show the codelibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('pillow'), envname = \"py_venv\", pip = TRUE)\n  })\n)"
+    "text": "some text…\n\n\n Show the codelibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('matplotlib', 'pillow'), envname = \"py_venv\", pip = TRUE)\n  })\n)",
+    "crumbs": [
+      "Navigation",
+      "Inversions and their interesting properties"
+    ]
   },
   {
     "objectID": "inversions_py/inversions_py.html#image-configuration-and-setup-using-pillow",
     "href": "inversions_py/inversions_py.html#image-configuration-and-setup-using-pillow",
     "title": "\nExploring Inversions in PythonKarim K. Kardous     \n",
     "section": "Image configuration and setup using Pillow",
-    "text": "Image configuration and setup using Pillow\n\nsome text…\n\n\n Show the codeimport math\nimport PIL\nfrom PIL import Image # you can also use from matplotlib.image import imread; perfectly fine but your code if you go for this would have to be adapted, fairly sign.\n\n# square to match a chess board; at least the shape part\nwidth = 500\nheight = 500\n\nboard = Image.new('RGB', (width, height))\n# board.show()\n\n\n\nsome text…"
+    "text": "Image configuration and setup using Pillow\n\nUnfortunately, PIL and Image from pillow don’t seem work too well in tandem with Quarto when rendering images, I’d have to first save the images ‘locally’ first to then show them in html output, so here matplotlib’s pyplot is also used/loaded to bypass the local save first\n\n\n Show the codefrom PIL import Image \nimport matplotlib.pyplot as plt\nimport math\n\n# build a function to ease the plotting, reusable boilerplate basically with option to add additional arguments\ndef draw_figure(width=500, height=500, draw_func=None, title='Custom Board', figsize=(4, 4), background='white', **kwargs):\n    \n    board = Image.new('RGB', (width, height), background) \n    # apply function if provided\n    if draw_func:\n        draw_func(board, width, height, **kwargs)\n    \n    plt.figure(figsize=figsize)\n    plt.imshow(board)\n    plt.axis('off')\n    plt.title(title)\n    plt.show()\n    \ndef solid_unicolor_board(board, width, height):\n  \n  for x in range(width):\n    for y in range(height):\n      board.putpixel( (x, y), (0, 0, 0))\n      \n\n# define chess board pattern\ndef chess_pattern(board, width, height, square=100, **kwargs):\n  \n  for x in range(width):\n    for y in range(height):\n      cx = x // square # or you can use math.floor(x / square) if index doesn't jstart at 0 \n      cy = y // square\n      color = ((cx + cy) % 2) * 255\n      board.putpixel((x, y), (color, color, color))\n\n\ndraw_figure(draw_func = solid_unicolor_board, title = 'Solid Black Board')\n\n\n\n\n\n\n Show the codedraw_figure(draw_func = chess_pattern, title = 'Chess Board')\n\n\n\n\n\n\n\n\nsome text…",
+    "crumbs": [
+      "Navigation",
+      "Inversions and their interesting properties"
+    ]
   }
 ]
