@@ -24,7 +24,7 @@ In a nutshell, I share code and thoughts while replicating data and data visuali
 ::: {.project-card}
 ### **Is NHS Good Value?** {.project-title}
 
-Replication of a data-driven article/analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
+Replication of a data-driven article and analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
 
 [View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
 :::

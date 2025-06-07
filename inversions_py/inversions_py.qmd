@@ -129,8 +129,8 @@ def inversion_pattern(board, width, height, R = 256, square = 64, **kwargs):
 
   for x in range(width):
     for y in range(height):
-      x0 = x - width / 2 + .5  # define a center for x and one for y with offsets by half a pixel as technically the center is at .5, .5
-      y0 = y - height / 2 + .5
+      x0 = x - width / 2 + 0.5  # define a center for x and one for y with offsets by half a pixel as technically the center is at .5, .5
+      y0 = y - height / 2 + 0.5
       f = R**2 / (x0**2 + y0**2) # inverse factor or the radius squared divided by distance to center; addition to avoid zero division
       x1 = x0 * f
       y1 = y0 * f
@@ -181,7 +181,7 @@ draw_figure(
 ```
 
 ::: text-justify
-Doubling the dimensions already leads to significant visual improvement. The lift in clarity is again epscially visible towards the center/origin where distortion is most intense/visible.
+Doubling the dimensions already leads to significant visual improvement. The lift in clarity is again specially visible towards the center/origin where distortion is most intense/visible.
 :::
 
 ## **Improving Output Resolution (by a factor of 10)**
