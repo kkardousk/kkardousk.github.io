@@ -40,7 +40,7 @@ body {
   }
 
 a:hover {
-  color: #d35400;
+  color: #ffa65c;
     text-decoration: underline;
 }
 
@@ -57,7 +57,7 @@ a:hover {
 #quarto-sidebar .toc .nav-link,
 .quarto-sidebar .toc a,
 .quarto-sidebar .toc .nav-link {
-  color: #ffa65c !important;
+  color: #333333 !important;
 }
 
 .toc a:hover,
@@ -72,7 +72,7 @@ a:hover {
 #quarto-sidebar .toc .nav-link:hover,
 .quarto-sidebar .toc a:hover,
 .quarto-sidebar .toc .nav-link:hover {
-  color: #d35400 !important;
+  color: #ffa65c !important;
 }
 
 .toc .nav-link.active,
