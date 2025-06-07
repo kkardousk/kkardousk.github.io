@@ -176,7 +176,7 @@ draw_figure(
   height = 512 * 2, 
   square = 256 * 2, 
   R = 256 * 2, 
-  title = 'Improved Resoltion (x2)'
+  title = 'Improved Resolution (x2)'
   )
 ```
 

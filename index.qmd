@@ -47,7 +47,7 @@ Here I explore some ways to draw cool looking objects, namely using inversions -
 
 ## About This Site
 
-This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings in as many coding languages as I possibly can. 
+This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings - in as many coding languages as I possibly can. 
 
 **On Replications:** There has been a clear increase in the use of data ubiquitously and over recent years, news articles are therefore no exception. 
 Embedded in news articles these days you can, and without much effort, find anything from simple tables to fairly involved/advanced visualizations.
