@@ -45,8 +45,6 @@ Here I explore some ways to draw cool looking objects, namely using inversions -
 [View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
 :::
 
-<!-- more projections go here once i engage in more work on this -->
-
 ## About This Site
 
 This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings in as many coding languages as I possibly can. 
