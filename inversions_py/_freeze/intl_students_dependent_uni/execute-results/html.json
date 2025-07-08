@@ -1,0 +1,19 @@
+{
+  "hash": "a65b41582e9f49ee58496c6da85ff32e",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: |\n  <div class=\"custom-title-block\" style=\"font-size: 1.2em;\">\n    <span style=\"color:#000000;\">Replication of below article's Data and Visualizations</span><br>\n    <span style=\"color:#333333; font-size:0.8em;\">\"These Are the U.S. Universities Most Dependent on International Students\"</span><br>\n    <span style=\"color:#666666; font-size:0.7em;\">\n      By <a href=\"https://www.nytimes.com/2025/05/23/upshot/harvard-trump-international-students.html\" \n      target=\"_blank\" style=\"color:#000000; text-decoration:underline;\">Emily Badger, Aatish Bhatia, Asmaa Elkeurtim Steven Rich and Ethan Singer\"</a><br>\n    </span><br>\n    <span style=\"font-size:0.8em; color:#333333; white-space: nowrap\">\n      Karim K. Kardous\n      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>\n        <i class='bi bi-envelope'></i>\n      </a>\n      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>\n        <i class='bi bi-github'></i>\n      </a>\n    </span>\n  </div>\nformat:  \n  html:\n    toc: true\n    toc-depth: 4\n    toc-expand: true\n    toc-title: 'Jump To'\n    number-depth: 2\n    fig-format: retina\n    fig-dpi: 300\n    code-link: true # requires both downlit and xml2 to be downloaded\n    code-fold: true\n    code-summary: '<i class=\"bi-code-slash\"></i> Show the code'\n    # code-overflow: wrap\n    code-tools:\n      toggle: true  # adds \"Show All / Hide All\"; also allows for all code copy (at once as quarto doc)\n    css: styles.css\n    highlight-style: github-dark\n    df-print: paged\n    page-layout: article\n    embed-resources: true\n    smooth-scroll: true\n    link-external-icon: false\n    link-external-newwindow: true\n    fontsize: 1.1em\n    linestretch: 0\n    linespace: 0\n    html-math-method: katex\n    linkcolor: '#D35400'\nexecute:\n  echo: true\n  warning: false\n  message: false\n  info: false\n  cache: false\n  freeze: auto\neditor: visual\n---\n\n\n\n## **Initial Setup**\n\n::: text-justify\nI start by configuring the Python environment using `{reticulate}`, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.\n:::\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(reticulate)\ninvisible(\n  capture.output({\n    Sys.setenv(RETICULATE_PYTHON = \"py_venv/bin/python3.9\")\n    reticulate::use_python(\"py_venv/bin/python3.9\", required = TRUE)\n    })\n)\n\ninvisible(\n  capture.output({\n  use_python(\"py_venv/bin/python3.9\", required = TRUE)\n  py_config()\n  py_install(c('playwright', 'beautifulsoup4', 'pandas', 'plotnine'), envname = \"py_venv\", pip = TRUE)\n  })\n)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nsystem(\"py_venv/bin/python -m playwright install chromium\")\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {
+      "include-in-header": [
+        "<link href=\"intl_students_dependent_uni_files/libs/pagedtable-1.1/css/pagedtable.css\" rel=\"stylesheet\" />\n<script src=\"intl_students_dependent_uni_files/libs/pagedtable-1.1/js/pagedtable.js\"></script>\n"
+      ]
+    },
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

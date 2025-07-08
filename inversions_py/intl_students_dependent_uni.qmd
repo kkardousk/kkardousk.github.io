@@ -1,0 +1,88 @@
+---
+title: |
+  <div class="custom-title-block" style="font-size: 1.2em;">
+    <span style="color:#000000;">Replication of below article's Data and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.8em;">"These Are the U.S. Universities Most Dependent on International Students"</span><br>
+    <span style="color:#666666; font-size:0.7em;">
+      By <a href="https://www.nytimes.com/2025/05/23/upshot/harvard-trump-international-students.html" 
+      target="_blank" style="color:#000000; text-decoration:underline;">Emily Badger, Aatish Bhatia, Asmaa Elkeurtim Steven Rich and Ethan Singer"</a><br>
+    </span><br>
+    <span style="font-size:0.8em; color:#333333; white-space: nowrap">
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+format:  
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    # code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: auto
+editor: visual
+---
+
+## **Initial Setup**
+
+::: text-justify
+I start by configuring the Python environment using `{reticulate}`, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.
+:::
+
+```{r}
+#| echo: true
+#| message: false
+library(reticulate)
+invisible(
+  capture.output({
+    Sys.setenv(RETICULATE_PYTHON = "py_venv/bin/python3.9")
+    reticulate::use_python("py_venv/bin/python3.9", required = TRUE)
+    })
+)
+
+invisible(
+  capture.output({
+  use_python("py_venv/bin/python3.9", required = TRUE)
+  py_config()
+  py_install(c('playwright', 'beautifulsoup4', 'pandas', 'plotnine'), envname = "py_venv", pip = TRUE)
+  })
+)
+```
+
+```{r}
+system("py_venv/bin/python -m playwright install chromium")
+```
+
+

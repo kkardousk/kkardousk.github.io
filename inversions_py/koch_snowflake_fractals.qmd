@@ -1,0 +1,194 @@
+---
+title: |
+  <div class="custom-title-block" style="text-align: center;">
+    <span style="color:#2c3e50; font-size: 1.4em; font-weight: bold;">Exploring Von Koch and his Snowflakes (Fractals) </span><br>
+    <span style="font-size:.5em;">Karim K. Kardous</span><br>
+    <a href="mailto:kardouskarim@gmail.com" style="margin: 0 6px; font-size: 0.9em;">
+      <i class="bi bi-envelope"></i>
+    </a>
+    <a href="https://github.com/kkardousk" style="margin: 0 6px; font-size: 0.9em;">
+      <i class="bi bi-github"></i>
+    </a>
+  </div>
+format:  
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    # code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 0
+    linespace: 0
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: auto
+editor: visual
+---
+
+## **Initial Setup**
+
+::: text-justify
+I start by configuring the Python environment using `{reticulate}`, specifying a custom virtual environment and ensuring required packages (matplotlib and pillow) are installed. This setup step ensures Python and R work seamlessly together; granted 'seamlessly' might be over-reaching, but at least for this case, fairly commonly used modules, it was the case.
+:::
+
+```{r}
+#| echo: true
+#| message: false
+
+library(reticulate)
+invisible(
+  capture.output({
+    Sys.setenv(RETICULATE_PYTHON = "py_venv/bin/python3.9")
+    reticulate::use_python("py_venv/bin/python3.9", required = TRUE)
+    })
+)
+
+invisible(
+  capture.output({
+  use_python("py_venv/bin/python3.9", required = TRUE)
+  py_config()
+  py_install(c('matplotlib', 'pillow'), envname = "py_venv", pip = TRUE)
+  })
+)
+```
+
+::: text-justify
+With this chunk executed, R is now ready to run Python code from the designated virtual environment with the necessary libraries installed.
+:::
+
+## **Image Configuration and Setup using matplotlib & [Pillow](https://pypi.org/project/pillow/)**
+
+::: text-justify
+To overcome issues with displaying Pillow images directly in Quarto, I used matplotlib.pyplot to render and show images in the document. This section decomposes main first steps in creating the Snowflake fractals; before 'completing' the figure. Air quotes here implying that technically the figure can go up to infinity in its decomposition into smaller fragments or segments and equilateral triangles. 
+:::
+
+```{python}
+#| echo: true
+#| message: false
+
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
+import math
+
+width = 1748
+height = 1240
+A0 = [1748 / 2 + 400, 800]
+B0 = [1748 / 2 - 400, 800]
+
+def koch(A, B, n, figsize = (3, 3)):
+    vonkoch = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(vonkoch)
+    
+    if(n == 0):
+        draw.line((A, B), fill = (0, 0, 0), width = 2)
+        plt.figure(figsize = figsize)
+        plt.imshow(vonkoch)
+        plt.title('Initial AB segment (At Step n = 0)')
+        plt.axis('off')
+        plt.show()
+    
+koch(A0, B0, 0)
+```
+
+::: text-justify
+The next step is when n is > 0 to start creating the pattern. The idea, [Von Koch's](https://nrich.maths.org/problems/von-koch-curve#:~:text=The%20Von%20Koch%20curve%20is,third%20of%20the%20original%20length.), is to split the segment into 4 parts, or segments: AM1, M1M2, M2M3, and M3B; almost forming a triangle M1M2M3, as shown below, with more steps involved including homothety and similarities 
+:::
+
+```{python}
+#| echo: true
+#| message: false
+
+def koch(draw, A, B, n):
+    if(n == 0):
+        draw.line((A, B), fill = (0, 0, 0), width = 10)
+    else:
+        M1 = sim(A, B, alpha = 0, mu = 1/3)
+        M2 = sim(A, B, alpha = math.pi / 6, mu = 1/math.sqrt(3)) # alpha = 30° in radians, mu = scaling factor 1/√3
+        M3 = sim(A, B, alpha = 0, mu = 2/3) 
+        koch(draw, A, M1, n - 1)
+        koch(draw, M1, M2, n - 1)
+        koch(draw, M2, M3, n - 1)
+        koch(draw, M3, B, n - 1)
+
+def sim(A, B, alpha, mu):
+    C = [B[0] - A[0], B[1] - A[1]]
+    D = [
+        mu * (C[0] * math.cos(alpha) + C[1] * math.sin(alpha)),
+        mu * (-C[0] * math.sin(alpha) + C[1] * math.cos(alpha))
+    ]
+    return [A[0] + D[0], A[1] + D[1]]
+
+def draw_koch_wrapper(A, B, n, figsize = (3, 3)):
+    image = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    koch(draw, A, B, n)
+
+    plt.figure(figsize = figsize)
+    plt.imshow(image)
+    plt.title(f'At Step n = {n}')
+    plt.axis('off')
+    plt.show()
+
+for step in range(1, 7):
+  draw_koch_wrapper(A0, B0, n = step)
+
+```
+
+## **Output Comment**
+::: text-justify
+I think there reaches a point where each smaller fragments/ fractals reaches the size of a pixel, it appears to be at step no. of 6 from above; we can tell essentially that step 5 and 6 are virtually identical, at least under the pixel/dimensions set. 
+:::
+
+## **'Completing' the Snowflake ❄️**
+::: text-justify
+Below we add the two missing sides of the initial equilateral triangle by computing the third vertex (via the `C0` rotation shown in the code) and recursively applying the Koch construction to all three edges, completing the full snowflake.
+:::
+
+```{python}
+#| echo: true
+#| message: false
+
+def draw_koch_wrapper(A, B, n, figsize=(3, 3)):
+    image = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+
+    # third point of the equilateral triangle (point C0)
+    C0 = sim(B0, A0, alpha = math.pi / 3, mu = 1) # or a rotation of 60° and no homothety since we only want a mirror of what we have currently, no scaling needed
+    # draw the three recursive edges
+    koch(draw, A, B, n)
+    koch(draw, B, C0, n)
+    koch(draw, C0, A, n)
+    plt.figure(figsize = figsize)
+    plt.imshow(image)
+    plt.title(f'Koch Snowflake (n = {n})')
+    plt.axis('off')
+    plt.show()
+
+draw_koch_wrapper(A0, B0, n = 6)
+
+```
+
+Overall, I thought it was interesting, aesthetically if nothing else, to see how with a few lines of code, fairly intricate and cool-looking images get created. Thanks for reading !
