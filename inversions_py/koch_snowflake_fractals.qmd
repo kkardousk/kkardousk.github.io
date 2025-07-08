@@ -171,7 +171,7 @@ Below we add the two missing sides of the initial equilateral triangle by comput
 #| echo: true
 #| message: false
 
-def draw_koch_wrapper(A, B, n, figsize=(3, 3)):
+def draw_koch_wrapper(A, B, n, figsize = (12, 3)):
     image = Image.new('RGB', (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(image)
 
