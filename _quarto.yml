@@ -29,6 +29,9 @@ website:
             text: "Intl. Travel Into the US (Replication)"
           - href: inversions_py/inversions_py.qmd
             text: "Inversions and their interesting properties"
+          - href: inversions_py/koch_snowflake_fractals.qmd
+            text: "Koch and his Snowflakes, Fractals"
+
    
   page-footer:
     left: "© 2025 Karim K. Kardous"

@@ -45,6 +45,14 @@ Here I explore some ways to draw cool looking objects, namely using inversions -
 [View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
 :::
 
+::: {.project-card}
+### **Koch and his Snowflake Fractals** {.project-title}
+
+Here I explore some ways to draw cool looking objects, here snowflakes namely using fractals and their properties - inspired by Micmaths.
+
+[View Project](inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
+:::
+
 ## About This Site
 
 This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings - in as many coding languages as I possibly can. 
