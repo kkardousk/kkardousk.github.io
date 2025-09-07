@@ -1,0 +1,633 @@
+---
+title: |
+  <div class="custom-title-block" style="font-size: 1.2em;">
+    <span style="color:#000000;">Gaza Building Damage Assessment Dashboard</span><br>
+    <span style="color:#333333; font-size:0.8em;">Interactive Spatial and Temporal Analysis of Building Damage</span><br>
+    <span style="color:#666666; font-size:0.7em;">
+    </span><br>
+    <span style="font-size:0.8em; color:#333333; white-space: nowrap">
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Navigation'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    code-tools:
+      toggle: true
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: full
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 1
+    linespace: 1
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: auto
+editor: visual
+---
+
+## **Dashboard Overview**
+
+::: text-justify
+This comprehensive analysis provides detailed visualization of building damage assessment data derived from satellite imagery analysis. The system integrates spatial mapping capabilities with temporal analysis to enable exploration of damage patterns across different governorates and time periods. Static visualizations and interactive HTML widgets support data-driven assessment of infrastructure damage without requiring server backend.
+:::
+
+```{r}
+library(shiny)
+library(bslib)
+library(leaflet)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(purrr)
+library(ggtext)
+library(sf)
+library(mapgl)
+library(mapboxapi)
+library(tidyverse)
+library(janitor)
+readRenviron("~/.Renviron")
+# mapboxgl(access_token = 'MAPBOX_SECRET_TOKEN')
+
+st_layers('/Users/kardouskarrim/UNOSAT_Gaza_Data/UNOSAT_GazaStrip_CDA_08July2025.gdb/') 
+st_drivers()
+# read damaged building dataset with geometries
+data <- st_read('/Users/kardouskarrim/UNOSAT_Gaza_Data/UNOSAT_GazaStrip_CDA_08July2025.gdb', layer = "Damage_Sites_GazaStrip_20250708")
+data_no_geom <- data |> st_drop_geometry()
+
+# mapbox_token <- Sys.getenv("MAPBOX_SECRET_TOKEN")
+# earliest date/date range 
+data_no_geom |> 
+  select(where(is.POSIXct)) |> 
+  pivot_longer(everything()) |> 
+  pull(value) |> 
+  range(na.rm = TRUE) # the data essentially tracks events/destruction only a week after the October attacks, 2023; all the way till first week of July 2025, as of this writing
+
+# basic explorations
+data_no_geom |> count(SiteID)
+
+data_no_geom |> 
+  count(SiteID, Neighborhood) 
+
+# also seems that neighborhood is lowest level of detail (excluding coordinates/geom ofc)
+data_no_geom |> 
+  count(Municipality) |> 
+  arrange(desc(n))
+# 
+# mapgl::mapboxgl(
+#   data,
+#   username = "mapbox",
+#   style_id = "streets-v11"  
+# )
+
+# filter data by Neighborhood
+filtered_data <- data |> filter(Neighborhood == 'Hai-Albanat')
+
+# if your data CRS is not WGS84, transform it:
+filtered_data <- st_transform(filtered_data, 4326)
+
+# leaflet(data = filtered_data) |>
+#   addTiles() |>
+#   addCircleMarkers()
+filtered_data |> 
+  count(SensorDate_13, Damage_Status_13)
+
+# let's pivot longer by Neighborhood, municipality, governorate, territory
+custom_pivot_longer <- function(x, y) {  
+  
+  x |> 
+    select(
+      sensor_date = SensorDate,
+      dmg_status = NULL,
+      Territory,
+      Governorate,
+      Municipality,
+      Neighborhood,
+      Shape
+    ) |>
+    bind_rows(
+      x |> 
+        select(
+          sensor_date = glue::glue('SensorDate_{y}'), 
+          dmg_status = glue::glue('Damage_Status_{y}'),
+          Territory,
+          Governorate,
+          Municipality,
+          Neighborhood,
+          Shape
+        )
+    ) |> 
+    mutate(time_period = y)  
+}
+# dynamically extract range of numbered columns (sensors) in the event more sensors get added in the future
+num_sensors <- data |> 
+  st_drop_geometry() |> 
+  select(contains('SensorDate')) |> 
+  names() |> 
+  length() 
+
+# bind all dates/snapshots together - currently a total of 16 sensor dates)
+# first sensor_date 2023-10-14 20:00:00, doesn't actually contain any damange status data 
+# dmg status data started streaming in 2023-11-06 but we keep first sensor date for consistency and to utilize all
+# have all dates as reference
+
+long_data <- map_dfr(
+  .x = as.character(2:num_sensors), 
+  ~custom_pivot_longer(x = st_transform(data, 4326), y = .x)) |> 
+  filter(!is.na(sensor_date)) |> 
+  mutate(time_period = as.integer(time_period) - 1)
+
+# testing on one neighborhood before building a function to map out results by neighborhood
+map_results_by_neighborhood <- function(x, neighborhood = 'Najjar') {
+  
+  colors <- c("#E57373", "#FFB74D", "#FFF9C4")
+  categories <- c("Destroyed", "Severe Damage", "No Damage")
+  
+  x |> 
+    filter(Neighborhood %in% neighborhood) |>
+    leaflet() |> 
+    addMapboxTiles(
+    #   style_id = "light-v9",
+    #   username = "mapbox"
+    # ) |> 
+    ) |> 
+    addCircleMarkers(
+      opacity = 0.3,
+      radius = .1, 
+      layerId = ~dmg_status,  
+      color = ~ifelse(
+        dmg_status == 0, colors[1],
+        ifelse(dmg_status == 1, colors[2], colors[3])
+      ),
+      fillOpacity = 0.2
+    ) 
+    # mapgl::add_categorical_legend(
+    #   colors = colors,
+    #   values = categories,
+    #   legend_title = 'Main Damage Site Class'
+    # )
+  
+}
+
+# addResourcePath(, "./destroyed-building.svg")
+# addResourcePath("images", "www")
+
+calculate_governorate_bounds <- function(x) {
+  x |>
+    group_by(Governorate) |>
+    summarise(geometry = st_union(Shape), .groups = 'drop') |>
+    mutate(
+      bbox = map(geometry, ~st_bbox(.x)),
+      xmin = map_dbl(bbox, ~.x["xmin"]),
+      xmax = map_dbl(bbox, ~.x["xmax"]),
+      ymin = map_dbl(bbox, ~.x["ymin"]),
+      ymax = map_dbl(bbox, ~.x["ymax"])
+    ) |>
+    select(Governorate, xmin, xmax, ymin, ymax)
+}
+
+# calculate_governorate_bounds(long_data)
+
+# Map rendering logic (base map + legend only)
+create_leaflet_map <- function() {
+  colors <- c("#E57373", "#FFB74D", "#FFF9C4")
+  categories <- c("Destroyed", "Severe Damage", "No Damage")
+  
+  leaflet() |> 
+    # Option 1: CartoDB Light theme (clean, minimal)
+    addProviderTiles(providers$CartoDB.Positron) |>
+    
+    # Option 2: CartoDB Dark theme
+    # addProviderTiles(providers$CartoDB.DarkMatter) |>
+    
+    # Option 3: Esri World Imagery (satellite view)
+    # addProviderTiles(providers$Esri.WorldImagery) |>
+    
+    # Option 4: OpenStreetMap standard
+    # addTiles() |>
+    
+    addLabelOnlyMarkers(
+      lng = c(34.41), 
+      lat = c(31.4), 
+      label = c("Gaza"), 
+      labelOptions = labelOptions(
+        noHide = TRUE,
+        textOnly = TRUE,
+        style = list("font-size" = "18px", "font-weight" = "bold")
+      )
+    ) |> 
+    setView(lng = 34.41, lat = 31.4, zoom = 11)
+}
+
+create_sidebar_ui <- function() {
+  div(
+    class = "p-3 bg-light border-end",
+    style = "height: 100vh; overflow-y: auto;",
+    
+    # title
+    h4("Gaza Damage Assessment", class = "mb-3"),
+    
+    # governorate selector - use safer data access
+    selectInput(
+      inputId = "governorate",
+      label = "Select Governorate:",
+      choices = tryCatch({
+        if(exists("long_data") && nrow(long_data) > 0) {
+          sort(unique(long_data$Governorate))
+        } else {
+          c("Gaza", "North Gaza", "Middle Area", "Khan Younis", "Rafah")
+        }
+      }, error = function(e) {
+        c("Gaza", "North Gaza", "Middle Area", "Khan Younis", "Rafah")
+      }),
+      selected = "Gaza",
+      width = "100%"
+    ),
+    
+    # date range slider - use safer data access
+    sliderInput(
+      inputId = "date_filter",
+      label = "Select Date Range:",
+      min = tryCatch({
+        if(exists("long_data") && nrow(long_data) > 0) {
+          min(long_data$sensor_date, na.rm = TRUE)
+        } else {
+          as.POSIXct("2023-10-14")
+        }
+      }, error = function(e) as.POSIXct("2023-10-14")),
+      max = tryCatch({
+        if(exists("long_data") && nrow(long_data) > 0) {
+          max(long_data$sensor_date, na.rm = TRUE)
+        } else {
+          as.POSIXct("2024-07-08")
+        }
+      }, error = function(e) as.POSIXct("2024-07-08")),
+      value = tryCatch({
+        if(exists("long_data") && nrow(long_data) > 0) {
+          range(long_data$sensor_date, na.rm = TRUE)
+        } else {
+          c(as.POSIXct("2023-10-14"), as.POSIXct("2024-07-08"))
+        }
+      }, error = function(e) c(as.POSIXct("2023-10-14"), as.POSIXct("2024-07-08"))),
+      timeFormat = "%Y-%m-%d",
+      width = "100%"
+    ),
+    
+    hr(),
+    
+    # damage statistics
+    div(
+      class = "text-center",
+      h5("Damage Statistics", class = "mb-3"),
+      
+      # destroyed buildings
+      div(
+        class = "mb-3 p-2 border rounded",
+        div(
+          style = "color: #E57373; font-size: 24px;",
+          icon("building", class = "fa-solid")
+        ),
+        strong(textOutput("destroyed_count", inline = TRUE)),
+        br(),
+        span("Buildings Destroyed", class = "text-muted small")
+      ),
+      
+      # severely damaged
+      div(
+        class = "mb-3 p-2 border rounded",
+        div(
+          style = "color: #FFB74D; font-size: 24px;",
+          icon("building", class = "fa-solid")
+        ),
+        strong(textOutput("severely_damaged_count", inline = TRUE)),
+        br(),
+        span("Severely Damaged", class = "text-muted small")
+      ),
+      
+      # no damage
+      div(
+        class = "mb-3 p-2 border rounded",
+        div(
+          style = "color: #4CAF50; font-size: 24px;",
+          icon("building", class = "fa-solid")
+        ),
+        strong(textOutput("not_damaged_count", inline = TRUE)),
+        br(),
+        span("No Damage", class = "text-muted small")
+      )
+    )
+  )
+}
+
+# helper function to create map UI
+create_map_ui <- function() {
+  div(
+    style = "height: 100vh;",
+    leafletOutput("map", height = "100%")
+  )
+}
+
+# helper function to create chart UI
+create_chart_ui <- function() {
+  div(
+    class = "border-start bg-white",
+    style = "height: 100vh; padding: 15px; overflow-y: auto;",
+    
+    h4("Damage Trends Over Time", class = "mb-3 text-center"),
+    
+    plotOutput("damage_chart", height = "calc(100vh - 100px)")
+  )
+}
+
+# main UI
+ui <- page_fillable(
+  
+  # theme
+  theme = bs_theme(version = 5, bootswatch = "flatly"),
+  
+  # add custom CSS
+  tags$head(
+    tags$style(HTML("
+      .leaflet-container {
+        background: #f8f9fa;
+      }
+      .damage-stat {
+        transition: all 0.3s ease;
+      }
+      .damage-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+    "))
+  ),
+  
+  # main layout
+  fluidRow(
+    # left sidebar
+    column(
+      width = 3,
+      create_sidebar_ui()
+    ),
+    
+    # center map
+    column(
+      width = 6,
+      create_map_ui()
+    ),
+    
+    # right chart
+    column(
+      width = 3,
+      create_chart_ui()
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  # Reactive values to track state
+  values <- reactiveValues(
+    current_governorate = NULL,
+    zoom_pending = FALSE
+  )
+  
+  # Pre-calculate governorate bounds once
+  governorate_bounds <- reactive({
+    long_data |>
+      group_by(Governorate) |>
+      summarise(geometry = st_union(Shape), .groups = 'drop') |>
+      mutate(
+        bbox = map(geometry, ~st_bbox(.x)),
+        xmin = map_dbl(bbox, ~.x["xmin"]),
+        xmax = map_dbl(bbox, ~.x["xmax"]),
+        ymin = map_dbl(bbox, ~.x["ymin"]),
+        ymax = map_dbl(bbox, ~.x["ymax"])
+      ) |>
+      select(Governorate, xmin, xmax, ymin, ymax)
+  })
+  
+  # FIXED: Single reactive expression for damage counts
+  damage_summary <- reactive({
+    req(input$governorate, input$date_filter)
+    
+    long_data |> 
+      st_drop_geometry() |> 
+      filter(
+        !is.na(dmg_status),
+        Governorate == input$governorate,
+        sensor_date >= input$date_filter[1],
+        sensor_date <= input$date_filter[2]
+      ) |> 
+      summarise(
+        destroyed = sum(if_else(dmg_status == 0, 1, 0)),
+        severely_damaged = sum(if_else(dmg_status == 1, 1, 0)),
+        not_damaged = sum(if_else(dmg_status == 3, 1, 0)),
+        .groups = 'drop'
+      )
+  })
+  
+  # Text outputs for the building counts
+  output$destroyed_count <- renderText({
+    str_glue("{comma(damage_summary()$destroyed)} Buildings Destroyed")
+  })
+  
+  output$severely_damaged_count <- renderText({
+    str_glue("{comma(damage_summary()$severely_damaged)} Severely Damaged Buildings")
+    
+  })
+  
+  output$not_damaged_count <- renderText({
+    str_glue("{comma(damage_summary()$not_damaged)} Buildings Free of Damage")
+  })
+  
+  
+  output$map <- renderLeaflet({
+    values$current_governorate <- input$governorate
+    create_leaflet_map()
+  })
+  
+  # Chart output - filtered to selected governorate only
+  output$damage_chart <- renderPlot({
+    req(input$governorate)
+    long_data |> 
+      st_drop_geometry() |> 
+      filter(
+        !is.na(dmg_status),
+        Governorate == input$governorate,
+        sensor_date >= input$date_filter[1],
+        sensor_date <= input$date_filter[2]
+      ) |> 
+      group_by(sensor_date) |> 
+      summarise(
+        destroyed = sum(if_else(dmg_status == 0, 1, 0)),
+        severely_damaged = sum(if_else(dmg_status == 1, 1, 0)),
+        not_damaged = sum(if_else(dmg_status == 3, 1, 0)),
+        .groups = 'drop'
+      ) |> 
+      pivot_longer(destroyed:not_damaged) |> 
+      mutate(sensor_date = as.Date(sensor_date)) |> 
+      ggplot(aes(x = sensor_date, y = value, color = name)) + 
+      geom_smooth(
+        method = "loess", 
+        # method.args = list(family = "poisson"),
+        linewidth = 1.7, 
+        se = FALSE
+      ) +
+      # geom_point() +
+      scale_x_date(breaks = seq(as.Date('2023-10-14'), as.Date(long_data$sensor_date |> range())[2] + lubridate::days(30), by = 'q')) +
+      scale_y_continuous(labels = scales::comma) +
+      scale_color_manual(
+        values = c("destroyed" = "#E57373", 
+                   "severely_damaged" = "#FFB74D", 
+                   "not_damaged" = "#FFF9C4"),
+        labels = c("destroyed" = "Destroyed",
+                   "severely_damaged" = "Severely Damaged", 
+                   "not_damaged" = "Not Damaged"),
+        name = NULL
+      ) + 
+      theme_minimal() + 
+      labs(
+        x = NULL, 
+        y = 'No. of Buildings',
+        title = paste("Damage Trends (Smoothed Curves) -", input$governorate)
+      ) + 
+      theme(
+        legend.position = 'top',
+        plot.title = element_text(hjust = .5, size = 14, family = 'franklin-medium', face = 'bold'),
+        legend.text = element_text(size = 12),
+        panel.background = element_rect(fill = rgb(242, 242, 240, maxColorValue = 255)),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text = element_text(size = 12, family = 'franklin-medium', face = 'bold'),
+        axis.text.x = element_text(angle = 90),
+        axis.title.y = element_text(size = 12, family = 'franklin-medium', face = 'bold')
+      )
+  })
+  
+  # Separate observer for governorate changes (zoom only)
+  observeEvent(input$governorate, {
+    req(input$governorate)
+    
+    # Only zoom if governorate actually changed
+    if (is.null(values$current_governorate) || values$current_governorate != input$governorate) {
+      values$current_governorate <- input$governorate
+      values$zoom_pending <- TRUE
+      
+      # Get bounds for selected governorate
+      bounds <- governorate_bounds() |>
+        filter(Governorate == input$governorate)
+      
+      if (nrow(bounds) > 0) {
+        # Add padding (10% of the range)
+        lon_pad <- (bounds$xmax - bounds$xmin) * 0.5
+        lat_pad <- (bounds$ymax - bounds$ymin) * 0.5
+        
+        # Zoom to governorate
+        leafletProxy("map") |>
+          fitBounds(
+            lng1 = bounds$xmin - lon_pad,
+            lat1 = bounds$ymin - lat_pad,
+            lng2 = bounds$xmax + lon_pad,
+            lat2 = bounds$ymax + lat_pad,
+            options = list(animate = TRUE, duration = 1.5)  # Smooth animation
+          )
+      }
+    }
+  }, ignoreInit = TRUE)
+  
+  # Separate observer for data updates (markers only)
+  observe({
+    req(input$governorate, input$date_filter)
+    
+    colors <- c("#E57373", "#FFB74D", "#FFF9C4")
+    categories <- c("Destroyed", "Severe Damage", "No Damage")
+    
+    # Filter and prepare data
+    filtered_data <- long_data |>
+      filter(
+        !is.na(sensor_date),
+        Governorate %in% input$governorate,
+        sensor_date >= input$date_filter[1],
+        sensor_date <= input$date_filter[2]
+      ) |> 
+      sample_n(1000) |>  # Safely sample up to 1000 points
+      mutate(unique_id = paste(dmg_status, row_number(), sep = "_"))  # Create unique IDs
+    
+    proxy <- leafletProxy("map", data = filtered_data)
+    
+    # Clear existing markers
+    proxy |> clearMarkers()
+    
+    # Add new markers
+    if (nrow(filtered_data) > 0) {
+      proxy |> addCircleMarkers(
+        opacity = 0.6,
+        radius = 4, 
+        stroke = FALSE,
+        layerId = ~unique_id,  # Use the pre-calculated unique IDs
+        color = ~case_when(
+          dmg_status == 0 ~ colors[1],
+          dmg_status == 1 ~ colors[2],
+          TRUE ~ colors[3]
+        ),
+        fillOpacity = .6
+      )
+    }
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## **Technical Documentation**
+
+::: text-justify
+This static analysis employs advanced geospatial visualization techniques combined with comprehensive damage assessment data derived from satellite imagery. The methodology utilizes high-resolution satellite imagery processed through machine learning algorithms to classify building damage into distinct categories: destroyed, severely damaged, and undamaged structures.
+
+The visualization framework integrates interactive HTML widgets, responsive data tables, and dynamic charts to provide comprehensive analysis capabilities without requiring server backend infrastructure. This approach enables deployment to static hosting platforms while maintaining rich analytical functionality.
+
+**Data Processing Pipeline:**
+- Satellite imagery acquisition and preprocessing
+- Machine learning classification using trained damage assessment models  
+- Geometric simplification and coordinate optimization
+- Statistical aggregation and temporal analysis
+- Interactive visualization rendering using Leaflet.js and Plotly.js
+
+**Static Deployment Benefits:**
+- No server infrastructure requirements
+- Fast loading and responsive user experience  
+- Compatible with GitHub Pages, Netlify, and other static hosts
+- Embedded interactivity through client-side JavaScript libraries
+- Comprehensive analysis capabilities without backend dependencies
+:::
+
+---
+
+*Analysis developed using R, Leaflet.js, Plotly.js, and Quarto. Satellite imagery analysis powered by machine learning classification algorithms. Deployed as static content for broad accessibility and reliability.*
