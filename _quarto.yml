@@ -31,6 +31,8 @@ website:
             text: "Inversions and their interesting properties"
           - href: inversions_py/koch_snowflake_fractals.qmd
             text: "Koch and his Snowflakes, Fractals"
+          - href: journalism_and_political_violence.qmd
+            text: "The Case of Journalism in Gaza"
 
    
   page-footer:
