@@ -53,6 +53,14 @@ Here I explore some ways to draw cool looking objects, here snowflakes namely us
 [View Project](inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
 :::
 
+::: {.project-card}
+### **The Case of Journalism in Gaza** {.project-title}
+
+Replication of ACLED Visual (Armed Conflict Location and Event Data) where the data looks at casualties among journalists since October 2023 through to end of August 2025.
+
+[View Project](journalism_and_political_violence.qmd){.btn .btn-primary}
+:::
+
 ## About This Site
 
 This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings - in as many coding languages as I possibly can. 
