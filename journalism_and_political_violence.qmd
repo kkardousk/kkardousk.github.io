@@ -2,7 +2,7 @@
 title: |
   <div class="custom-title-block" style="font-size: 1.2em;">
     <span style="color:#000000;">Journalism in the face of Political Violence</span><br>
-    <span style="color:#333333; font-size:0.8em;">The State of Journalism in Gaza</span><br>
+    <span style="color:#333333; font-size:0.8em;">The state of Journalism in Gaza</span><br>
     <span style="color:#666666; font-size:0.7em;">
     </span>
     <span style="font-size:0.8em; color:#333333; white-space: nowrap">
@@ -55,7 +55,7 @@ editor: visual
 ---
 
 :::{style="text-align: center; font-size: 1.5em;"}
-**Sometimes, "a [plot] is worth a thousands words".**
+**When "a [plot] is worth a thousands words".**
 :::
 ```{r}
 library(tidyverse)
@@ -119,7 +119,9 @@ create_waffle_positions <- function(area_name, kills, complete_sequence_7_rows, 
     row_pos = ceiling(tile_id / 7),
     col_pos = ((tile_id - 1) %% 7) + 1
   ) |>
-    filter(type == "deaths")  # only keep death tiles for visualization
+    filter(type == "deaths")  # only keeping death tiles for visualization
+  # another way is to use {waffle} package but i had to 'white out' non death tiles after adding remainders to the actual no. of kills per area
+  # (waffle lacks a certain customization capability on this front) 
   
   return(positions)
 }
@@ -133,7 +135,7 @@ all_positions <- pmap_dfr(
 # create individual waffle charts with labels (no spacers for alignment)
 create_interactive_waffle <- function(area_name, kills, no_of_rows) {
   
-  # filter positions for this area
+  # filter positions for area argument
   area_positions <- all_positions |> filter(area == area_name)
   # determine svg path based on area
   svg_path <- if(area_name == 'Gaza Strip') 'person-svgrepo.svg' else 'person-svgrepo-orange.svg'
@@ -141,7 +143,6 @@ create_interactive_waffle <- function(area_name, kills, no_of_rows) {
   svg_image <- magick::image_read_svg(svg_path, width = 120, height = 120)
   
   p <- ggplot(area_positions, aes(x = col_pos, y = row_pos)) +
-    # use geom_point_interactive for interactivity
     geom_point_interactive(
       aes(
         data_id = area,
@@ -202,13 +203,13 @@ create_interactive_waffle <- function(area_name, kills, no_of_rows) {
   return(p)
 }
 
-# create all waffle charts (no alignment/spacers this time)
+# create all waffle charts 
 waffle_charts <- pmap(
   list(waffle_data$area, waffle_data$kills, waffle_data$no_of_rows),
   create_interactive_waffle
 )
 
-# create main plot without spacer alignment
+# create main plot
 main_plot <- wrap_plots(waffle_charts, nrow = 1) +
   plot_annotation(
     title = "Top 10 countries and territories with the most journalists killed by political violence\n",

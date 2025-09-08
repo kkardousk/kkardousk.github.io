@@ -19,17 +19,16 @@ In a nutshell, I share code and thoughts while replicating data and data visuali
 
 ::::
 
-## Recent Projects
+## List of Projects
 
-::: {.project-card}
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ### **Is NHS Good Value?** {.project-title}
-
 Replication of a data-driven article and analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
 
 [View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
 :::
 
-::: {.project-card}
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ### **Has International Travel Into the U.S declined ?** {.project-title}
 
 Replication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al
@@ -37,25 +36,22 @@ Replication of a data-driven article/analysis of the impact (if any) of Presiden
 [View Project](holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
 
-::: {.project-card}
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ### **Cool looking Inversions** {.project-title}
-
 Here I explore some ways to draw cool looking objects, namely using inversions - inspired by Micmaths.
 
 [View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
 :::
 
-::: {.project-card}
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ### **Koch and his Snowflake Fractals** {.project-title}
-
 Here I explore some ways to draw cool looking objects, here snowflakes namely using fractals and their properties - inspired by Micmaths.
 
 [View Project](inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
 :::
 
-::: {.project-card}
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ### **The Case of Journalism in Gaza** {.project-title}
-
 Replication of ACLED Visual (Armed Conflict Location and Event Data) where the data looks at casualties among journalists since October 2023 through to end of August 2025.
 
 [View Project](journalism_and_political_violence.qmd){.btn .btn-primary}

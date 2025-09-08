@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.6.43">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>quarto-input54602d0eadef3af1</title>
+<title>quarto-input13e47b817069a1d1</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -7232,6 +7232,18 @@ z-index: 2;
  <span class="menu-text">Inversions and their interesting properties</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inversions_py/koch_snowflake_fractals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Koch and his Snowflakes, Fractals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./journalism_and_political_violence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Case of Journalism in Gaza</span></a>
+  </div>
+</li>
       </ul>
 </li>
     </ul>
@@ -7428,8 +7440,8 @@ z-index: 2;
 <span><span class="va">gt_nyt_custom</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">title</span> <span class="op">=</span> <span class="st">&#39;&#39;</span>, <span class="va">subtitle</span> <span class="op">=</span> <span class="st">&#39;&#39;</span>, <span class="va">first_10_rows_only</span> <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://sfirke.github.io/janitor/reference/clean_names.html">clean_names</a></span><span class="op">(</span>case <span class="op">=</span> <span class="st">&#39;title&#39;</span><span class="op">)</span></span>
-<span>  <span class="va">numeric_cols</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.double</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">integer_cols</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.integer</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">numeric_cols</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/where.html">where</a></span><span class="op">(</span><span class="va">is.double</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">integer_cols</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/where.html">where</a></span><span class="op">(</span><span class="va">is.integer</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">title_fmt</span> <span class="op">&lt;-</span> <span class="kw">if</span><span class="op">(</span><span class="va">title</span> <span class="op">!=</span> <span class="st">&quot;&quot;</span><span class="op">)</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">&quot;**{title}**&quot;</span><span class="op">)</span> <span class="kw">else</span> <span class="st">&quot;&quot;</span></span>
 <span>  <span class="va">subtitle_fmt</span> <span class="op">&lt;-</span> <span class="kw">if</span><span class="op">(</span><span class="va">subtitle</span> <span class="op">!=</span> <span class="st">&quot;&quot;</span><span class="op">)</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">&quot;*{subtitle}*&quot;</span><span class="op">)</span> <span class="kw">else</span> <span class="st">&quot;&quot;</span></span>
@@ -7451,7 +7463,7 @@ z-index: 2;
 <span>      style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
 <span>        <span class="fu"><a href="https://gt.rstudio.com/reference/cell_text.html">cell_text</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">&#39;#CC6600&#39;</span>, weight <span class="op">=</span> <span class="st">&#39;bold&#39;</span><span class="op">)</span></span>
 <span>      <span class="op">)</span>,</span>
-<span>      locations <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/cells_column_labels.html">cells_column_labels</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>      locations <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/cells_column_labels.html">cells_column_labels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_number.html">fmt_number</a></span><span class="op">(</span></span>
 <span>      columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">numeric_cols</span><span class="op">)</span>,</span>
@@ -7945,7 +7957,7 @@ height: 0px !important;
 <details class="code-fold"><summary><i class="bi-code-slash"></i> Show the code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># reveal data sample for year 2004 as an example</span></span>
 <span><span class="va">all_data</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">year</span> <span class="op">==</span> <span class="fl">2004</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">last_col</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">last_col</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">gt_nyt_custom</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/md.html">md</a></span><span class="op">(</span><span class="st">&quot;**Chart Data Summary**&quot;</span><span class="op">)</span>,</span>
@@ -10727,7 +10739,7 @@ height: 0px !important;
 <span>    <span class="fl">83.1</span>,      <span class="fl">83.1</span>,       <span class="st">&quot;Spain&quot;</span>,</span>
 <span>    <span class="fl">84.1</span>,      <span class="fl">84.1</span>,       <span class="st">&quot;Japan&quot;</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">last_col</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">last_col</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># order gets lost when pivoting longer so we create a integer sequence and force rank/arrange that way</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>seq <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">15</span><span class="op">)</span></span>
 <span></span>
@@ -11448,7 +11460,7 @@ height: 0px !important;
 <span>    style <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/cell_fill.html">cell_fill</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">&#39;#fff5ec&#39;</span><span class="op">)</span>, </span>
 <span>    locations <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/cells_body.html">cells_body</a></span><span class="op">(</span>rows <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_currency.html">fmt_currency</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span>, decimals <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_currency.html">fmt_currency</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span>, decimals <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="yaocxgutrx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#yaocxgutrx table {
@@ -11988,7 +12000,7 @@ height: 0px !important;
 <span>    names_to <span class="op">=</span> <span class="st">&#39;spend_category&#39;</span>,</span>
 <span>    values_to <span class="op">=</span> <span class="st">&#39;budget&#39;</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>country <span class="op">=</span> <span class="fl">1</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>country <span class="op">=</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/pkg/tidyselect/man/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    spend_category <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span><span class="va">spend_category</span> <span class="op">==</span> <span class="st">&#39;Ambulance&#39;</span> <span class="op">~</span> <span class="st">&#39;Community&#39;</span>,</span>
 <span>                               <span class="va">spend_category</span> <span class="op">==</span> <span class="st">&#39;Medicines&#39;</span> <span class="op">~</span> <span class="st">&#39;Medical Goods &amp; Equip.&#39;</span>,</span>
