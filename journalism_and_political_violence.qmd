@@ -17,8 +17,8 @@ title: |
   </div>
 format:
   html:
-    fig-width: 18
-    fig-height: 12
+    fig-width: 20
+    fig-height: 14
     toc: true
     toc-depth: 4
     toc-expand: true
@@ -162,7 +162,7 @@ create_interactive_waffle <- function(area_name, kills, no_of_rows) {
     scale_y_continuous(limits = c(-1.5, max(waffle_data$no_of_rows) + 0.5), expand = c(0, 0)) +  # same y-limits for all
     theme_void() +
     theme(
-      plot.margin = margin(t = 5, r = 20, b = 20, l = 20, unit = "pt")  # increased margins for spacing
+      plot.margin = margin(t = 5, r = 10, b = 20, l = 10, unit = "pt")  # increased margins for spacing
     ) +
     # add area name at bottom
     geom_text(
@@ -211,14 +211,14 @@ waffle_charts <- pmap(
 # create main plot without spacer alignment
 main_plot <- wrap_plots(waffle_charts, nrow = 1) +
   plot_annotation(
-    title = "Top 10 countries and territories with the most journalists killed by political violence",
-    subtitle = "7 October 2023 — 29 August 2025<br>Journalists killed <img src='person-grey.png' width='16' height='16'> = 1",
+    title = "Top 10 countries and territories with the most journalists killed by political violence\n",
+    subtitle = "7 October 2023 — 29 August 2025<br>Journalists killed <img src='person-grey.png' width='16' height='16'> = 1<br>",
     caption = 'Data and Plot Replicated from ACLED',
     theme = theme(
-      plot.title = element_text(size = 20, hjust = 0, family = 'franklin', face = "bold", color = '#2D2D2D', margin = margin(t = -5, b = 5)),
-      plot.subtitle = ggtext::element_markdown(size = 16, hjust = 0, family = 'franklin', color = '#5A5A5A', margin = margin(t = -4, b = 4)),
+      plot.title = element_text(size = 28, hjust = 0, family = 'franklin', face = "bold", color = '#2D2D2D', margin = margin(t = -5, b = 5)),
+      plot.subtitle = ggtext::element_markdown(size = 18, hjust = 0, family = 'franklin', color = '#5A5A5A', margin = margin(t = -4, b = 4)),
       plot.caption.position = 'panel',
-      plot.caption = element_text(size = 12, hjust = 0, family = 'franklin', color = '#5A5A5A')
+      plot.caption = element_text(size = 18, hjust = 0, family = 'franklin', color = '#5A5A5A')
     )
   )
 
