@@ -65,12 +65,13 @@ library(showtext)
 library(magick)
 library(grid)
 library(cowplot)
+library(ggtext)
 
 font_add(family = "franklin-medium", regular = "renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf") 
 
 theme_set_custom <- function() {
   
-  # loading google Fonts
+  # loading google fonts
   sysfonts::font_add_google("Libre Franklin", "franklin")
   sysfonts::font_add(
     family = "franklin-medium", 
@@ -129,94 +130,6 @@ all_positions <- pmap_dfr(
   create_waffle_positions
 )
 
-# create individual waffle charts with ggiraph
-create_interactive_waffle <- function(area_name, kills, no_of_rows) {
-  
-  # filter positions for this area
-  area_positions <- all_positions |> filter(area == area_name)
-  # determine svg path based on area
-  svg_path <- if(area_name == 'Gaza Strip') 'person-svgrepo.svg' else 'person-svgrepo-orange.svg'
-  # read and prepare svg
-  svg_image <- magick::image_read_svg(svg_path, width = 120, height = 120)
-  
-  # create the plot
-  p <- ggplot(area_positions, aes(x = col_pos, y = row_pos)) +
-    # use geom_point_interactive for interactivity
-    geom_point_interactive(
-      aes(data_id = area),
-      size = 15,  # adjust size as needed
-      alpha = 0,  # make points transparent since we'll overlay svgs
-      color = "transparent"
-    ) +
-    scale_x_continuous(limits = c(0.5, 7.5), expand = c(0, 0)) +
-    scale_y_continuous(limits = c(0.5, no_of_rows + 0.5), expand = c(0, 0)) +
-    coord_fixed() +
-    theme_void() +
-    theme(
-      plot.title = element_text(
-        hjust = if_else(area_name == 'India', 0.4, 0.5),
-        family = 'franklin',
-        vjust = 0.1,
-        size = 17,
-        face = 'bold'
-      ),
-      plot.margin = margin(t = 5, r = 5, b = 40, l = 5, unit = "pt")
-      # panel.background = element_rect(fill = "white", color = NA),
-      # plot.background = element_rect(fill = "white", color = NA)
-    ) +
-    # add area name label below the waffle chart
-    annotate(
-      'text',
-      x = 4,  
-      y = -0.5,
-      label = area_name,
-      hjust = 0.5,
-      vjust = 0.5,
-      size = 6,  
-      family = 'franklin'
-    ) +
-    # extend coordinate system to show labels below
-    coord_cartesian(clip = "off", ylim = c(-1, no_of_rows + 0.5))
-  
-  # add svg annotations for each death tile
-  svg_annotations <- map(1:nrow(area_positions), ~ {
-    pos <- area_positions[.x, ]
-    annotation_custom(
-      grob = grid::rasterGrob(image = svg_image),
-      xmin = pos$col_pos - 0.4, xmax = pos$col_pos + 0.4,
-      ymin = pos$row_pos - 0.4, ymax = pos$row_pos + 0.4
-    )
-  })
-  
-  # add all annotations
-  p <- p + svg_annotations
-  
-  return(p)
-}
-
-# create all waffle charts
-waffle_charts <- pmap(
-  list(waffle_data$area, waffle_data$kills, waffle_data$no_of_rows),
-  create_interactive_waffle
-)
-
-# align charts (same logic as before)
-waffle_charts_aligned <- map2(waffle_charts, waffle_data$no_of_rows, ~{
-  max_rows <- max(waffle_data$no_of_rows)
-  spacer_height <- (max_rows - .y) * 7
-  
-  if(spacer_height > 0) {
-    spacer <- plot_spacer() + theme(plot.margin = margin(0, 0, 3, 0))
-    spacer / .x + plot_layout(heights = c(spacer_height, .y * 7))
-  } else {
-    .x
-  }
-})
-
-# create main plot
-main_plot <- wrap_plots(waffle_charts_aligned, nrow = 1)
-
-## using cowplot instead of patchwork for better label control
 # create individual waffle charts with labels (no spacers for alignment)
 create_interactive_waffle <- function(area_name, kills, no_of_rows) {
   
@@ -249,9 +162,7 @@ create_interactive_waffle <- function(area_name, kills, no_of_rows) {
     scale_y_continuous(limits = c(-1.5, max(waffle_data$no_of_rows) + 0.5), expand = c(0, 0)) +  # same y-limits for all
     theme_void() +
     theme(
-      plot.margin = margin(t = 5, r = 5, b = 20, l = 5, unit = "pt")
-      # panel.background = element_rect(fill = "white", color = NA),
-      # plot.background = element_rect(fill = "white", color = NA)
+      plot.margin = margin(t = 5, r = 20, b = 20, l = 20, unit = "pt")  # increased margins for spacing
     ) +
     # add area name at bottom
     geom_text(
