@@ -33,6 +33,8 @@ website:
             text: "Koch and his Snowflakes, Fractals"
           - href: journalism_and_political_violence.qmd
             text: "The Case of Journalism in Gaza"
+          - href: sept11_legacy.qmd
+            text: "The 9/11 Legacy"
 
    
   page-footer:

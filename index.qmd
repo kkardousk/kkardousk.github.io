@@ -57,6 +57,13 @@ Replication of ACLED Visual (Armed Conflict Location and Event Data) where the d
 [View Project](journalism_and_political_violence.qmd){.btn .btn-primary}
 :::
 
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+### **The 9/11 Legacy** {.project-title}
+Replication of a PEW Research Center where the data looks at, among other things, the emotional toll of 9/11, its enduring legacy, and its polarizing impact on the Political Spectrum. 
+
+[View Project](sept11_legacy.qmd){.btn .btn-primary}
+:::
+
 ## About This Site
 
 This personal website serves as a repository for my replications of interesting studies/articles, analysis, and explorations of topics that spark my curiosity. As a data enthusiast, I enjoy diving into datasets, uncovering insights, and sharing my methods/findings - in as many coding languages as I possibly can. 
