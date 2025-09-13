@@ -452,7 +452,7 @@ The plot gets displayed below. Note that I added my name right after the source 
 }
 ```
 
-```{r}
+```{r fig-p1-plot}
 #| fig-cap: ""
 #| class: "bordered-plot"
 #| fig-width: 6
@@ -463,7 +463,7 @@ The plot gets displayed below. Note that I added my name right after the source 
 #| echo: false
 p1
 ```
-Overall, I like the design of the plot. I especially appreciated moving the x axis to the top along with it's 'ruler' like design as the vast majority of the data sits on the upper region of the plot. I also like the fact that they added a label 'aggregating' the % for those 30 and above, simultaneously giving the reader a better picture of the dynamic while also utilizing an otherwise 'dead' area in the plot.
+Overall, I like the design of the plot. I especially appreciated moving the x axis to the top along with its 'ruler' like design as the vast majority of the data sits on the upper region of the plot. I also like the fact that they added a label 'aggregating' the % for those 30 and above, simultaneously giving the reader a better picture of the dynamic while also utilizing an otherwise 'dead' area in the plot.
 
 ## **A Devastating Legacy** {.text-justify}
 
@@ -998,13 +998,13 @@ p4 <- pivoted_islam_views_data |>
 p4
 ```
 ::: {style="text-align: justify;"}
-Above plot (along with first one) was most likely the hardest one to replicate. Many elements make up the plot.
+Above plot (along with the first one (@fig-p1-plot)) was probably the hardest one to replicate as many elements make up the plot.
 
 The technical approach required several strategic decisions to achieve accurate replication. Rather than using `facet_wrap()` to separate the online and telephone survey periods, the solution avoided faceting entirely to maintain unified control over plot elements. This allowed for global styling changes and consistent spacing across the entire visualization.
 
 One albeit 'hacky' way was to insert a dummy record with empty string as the date value ("") which was positioned strategically between the online and telephone survey sections. This created the necessary visual break without disrupting the data structure or requiring complex faceting logic that would complicate element positioning.
 
-The dummy record approach enabled using `geom_rect()` to create a white rectangle that effectively "erases" the unwanted dummy row from view (ymin = 6.5, ymax = 7.5). This rectangle spans the full plot width, creating a clean canvas for overlaying the divider elements.
+The dummy record approach enabled using `geom_rect()` to create a white rectangle that effectively "erases" the unwanted dummy row from view `(ymin = 6.5, ymax = 7.5)`. This rectangle spans the full plot width, creating a clean canvas for overlaying the divider elements.
 
 The "Telephone surveys" label and horizontal line required annotation_custom() with grid grobs rather than standard ggplot annotations, since these elements needed to extend beyond the plot panel boundaries. The `grid::textGrob()` and `grid::linesGrob()` functions provided the necessary control for precise positioning outside the 'normal' coordinate system.
 
