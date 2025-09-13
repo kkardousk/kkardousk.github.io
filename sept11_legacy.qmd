@@ -452,7 +452,7 @@ The plot gets displayed below. Note that I added my name right after the source 
 }
 ```
 
-```{r fig-p1-plot}
+```{r}
 #| fig-cap: ""
 #| class: "bordered-plot"
 #| fig-width: 6
@@ -998,7 +998,7 @@ p4 <- pivoted_islam_views_data |>
 p4
 ```
 ::: {style="text-align: justify;"}
-Above plot (along with the first one (@fig-p1-plot)) was probably the hardest one to replicate as many elements make up the plot.
+Above plot was probably the hardest one to replicate as many elements make up said plot.
 
 The technical approach required several strategic decisions to achieve accurate replication. Rather than using `facet_wrap()` to separate the online and telephone survey periods, the solution avoided faceting entirely to maintain unified control over plot elements. This allowed for global styling changes and consistent spacing across the entire visualization.
 
