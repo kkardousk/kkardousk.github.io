@@ -1,13 +1,17 @@
 ---
 title: "About Me"
+format:
+  html:
+    css: styles.css
 ---
-Hello! I'm a data scientist/enthusiast with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.
+
+Hello! I'm a data scientist with a passion for analyzing and visualizing information to uncover meaningful insights. My background spans across data science, statistics, and research methodologies.
 
 On this website, I share various data projects I've worked on, focusing particularly on:
 
 - Data replications of interesting studies and articles
 - Visualizations that help tell stories through data
-- Analysis of topics related to economics, healthcare, and social sciences
+- Analysis of topics related to economics, business, healthcare, and social sciences
 
 ### My Approach
 
@@ -20,4 +24,4 @@ I believe in transparent, reproducible data analysis. When working on projects, 
 
 ### Connect With Me
 
-I'm always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through [GitHub](https://github.com/kkardousk) or connect with me on other platforms.
+I'm always interested in connecting with fellow data enthusiasts, researchers, and curious minds. Feel free to reach out through <a href="https://github.com/kkardousk" target="_blank">GitHub</a> or connect with me on other platforms.

@@ -10,7 +10,7 @@ format:
 ::: {.g-col-5}
 # Where Data Meets Curiosity {.text-center}
   
-In a nutshell, I share code and thoughts while replicating data and data visualizations that I find interesting online (mostly data-driven news articles) along with analyses I like to do in my spare time.<br> Feel free to connect with me if you have any questions or suggestions !
+In a nutshell, I share my `code` and thoughts while replicating data and reverse engineering data visualizations that I find interesting online, mostly data-driven news articles along with analyses I like to do in my spare time.<br> You will also find external links to more of my work in the 'Older Links' section. <br>Feel free to connect with me if you have any questions or suggestions !
 :::
 
 ::: {.g-col-4 .gif-container .text-center}
@@ -21,47 +21,122 @@ In a nutshell, I share code and thoughts while replicating data and data visuali
 
 ## List of Projects
 
-::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
-### **Is NHS Good Value?** {.project-title}
-Replication of a data-driven article and analysis of the UK's healthcare systems among other countries; by British editor Tom Calver
+::: {.projects-grid}
 
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
+### **Is NHS Good Value?** {.project-title}
+::: {.project-tags}
+[Healthcare]{.tag} [Replication]{.tag} [UK Policy]{.tag}
+:::
+:::
+
+::: {.project-description}
+Replication of a data-driven article and analysis of the UK's healthcare systems among other countries; by British editor Tom Calver. This study compares healthcare efficiency metrics across multiple nations.
+:::
+
+::: {.project-footer}
 [View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
 :::
+:::
 
 ::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
 ### **Has International Travel Into the U.S declined ?** {.project-title}
+::: {.project-tags}
+[Tourism]{.tag} [Policy Impact]{.tag} [Replication]{.tag}
+:::
+:::
 
-Replication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al
+::: {.project-description}
+Replication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al. Examining tourism trends and policy effects.
+:::
 
+::: {.project-footer}
 [View Project](holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
+:::
 
 ::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
 ### **Cool looking Inversions** {.project-title}
-Here I explore some ways to draw cool looking objects, namely using inversions - inspired by Micmaths.
+::: {.project-tags}
+[Mathematics]{.tag} [Visualization]{.tag} [Python]{.tag}
+:::
+:::
 
+::: {.project-description}
+Here I explore some ways to draw cool looking objects, namely using inversions - inspired by Micmaths. Creating geometric art through mathematical transformations and exploring the beauty of inverse geometry.
+:::
+
+::: {.project-footer}
 [View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
 :::
+:::
 
 ::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
 ### **Koch and his Snowflake Fractals** {.project-title}
-Here I explore some ways to draw cool looking objects, here snowflakes namely using fractals and their properties - inspired by Micmaths.
+::: {.project-tags}
+[Fractals]{.tag} [Python]{.tag} [Geometry]{.tag}
+:::
+:::
 
+::: {.project-description}
+Here I explore some ways to draw cool looking objects, here snowflakes namely using fractals and their properties - inspired by Micmaths. Diving deep into recursive patterns and self-similar structures.
+:::
+
+::: {.project-footer}
 [View Project](inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
 :::
-
-::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
-### **The Case of Journalism in Gaza** {.project-title}
-Replication of ACLED Visual (Armed Conflict Location and Event Data) where the data looks at casualties among journalists since October 2023 through to end of August 2025.
-
-[View Project](journalism_and_political_violence.qmd){.btn .btn-primary}
 :::
 
 ::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
-### **The 9/11 Legacy** {.project-title}
-Replication of a PEW Research Center where the data looks at, among other things, the emotional toll of 9/11, its enduring legacy, and its polarizing impact on the Political Spectrum. 
+::: {.project-highlight}
+:::
+::: {.project-header}
+### **The state of Journalism in Gaza** {.project-title}
+::: {.project-tags}
+[Conflict Analysis]{.tag} [ACLED Data]{.tag} [Journalism]{.tag}
+:::
+:::
 
+::: {.project-description}
+Replication of ACLED Visual (Armed Conflict Location and Event Data) where the data looks at casualties among journalists since October 2023 through to end of August 2025. A critical examination of press freedom and safety.
+:::
+
+::: {.project-footer}
+[View Project](journalism_and_political_violence.qmd){.btn .btn-primary}
+:::
+:::
+
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
+### **The 9/11 Legacy** {.project-title}
+::: {.project-tags}
+[PEW Research]{.tag} [Social Impact]{.tag} [Political Analysis]{.tag}
+:::
+:::
+
+::: {.project-description}
+Replication of a PEW Research Center where the data looks at, among other things, the emotional toll of 9/11, its enduring legacy, and its polarizing impact on the Political Spectrum. Analyzing long-term societal effects.
+:::
+
+::: {.project-footer}
 [View Project](sept11_legacy.qmd){.btn .btn-primary}
+:::
+:::
+
 :::
 
 ## About This Site
@@ -71,7 +146,7 @@ This personal website serves as a repository for my replications of interesting 
 **On Replications:** There has been a clear increase in the use of data ubiquitously and over recent years, news articles are therefore no exception. 
 Embedded in news articles these days you can, and without much effort, find anything from simple tables to fairly involved/advanced visualizations.
 But of course, you seldom find the exact methodology the author(s) used in presenting said visualizations to their readers. 
-The purpose here then becomes to reverse-engineer the final article output to generate a clear path to each 'element' that is required to make said output - almost like reconstructing a puzzle. 
+The purpose here then becomes to reverse-engineer the final article output to generate a clear path to each 'element' that is required to make said outputs - almost like reconstructing a puzzle. 
 
 "Where there is a will, there is a way"; similarly, where there is HTML, there is its source page- less poetic but equally true.
 This will be the leitmotif for most data extraction from articles I work on replicating; unless they are behind a paywall (where an account has to be created first -with or without a paid subscription); or JS is intentionally set to not redirect; not allowing for the actual data to be revealed under the hood. 
@@ -81,8 +156,4 @@ I find the exercise interesting for multiple reasons, one of which being thinkin
 
 In terms of coding choices; I will mostly be using R *in tandem* with Quarto along with python and potentially explore additional languages/frameworks along the way.
 
-**On Analysis:** Once things get streamlined and time to publish additional replication projects shrinks, I will most likely begin devoting time to dive into articles or more generally online sources that I will either support or *critique*. This will be relying more on the analytical side of things in making my point of whether or not I think the article/piece drives home their point with rigor; and if not, suggest concrete improvements; be it on the choice of methods and/or how the message is conveyed visually.
-
-**On Opinion:** This section will really focus more on (potentially pompous) philosophical and metaphysical takes (I warned you) to take a step back and some hindsight into deciphering the speed with which things are evolving, tackling many topics..more to come on that section ! 
-
-
+**On Analysis:** I will likely begin devoting time to dive into articles or more generally online sources that I will either support or *critique*. This will be relying more on the analytical side of things in making my point of whether or not I think the article/piece drives home their point with rigor; and if not, suggest concrete improvements; be it on the choice of methods and/or how the message is conveyed visually.

@@ -4,7 +4,6 @@ project:
   render:
     - "*.qmd"
     - "!drafts/"
-
 website:
   site-url: https://kkardousk.github.io/
   site-path: /
@@ -14,7 +13,7 @@ website:
   sidebar:
     style: "docked"
     search: true
-    collapse-level: 1
+    collapse-level: 2
     title: "Karim K. Kardous"  
     contents:
       - section: "Navigation"
@@ -32,17 +31,38 @@ website:
           - href: inversions_py/koch_snowflake_fractals.qmd
             text: "Koch and his Snowflakes, Fractals"
           - href: journalism_and_political_violence.qmd
-            text: "The Case of Journalism in Gaza"
+            text: "The state of Journalism in Gaza"
+          - href: https://huggingface.co/spaces/kardouskarim/gaza-damage-assessments
+            text: 'Gaza Damage Assessment Shiny App (2025)'
+            target: "_blank"
           - href: sept11_legacy.qmd
-            text: "The 9/11 Legacy"
-
+            text: "The 9/11 Legacy (Replication)"
+      - section: "Older Links"
+        contents:
+          - href: https://github.com/kkardousk/aoe
+            text: 'Age of Empires Replay Parser (2022)'
+            target: "_blank"
+          - href: https://www.kaggle.com/code/karimkardous/restaurant-business-in-2020-in-us/notebook
+            text: 'Restaurant Business in 2020 (2021)'
+            target: "_blank"
+          - href: https://www.researchgate.net/publication/283755253_Vindicating_the_Ubiquitous_Rationality_in_Civil_War_Violence_a_Redirection_from_Macro_to_Microdynamics_of_Civil_War_Violence
+            text: 'Vindicating the Rationality in Civil War Violence (2016)'
+            target: "_blank"
+          - href: https://www.researchgate.net/publication/298642701_Dynamics_of_Democratic_Breakdown_Macro-Comparative_Evidence_of_Golpes_de_Estado_and_Autogolpes_from_Latin_America
+            text: 'Dynamics of Democratic Breakdown in Latin America (2016)'
+            target: "_blank"
+          - href: https://www.researchgate.net/publication/287646067_What_Causes_Civil_Wars_Competing_Risks_Analyses_of_worldwide_Civil_War_Onsets_between_1970_and_1999
+            text: 'What Causes Civil Wars: Competing Risks Analyses (2016)'
+            target: "_blank"
+          - href: https://scispace.com/pdf/explaining-the-dynamics-of-civil-war-exposure-violence-and-26p0q7cze2.pdf
+            text: "Master's Thesis: Explaining the Dynamics of Civil War Exposure & Violence (2016)"
+            target: "_blank"
    
   page-footer:
     left: "© 2025 Karim K. Kardous"
     right:
       - icon: github
         href: https://github.com/kkardousk
-
 format:
   html:
     theme:
@@ -52,4 +72,3 @@ format:
     toc: false
     code-fold: true
     embed-resources: true
-    

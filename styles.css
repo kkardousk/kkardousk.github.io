@@ -77,6 +77,16 @@ a:hover {
     border-left-color: #ffa65c;
     background-color: rgba(230, 126, 34, 0.05);
 }
+/* Target only collapsible section headers */
+.sidebar-item-text.collapsed .menu-text,
+.sidebar-item-text[data-bs-toggle="collapse"] .menu-text {
+  font-weight: bold !important;
+  font-size: 1.1em !important;
+}
+/* Make links in "Older Links" section open in new tab */
+#quarto-sidebar-section-2 a[href^="http"] {
+  target: "_blank";
+}
 
 /* Header banner with SVG */
   .header-banner {
@@ -175,25 +185,98 @@ th, td {
     height: auto;
 }
 
+/* Projects Grid - ONLY NEW ADDITION */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
 /* Special styling for project cards */
-  .project-card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    font-weight: bold; 
-  }
+.project-card {
+  background: white;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
 
 .project-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.project-highlight {
+  width: 100%;
+  height: 4px;
+  background-color: #263646;
+  position: relative;
+  overflow: hidden;
+}
+
+.project-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transition: left 1.5s ease;
+}
+
+.project-card:hover .project-highlight::before {
+  left: 100%;
+}
+
+.project-header {
+  padding: 1.2rem 1.2rem 0.8rem 1.2rem;
 }
 
 .project-title {
   color: #ffa65c;
-    margin-bottom: 0.75rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0;
+}
+
+.tag {
+  background: #e9ecef;
+  color: #6c757d;
+  padding: 0.2rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #dee2e6;
+}
+
+.project-description {
+  padding: 0 1.2rem;
+  color: #555;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  font-weight: normal;
+  flex-grow: 1;
+}
+
+.project-footer {
+  padding: 1rem 1.2rem 1.2rem 1.2rem;
+  margin-top: auto;
 }
 
 /* Reading time and metadata styling */
