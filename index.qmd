@@ -38,7 +38,26 @@ Replication of a data-driven article and analysis of the UK's healthcare systems
 :::
 
 ::: {.project-footer}
-[View Project](tom-calver-article-NHS.qmd){.btn .btn-primary}
+[View Project](projects/nhs-healthcare/tom-calver-article-NHS.qmd){.btn .btn-primary}
+:::
+:::
+
+::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
+::: {.project-highlight}
+:::
+::: {.project-header}
+### **Stock Market Analysis & Forecast** {.project-title}
+::: {.project-tags}
+[Stocks]{.tag} [Forecast]{.tag} [Python]{.tag}
+:::
+:::
+
+::: {.project-description}
+Comprehensive analysis of stock market trends and predictive modeling using Python. This project examines market patterns and develops forecasting models for investment decision-making.
+:::
+
+::: {.project-footer}
+[View Project](projects/finance-dashboard/dashboard_starter.qmd){.btn .btn-primary}
 :::
 :::
 
@@ -57,7 +76,7 @@ Replication of a data-driven article/analysis of the impact (if any) of Presiden
 :::
 
 ::: {.project-footer}
-[View Project](holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
+[View Project](projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
 :::
 
@@ -76,7 +95,7 @@ Here I explore some ways to draw cool looking objects, namely using inversions -
 :::
 
 ::: {.project-footer}
-[View Project](inversions_py/inversions_py.qmd){.btn .btn-primary}
+[View Project](projects/mathematics-inversions/inversions_py/inversions_py.qmd){.btn .btn-primary}
 :::
 :::
 
@@ -95,7 +114,7 @@ Here I explore some ways to draw cool looking objects, here snowflakes namely us
 :::
 
 ::: {.project-footer}
-[View Project](inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
+[View Project](projects/mathematics-inversions/inversions_py/koch_snowflake_fractals.qmd){.btn .btn-primary}
 :::
 :::
 
@@ -114,7 +133,7 @@ Replication of ACLED Visual (Armed Conflict Location and Event Data) where the d
 :::
 
 ::: {.project-footer}
-[View Project](journalism_and_political_violence.qmd){.btn .btn-primary}
+[View Project](projects/journalism-gaza/journalism_and_political_violence.qmd){.btn .btn-primary}
 :::
 :::
 
@@ -133,7 +152,7 @@ Replication of a PEW Research Center where the data looks at, among other things
 :::
 
 ::: {.project-footer}
-[View Project](sept11_legacy.qmd){.btn .btn-primary}
+[View Project](projects/sept11-legacy/sept11_legacy.qmd){.btn .btn-primary}
 :::
 :::
 

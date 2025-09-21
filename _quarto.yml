@@ -22,20 +22,22 @@ website:
             text: Home
           - href: about.qmd
             text: About
-          - href: tom-calver-article-NHS.qmd
+          - href: projects/nhs-healthcare/tom-calver-article-NHS.qmd
             text: "Is NHS Good Value? (Replication)"
-          - href: holder-chokshi-granados-article-TravelToUS.qmd
+          - href: projects/finance-dashboard/dashboard_starter.qmd 
+            text: "Stock Market Analysis & Forecast"       
+          - href: projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.qmd
             text: "Intl. Travel Into the US (Replication)"
-          - href: inversions_py/inversions_py.qmd
+          - href: projects/mathematics-inversions/inversions_py/inversions_py.qmd
             text: "Inversions and their interesting properties"
-          - href: inversions_py/koch_snowflake_fractals.qmd
+          - href: projects/mathematics-inversions/inversions_py/koch_snowflake_fractals.qmd
             text: "Koch and his Snowflakes, Fractals"
-          - href: journalism_and_political_violence.qmd
+          - href: projects/journalism-gaza/journalism_and_political_violence.qmd
             text: "The state of Journalism in Gaza"
           - href: https://huggingface.co/spaces/kardouskarim/gaza-damage-assessments
             text: 'Gaza Damage Assessment Shiny App (2025)'
             target: "_blank"
-          - href: sept11_legacy.qmd
+          - href: projects/sept11-legacy/sept11_legacy.qmd
             text: "The 9/11 Legacy (Replication)"
       - section: "Older Links"
         contents:

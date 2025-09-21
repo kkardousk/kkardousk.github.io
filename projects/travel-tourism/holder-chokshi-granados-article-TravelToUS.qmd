@@ -1,0 +1,1336 @@
+---
+title: |
+  <div class="custom-title-block" style="font-size: 1.2em;">
+    <span style="color:#000000;">Replication of below article's Data and Visualizations</span><br>
+    <span style="color:#333333; font-size:0.8em; white-space: nowrap">"Has International Travel <br> to the U.S. Really Collapsed?"</span><br>
+    <span style="color:#666666; font-size:0.7em;">
+      By <a href="https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html" 
+      target="_blank" style="color:#000000; text-decoration:underline;">Josh Holder, Niraj Chokshi and Samuel Granados</a>
+    </span><br>
+    <span style="font-size:0.8em; color:#333333; white-space: nowrap">
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Jump To'
+    number-depth: 2
+    fig-format: retina
+    fig-dpi: 300
+    code-link: true # requires both downlit and xml2 to be downloaded
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    # code-overflow: wrap
+    code-tools:
+      toggle: true  # adds "Show All / Hide All"; also allows for all code copy (at once as quarto doc)
+    css: styles.css
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: article
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 1
+    linespace: 1
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: auto
+editor: visual
+---
+
+## *International Travel Into the US Prelude* {.text-justify}
+
+**About the data/article in a nutshell:** This New York Times article, backed by numbers from government agencies for the US & Canada, attempts to show whether International Travel into the US has dipped as a result of President Trump's administration and policies relating to broad tariffs, tight border control, etc. <br> The **main takeaway** is that while travel originating from Asia into the United States has timidly increased, that from Europe has stalled, meanwhile that of Canada has sharply decreased, especially when it comes to car crossings into the US; relative to air travel.<br> Despite a drastic drop for US bound travel from Canada, overall, travel into the United States has remained fairly undisturbed.<br>
+
+On my choices here, I decided to replicate/plot all outputs (minus the second one) with at best identical data points and visuals, and/or matching as much as possible the ones that were PNG (images) embedded into the article (as opposed to scrips/tables/or otherwise HMTL wrappers containing actual data points). With a solid few weeks time span having passed between article publication date and the time of this writing, and given that the numbers reported at the time were fairly recent, numbers on March 2025 when the article gets published in April 2025, any preliminary numbers that might have got adjusted since then will not allow for 100% match in said numbers.<br>
+
+The one piece that I don't replicate in this project is the second one; "International arrivals at major U.S. airports"; it's embedded into the article as a PNG, and would require a lot of work to reverse engineer the foundational data series behind it after scanning said PNG; but more importantly, I try to go for replicating new/unconventional visualizations when this one specifically, at the end of the day, albeit powerful, boils down to a couple of line plots. <br> If you like to give the original article a read, you can find it [here](https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html).
+
+**Overall Strategy for building first plot:** One way to recreate the first visual; which shows in a report-card style the % change in flight bookings into the US comparing (Jan 1st through April 26, 2024) to (same period this year), and looking at 1) overall (International), 2) European, 3) Asian, and 4) Canadian inbound travel; is to generate 4 tiles with a subtle vertical tick/separator between each of those said 4 percentages. The time frame of visits for both years covers Summer; which allows for 'apples to apples' comparisons but also focuses on an upcoming period of the year - very near future, meaning that said bookings are more likely than not to be definitive for a vast majority of them.
+
+Below code chunk loads in libraries used and configures and activates/sets a couple of themes to be used throughout the code
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+# check if the required package 'emo' is installed;
+# if not, it might mean your renv environment is not fully restored.
+# running `renv::restore()` will install all necessary packages
+# to ensure consistent package versions for building this quarto document,
+# effectively 'containerizing' your project and protecting it from future package changes.
+if (!requireNamespace("emo", quietly = TRUE)) {
+  message("\nIt looks like your environment might not be restored.\nRun `renv::restore()` to install required packages.\n")
+}
+
+# load packages
+library(xml2)
+library(downlit)
+library(gdtools)
+library(tidyverse)
+library(quarto)
+library(chromote)
+library(here)
+library(tidycensus)
+library(janitor)
+library(purrr)
+library(ggtext)
+library(ggshadow)
+library(ggiraph)
+library(gfonts)
+library(showtext)
+library(ggborderline)
+library(grid)
+library(patchwork)
+library(shiny)
+library(rvest)
+library(htmltools)
+library(gt)
+library(rsvg)
+library(magick)
+library(stringr)
+library(ggimage)
+library(qs)
+library(emo)
+
+theme_set_custom <- function() {
+  # loading google fonts
+  sysfonts::font_add_google("Libre Franklin", "franklin")
+  
+  # using here::here() to get absolute path, and check if file exists first
+  font_path <- "../../renv/library/macos/R-4.5/aarch64-apple-darwin20/sysfonts/fonts/Libre_Franklin/static/LibreFranklin-Medium.ttf"
+  
+  if (file.exists(font_path)) {
+    sysfonts::font_add(family = "franklin-medium", regular = font_path)
+  } else {
+    # Fallback to Google Fonts version
+    sysfonts::font_add_google("Libre Franklin", "franklin-medium")
+  }
+  
+  showtext::showtext_auto()
+  
+  # applying ggplot2 theme
+  ggplot2::theme_set(
+    ggplot2::theme_minimal(base_family = "franklin") +
+      ggplot2::theme(
+        panel.background = ggplot2::element_rect(fill = "#f8f8f8", color = NA),
+        plot.background = ggplot2::element_rect(fill = "#f8f8f8", color = NA)
+      )
+  )
+}
+theme_set_custom()
+
+```
+
+## **Travel Score Cards**
+
+```{r, fig.width = 9, fig.height = 3}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: true
+
+theme_set_custom()
+
+p1_tribble <- tribble(
+  ~perc_change, ~label, ~region, ~fill, ~width_cm, ~ length_cm, 
+  '-1.5%', 'International arrivals\n at U.S. airports', 'International','#969696', 170 / 300 * 2.54, 80 / 300 * 2.54, # converting into actual cm, controlling for resolution set (300 or print quality)
+  '-2%', 'Summer flight\n bookings from Europe', 'Europe', '#969696', 130 / 300 * 2.54, 77 / 300 * 2.54,
+  '+4%', 'Summer flight\n bookings from Asia', 'Asia', '#2b9d6c', 130 / 300 * 2.54, 77/ 300 * 2.54,
+  '-21%', 'Summer flight\n bookings from Canada', 'Canada', '#d65f00', 164 / 300 * 2.54, 77 / 300 * 2.54
+)
+
+# here i go for an interactive process whereby each plot is created separately in a list of plots; one main reason is that the boxes/rectangles are of different sizes. 
+tile_plot_rounded <- function(perc_change, label_text, fill, width_cm, length_cm, scaler = 3) { # 3 was best here
+  library(grid) # for some reason, roundrectGrob() wasn't running without first loading grid here too (even if called earlier when loading all packages)
+  ggplot() +
+    ggtitle(label_text) + # set the label as thes plot sub-title
+    annotation_custom(
+      grob = roundrectGrob(
+        width = unit(width_cm * scaler, "cm"),    
+        height = unit(length_cm * scaler, "cm"), 
+        r = unit(0.1, "npc"),  # corner radius, the higher the values the more prononcoumced the roundedness
+        gp = gpar(fill = fill, col = NA)
+      ),
+      xmin = 0, xmax = 6, ymin = 0, ymax = 3
+    ) +
+    annotate(
+    "text", 
+      x = 3, y = 1.5,
+      hjust = 0.5, vjust = 0.5,
+      size = 10, # text size for perc_change
+      label = perc_change,
+      color = 'white', 
+      family = 'franklin',
+      fontface = 'bold'
+    ) +
+    xlim(0, 6) + ylim(0, 3) +
+    coord_fixed(ratio = 1) + 
+    theme_void() +
+    theme(
+      plot.margin = margin(4, 2, 2, 2), # small margins add around each plot for more subtitle room
+      plot.title = element_text(hjust = 0.5, size = 14, family = 'franklin-medium', margin = margin(b = 5)) # this is a midway font face between plain and bold
+    )
+}
+# loop through labels, fills, and dimensions, and including 'label' for the title
+tile_plots <- pmap(
+  list(
+    perc_change = p1_tribble$perc_change,
+    label_text = p1_tribble$label, 
+    fill = p1_tribble$fill,
+    width_cm = p1_tribble$width_cm,
+    length_cm = p1_tribble$length_cm
+  ),
+  tile_plot_rounded 
+)
+
+# assign one row so that all plots are side by side and not potentially stacked (vertically)
+p1 <- wrap_plots(
+  tile_plots, nrow = 1
+) 
+# adds after wrap a title
+p_final <- p1 + 
+  plot_annotation(
+    title = 'Travel compared with last year',
+    caption = 'Sources: U.S. Customs and Border Protection and the Airlines Reporting Corporation',
+    theme = theme(
+      plot.title = element_text(size = 20, family = 'franklin', face = "bold", hjust = 0.5, margin = margin(t = -10, b = 10)),
+      plot.caption = element_text(size = 9, family = 'franklin-medium', face = 'bold', colour = '#727272', hjust = 0.15)
+      )
+  ) 
+p_final
+
+```
+
+## **Confidence, but Warning Signs**
+
+For the below visualization, I opted to use gt() from `{gt}` package as it naturally comes to mind when trying to build 'great tables', yes pun intended. A few things to mention here to explain my thought process. <br>
+
+-   Clearly the tables go over the left/right margins of the article layout in the original. While our dimensions may allow for all 3 tables to fit side by side, for replication purposes, we 'push out' the margins or reduce them to make them all 3 tables fit side by side.<br>
+-   Second, one other thing that stands out is the clear customization of the third column, the percent change actual values, where a target bar plot of some sort is drawn. To replicate that, one way (potentially only way) is to use `text_transform()`, in tandem with a custom function using `fn` argument that will incorporate mostly css code. This allows for greater customization down to the minutiae.<br>
+-   Said last column is also centered and anchored using a small vertical tick (this is most visible in the middle plot where values alternate between negative (left) and positive (right) of tick. <br>
+-   From the tick each value is gauged on their max for that table, to get a sense of proportionality and make sure each bar's no. of pixels proportionally match to the greatest (absolute) value per table.
+
+Below I show the code that pulls int the data, embedded in an html table; so that once the node or in this case `css` element name is identified, the rest is fairly easy.
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: true
+
+## p3; table to embed in gt() 
+# read in the correspoinding table node
+url <- 'https://www.nytimes.com/interactive/2025/04/30/world/us-travel-decline.html'
+raw_table <- 
+  read_html(url) |> 
+  html_element(css = '.svelte-5z6yzk') |> 
+  html_table() |> 
+  select(country = 1, perc_change = 2) |> 
+  filter(perc_change != '')
+
+# processing the tibble
+individual_country_changes <- 
+  raw_table |> 
+  mutate(
+    perc_change_num = parse_number(perc_change),
+    left_right_ended = if_else(perc_change_num <= -.02, 'left', 'right'),
+    # below also going to be used to section off the table into 3 columns
+    change_direction = case_when(
+      between(perc_change_num, -2, 1) ~ 'stalled',
+      perc_change_num < 0 ~ 'decreased',
+      .default = 'increased') 
+  ) |> 
+  mutate(
+    groupings = case_when(
+      n() == 11 ~ 1,
+      n() ==  6 ~ 2,
+      .default = 3),
+    .by = change_direction
+    ) 
+
+```
+
+::: full-width-block
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+#|results: 'asis' 
+
+gt_table_custom_ <- function(hex, direction, title = NULL) {
+  
+  title_ <- title
+  hex_to_pass_in_fn <- hex
+  dir_to_pass_in_fn <- direction
+  
+  individual_country_changes |> 
+    filter(groupings == {{direction}}) |> 
+    select(1:3) |> 
+    gt() |> 
+    text_transform(
+      locations = cells_body(columns = perc_change_num),
+      fn = function(x) {
+        x_num <- as.numeric(x)
+        max_val <- max(abs(x_num), na.rm = TRUE)
+        if(max_val == 0) max_val <- 1 
+        widths_for_glue <- abs(x_num) / max_val * if (dir_to_pass_in_fn == 2) 8 else 100 # default scaling may look misleaading for 'no change' countries, so massively reduced here otherwise center table values get way inflated for what they are ([-2; 1])
+        
+        # loop thru values of perc_change column and isolate each element so that it can pass thru str_glue() without length(x) > 1 error from if/else statement
+        purrr::map_chr(seq_along(x_num), function(x) {
+          width <- widths_for_glue[x]
+          val <- x_num[x]
+          
+          if(dir_to_pass_in_fn == 2) {
+            direction_to_go <- if(val < 0) "right" else "left"
+            translate_offset <- if(val <= -2) "20%" else "0" # translate back to the origin for values >= -.02 (this gets applied only for no-change countries/middle table)
+            str_glue(
+              '<div style="display: flex; align-items: center; justify-content: center;">
+                 <div style="position: relative; width: 100%; height: 8px;">
+                   <div style="position: absolute; left: 50%; top: -4px; bottom: 4px;width: 2px; height: 16px; background: #ccc;"></div>
+                   <div style="position: absolute; {direction_to_go}: 50%; top: 0; 
+                               background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; 
+                               transform: translateX({translate_offset}); 
+                               border-radius: 3px;"></div>
+                 </div>
+               </div>'
+            )
+          }  # for below, we treat direction 1 (very negative change) and 2 (very positive) virtually the same, only former goes from center to left while latter from center to right
+          else {
+            direction_to_go <- if(direction == 1) "right" else "left"
+            str_glue(
+              '<div style="display: flex; align-items: center; justify-content: center;">
+                 <div style="position: relative; width: 50%; height: 8px;">
+                   <div style="position: absolute; left: 50%; top: -8px; width: 2px; height: 16px; background: #ccc; transform: translateX(-1px);"></div>
+                   <div style="position: absolute; {direction_to_go}: 50%; top: -4px; background: {hex_to_pass_in_fn}; height: 8px; width: {width}%; border-radius: 3px;"></div>  
+                 </div>
+               </div>'
+            )
+          }
+        })
+      }
+    ) |>
+    cols_align(
+      align = "center",
+      columns = perc_change
+    ) |> 
+    tab_style(
+      style = cell_text(color = hex),
+      locations = cells_body(columns = perc_change)
+    ) |> 
+    tab_style(
+      style = css("white-space" = "nowrap"),
+      locations = cells_body(columns = country)
+      ) |> 
+    cols_label(
+      country = md("**Country**"),
+      perc_change = "",
+perc_change_num = htmltools::HTML("<span style='white-space: nowrap;'><strong>Change vs. 2024</strong></span>")    
+) |> 
+    opt_table_font(
+      font = c("franklin-medium"),
+      weight = 500
+    ) |> 
+    tab_options(
+      heading.align = "left",
+      table.width = pct(100), 
+      heading.padding = px(10),
+      table.border.top.style = "hidden",             
+      column_labels.border.bottom.style = "solid",
+      column_labels.border.bottom.width = px(1),
+      column_labels.border.bottom.color = "white",
+    ) |> 
+    cols_width(
+    country ~ pct(50),
+    perc_change ~ pct(50),
+    perc_change_num ~ pct(50)
+    ) 
+}
+
+# generate and assign tables below 
+tbl1 <- gt_table_custom_(hex = '#d65f00', direction = 1) |> 
+  tab_header(
+    title = md("**Where U.S.-bound summer flight bookings have <span style='color: #d65f00;'> decreased </span>...**")
+  )
+tbl2 <- gt_table_custom_(hex = '#666666', direction = 2) |> 
+  tab_header(
+    title = md("<span style='color: #666666;'>**... stayed about the same ...**</span>")
+    # subtitle = md("<span style='color: #FFFFFF;'>adding artificial padding.**</span>")
+  ) 
+
+tbl3 <- gt_table_custom_(hex = '#2b9d6c', direction = 3) |> 
+    tab_header(
+    title = md("**... and <span style='color: #2b9d6c;'>increased</span>.**")
+    # subtitle = md("<span style='color: #FFFFFF;'>adding artificial.** padding</span>")
+  ) 
+
+tables_row_layout <- htmltools::tags$div(
+  style = "display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; width: 100%; padding: 0 10px;",
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl1), 
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl2),
+  htmltools::tags$div(style = "flex: 1; min-width: 0;", tbl3)
+)
+
+caption_text <- "<span style='color:#707070;'>Source: Airlines Reporting Corporation &bull; Data covers flight bookings made between Feb. 1 and April 13 for travel between Memorial Day and Labor Day, compared to the same period last year.</span>"
+caption_html_content <- HTML(caption_text) 
+left_padding_value <- "20px" # adding some padding so that caption moves slightl to the right to match original's caption poisiton 
+
+caption_styled_div <- htmltools::tags$div(
+  style = paste(
+    "width: 50%;",  # overall visual span
+    "max-width: 1000px;", # cap the max width of the caption
+    "margin: 5px auto 0 auto;", 
+    "text-align: left;",
+    "font-family: 'franklin-medium', 'Libre Franklin', Arial, sans-serif;", # prioritize 'franklin-medium'
+    "font-weight: 500;",                                                 
+    "font-size: 0.85em;", 
+    "line-height: 1.1;",
+    paste0("padding-left: ", left_padding_value, ";") 
+  ),
+  caption_html_content
+)
+
+# parent div will stack them vertically and can be used to constrain overall width
+overall_final_layout <- htmltools::tags$div(
+  style = "width: 100%; max-width: 1900px; margin: 0 auto; padding-bottom: 1px;",
+  tables_row_layout,
+  caption_styled_div
+)
+# final output
+overall_final_layout
+```
+:::
+
+<br> Unlike the line graphs from the original article, showing the Intl. Arrivals, where the graph was embedded as an image, here I was able to extract the actual data using the tag id pointing out to the table using [Selector Gadget](https://g.co/kgs/zQmpZoP) - a free reliable Chrome Extension that can be used to identify either the CSS selector or Xpath of site elements - *in tandem* with `{rvest}` to read in the embedded data from said selector into a tibble.<br> Note that within `{gtExtras}`, there already is a New York Times custom theme table using `gtExtras::gt_theme_nytimes()`, but did not closely match the style of the headers or the overall style of the tables; however it's good to know if you are working with your own data (not replicating another piece), and you're just ready to use a starter template or its boilerplate to at least test how it looks, if nothing else. <br> Overallf, I think this is a fairly solid replication of the tables from the original, a piece I've enjoyed creating as it involved fairly advanced customization - I'd say it was deceptively simple to re-create, but worth it. <br> **One thing to call out** however is that these tables are optimized for desktop viewing due to their 100% width formatting. Mobile users may experience cramped display issues; I will let you in on a secret - it turns out that I do not stand a chance against the Financial might of the NYT !<br>
+
+## **A Canadian boycott** {.text-justify}
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+theme_set_custom()
+
+car_xing_ca_us_borders_py <- read_csv('car_crossing_ca_us_borders.csv') |>
+  distinct()
+
+car_xing_ca_us_borders_cy <- read_csv('car_crossing_ca_us_borders2.csv') |> 
+  distinct()
+
+# i am testing with below filters 
+# 1st, 2nd filter should only focus on Canadian nationals and or residents (article focuses on Canadian sentiment; with use of strong word such as boycott, so assuming we should look into Canada returns only, not Intl. returns from US into Canada)
+# 3nd filter -> 'Vehicles' is a major group (when 'automobiles' and 'motorcycles' are subgroups) so filtering to 'Vehicles' so that not to inflate the counts, but the plot caption in the original article mentions 'by automobile' so we filter t
+# 4rd filter same idea as in 2nd but here -> 'Travellers' is a major group after a quick calculation for one day as an example where all values for that day sumn up to 'Travellers' value 
+
+filtered_to_canadian_cy <-
+  car_xing_ca_us_borders_cy |> 
+  filter(
+    `Traveller characteristics` == 'Canadian resident visitors returning to Canada' & `Vehicle licence plate` == 'Canadian-plated vehicles entering Canada' & GEO == 'Canada' &
+    `Vehicle type` == 'Automobiles' & `Traveller type` == 'Travellers'
+    ) |> 
+  # above combination of filters is giving me exactly 1 record per day (without any aggregations/roll ups) and it also gives me 116 days (Jan 1 through to Apr 26th, so we stick to those filters; likely correct)
+  select(
+    crossing_date = 1,
+    travel_characteristic = 6,
+    travel_type = 7, 
+    vehicle_ttl = ncol(car_xing_ca_us_borders_cy) - 4
+    ) 
+
+# same with py (or prior year)
+filtered_to_canadian_py <- 
+  car_xing_ca_us_borders_py |> 
+    filter(
+    `Traveller characteristics` == 'Canadian resident visitors returning to Canada' & `Vehicle licence plate` == 'Canadian-plated vehicles entering Canada' & GEO == 'Canada' &
+    `Vehicle type` == 'Automobiles' & `Traveller type` == 'Travellers'
+    ) |> 
+  select(
+    crossing_date = 1,
+    travel_characteristic = 6,
+    travel_type = 7, 
+    vehicle_ttl = ncol(car_xing_ca_us_borders_py) - 4
+    ) |> # 117 days for py since it was leap year, so we filter out feb 29th to have a day over day comparison
+  filter(crossing_date != '2024-02-29')
+  
+# combining both sets 
+car_xing_change <- 
+  filtered_to_canadian_cy |> 
+  select(1, last_col()) |> 
+  arrange(crossing_date) |> 
+  bind_cols(
+    filtered_to_canadian_py |> 
+      arrange(crossing_date) |> 
+      select(ly_ttls = last_col())
+  ) |> 
+  mutate(
+    change = vehicle_ttl - ly_ttls,
+    change_perc = (vehicle_ttl - ly_ttls) / ly_ttls
+    ) |> 
+    filter(crossing_date < '2025-04-10') |> 
+  # add a rolling 7 day avg
+  mutate(
+    rolling_avg_7day = zoo::rollmean(change_perc, k = 7, fill = NA, na.rm = TRUE)
+    ) |> 
+  filter(!is.na(rolling_avg_7day))
+
+# first two months get abbreviated followed by a dot, while last two don't get abbreviated
+month_custom_labeller <- 
+  map_chr(
+  .x = car_xing_change |> 
+    pull(crossing_date) |> 
+    lubridate::month() |> 
+    unique() |> 
+    sort(), 
+  .f = function(x) 
+    case_when(
+      x > 2 ~ month(x, label = TRUE, abbr = FALSE),
+      .default = paste0(month(x, label = TRUE, abbr = TRUE), '.')
+      )
+  )
+  
+caption_text <- "<span style='color:#707070;'>Sources: Statistics Canada/K. Kardous Note: Data shows journeys by Canadian residents returning to Canada from the<br> U.S. by automobile. A 7-day rolling average is shown.</span>"
+
+car_xing_change |> 
+    mutate(
+        y_pos = pmax(rolling_avg_7day, 0),  # positive values only; this caps at 0 for < 0 so to create essentially two seperate series (one pos. and one negative)
+        y_neg = pmin(rolling_avg_7day, 0)   # negative values only
+    ) |> 
+  ggplot(aes(x = crossing_date)) + 
+  geom_area(aes(y = y_pos), fill = '#2b9d6c', outline.type = 'lower') +
+  geom_area(aes(y = y_neg), fill = '#d65f00', outline.type = 'lower') +
+  geom_hline(yintercept = 0) + 
+  labs(
+    x = NULL, 
+    y = NULL,
+    caption = caption_text
+    ) + 
+  scale_y_continuous(
+    labels = scales::percent
+    ) + 
+  scale_x_date(
+    breaks = seq(as.Date('2025-01-01'), as.Date('2025-04-09'), 'm'),
+    labels = month_custom_labeller
+    ) +
+  # arrow and text for negative region
+  annotate(
+    geom = "segment",
+    x = as.Date('2025-04-04'),    
+    xend = as.Date('2025-04-04'), 
+    y = -0.02,                    
+    yend = -0.1,                 
+    colour = "black",             
+    arrow = arrow(length = unit(0.1, "cm"), angle = 50, type = 'open'),
+    linewidth = .35
+  ) + 
+  annotate(
+    geom = 'text',
+    x = as.Date('2025-04-02'),
+    y = -0.06,
+    label = 'Less travel\nthan last year', 
+    hjust = 1,
+  ) +
+  # arrow and text for positive region
+    annotate(
+    geom = "segment",
+    x = as.Date('2025-04-04'),    
+    xend = as.Date('2025-04-04'), 
+    y = 0.025,                    
+    yend = 0.1,                 
+    colour = "black",             
+    arrow = arrow(length = unit(0.1, "cm"), angle = 50, type = 'open'),
+    linewidth = .35
+  ) +
+    annotate(
+    geom = 'text',
+    x = as.Date('2025-04-02'),
+    y = 0.06,
+    label = 'More travel\nthan last year', 
+    hjust = 1
+    ) + 
+    ggtitle(
+    label = "<span style='color:black;'>Car crossings at the Canada-U.S. border",
+    subtitle = "<span style='color:#777777;'>Change compared with same day last year"
+  ) +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.title = element_markdown(hjust = .5),
+    plot.subtitle = element_markdown(hjust = .5),
+    plot.caption = element_markdown(
+      size = 8, hjust = 0, 
+      margin = margin(l = -20, r = 10, t = 10, b = -5)
+      ),
+    axis.text = element_text(family = 'franklin-medium', face = 'bold'),
+    axis.text.x = element_text(hjust = -.9)
+  )
+```
+
+If you look at the original, while the trends overall match unquestionably, meaning the intent/message conveyed here and in the original article is fundamentally the same, there are a few spikes that I did not manage to replicate; while I am confident in my methods; and that the numbers reflect a true 7 day moving average of car crossings; I can only assume some the data has been re-actualized, updated to go from preliminary to definitive in the time ellapsed between article publication and now (as of this writing).
+
+## **Big drops along the border**
+
+::: text-justify
+**About the data:** You will find the data pushed as 2 separate csv files, one for March 2024, the other for March 2025, and combined as part of the pre-processing steps in the below code. The data tracks the no. of automobiles that crossed the CA -\> US large/known border stations, focusing only on ports that with at least 1,000 crossings for 2025. To match the numbers in the article as closely as possible. I applied below filters:
+
+-   traveller_type is set to "Travellers" (aggregate roll up)
+-   traveller_characteristics is set to detect the "Canadian residents" pattern, regardless of direction (going to or returning from the US)
+-   Wherever specific levels radio filter selection were displayed, I kept them all blank/unchecked
+-   I had to filter out "British Columbia" returned as part of the `{tidygeocoder}` wrapper for the `arcgis` API to get approximate/realistic coordinates around which triangles (for YoY changed would be plotted); the reason is that it returned (in that case only) a whole province, when a much smaller geography is needed. <br>For more info on the pull itself, feel free to consult [Statistics Canada](https://www150.statcan.gc.ca/t1/tbl1/en/cv!recreate.action?pid=2410005301&selectedNodeIds=1D146,2D3,2D18,2D41,2D42,2D75,2D91&checkedLevels=2D1&refPeriods=20240301,20240301&dimensionLayouts=layout2,layout3,layout2,layout2&vectorDisplay=false). <br>
+
+**Data Validation:** Above link lands you on Niagara Falls - Queenston Bridge border crossing (figuratively); which I then used along with another data point to validate that I am getting fairly close results, if not identical to the NYT's original. <br> I like to start simple more often than not by looking at a very specific example and then 'work my way up' or generalize so to speak - once the foundation is solid; also known pompously as Hypothetico-inductive reasoning. <br> While the data matches very highly with the article's output for Niagara Falls (both the split into Niagara Falls - Queenston Bridge and Niagara Falls - Rainbow Bridge), both in raw numbers (-101,250 fewer passengers vs. the article's 'Nearly 100,000' for YoY change for March) and % change (-41% vs -42%); I did get a significantly different figure for Douglas area (West coast). \~90k fewer passengers vs. the article's reported \~55k fewer crossings. <br> Given the color scheme used in the article's legend, the bars for Douglas and Niagara share a similarly dark shade of orange; and given the fact that Niagara falls number match; I cannot explain/account for said differences. I will not dwell on investigating the matter further, as the idea is to either replicate or create an output that is inspired by a piece that caught my eye, while remaining highly faithful to the fundamental message conveyed by said piece.<br>
+
+**Data Pull/Wrangling steps:** The whole point of replicating or getting inspired by this article's data and output was this very visualization, so in a way this is the "pièce de résistance", so it warranted that a lot of work had to be potentially done to replicate below map; which it did ! <br> On a high level, 4 main steps were crucial to replicate or come close to replicating said plot:
+
+-   After pulling the raw data from Statistics Canada, the first step was to map out actual coordinates of border crossings. From the `{tidygeocoder}` package, I used the `geo` wrapper function to call the `arcgis` API, after appending a string that would help better zero in, literally, on the likely coordinates needed as such `str_c(' Canada US border')`. A bounded region had to be set, outside of which contending coordinates were not included. Said coordinates would be along the Canada-US border, which includes to a signficant extent the 49th parallel/latitude in the western/center regions as well as various other boundaries through the Great Lakes and eastern/north eastern regions.
+
+-   I like the vertical fading into the "Great White North"; poetically adequate here. This entailed first measuring the distance between the center coordinates, called centroids (using `st_centroid()` from the `{sf}` package) and the points that will diverge *continuously* from that center to top and/or center to bottom. This gradual distance was then linked to rgb codes that would incrementally go from light grey into pure white to finally create that gradient into pure white `rgb(255, 255, 255)`.
+
+-   Then triangles had to be displayed; I chose `st_polygon()` also from `{sf}` as it offers a high degree of customization, where defaults fail to do so. I needed very small bases and potentially very large heights (defaults shapes all offer variations of an equilateral triangle). The filling had to depict varying shades of the [that color]{style="background-color: #d65f00; color: white; font-weight: bold; padding: 4px 8px; border-radius: 4px;"} When the triangle heights would imply differences in % magnitude (downward triangles for negative - almost all of them, and upward ones for positive % change in no. of crossings). This did not utilize the 'fourth dimension' of the rgb color system, its alpha value; ranging from 0-1, as I needed a change in actual color, not color intensity.
+
+-   Finally, the data callouts for Douglas (West bound) and Niagara (East bound) were displayed using a textboxes using `geom_textbox()` that were linked to their respective spikes through a quarter circle, the former traced/going from right to left (counter-clockwise), the latter from left to right.
+:::
+
+```{r}
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(rnaturalearth)
+library(tidygeocoder)
+library(sf)
+library(rnaturalearthdata)
+theme_set_custom()
+# steps to recreate last plot/map displaying drops in border crossings between Canada and US
+# tested it on 1 example/1 port with Only ports with at least 1,000 crossings in March 2025
+# and the results match the visual to a percentage + or -
+## go to below lins for 2024
+# https://www150.statcan.gc.ca/t1/tbl1/en/cv!recreate.action?pid=2410005301&selectedNodeIds=1D146,2D3,2D18,2D41,2D42,2D75,2D91&checkedLevels=2D1&refPeriods=20240301,20240301&dimensionLayouts=layout2,layout3,layout2,layout2&vectorDisplay=false
+## go to below link for 2025
+# https://www150.statcan.gc.ca/t1/tbl1/en/cv!recreate.action?pid=2410005301&selectedNodeIds=1D146,2D41,2D42&checkedLevels=2D1,2D2&refPeriods=20250301,20250301&dimensionLayouts=layout3,layout3,layout3,layout2&vectorDisplay=false
+
+# filters applied to test on Niagara Falls - Queenston Bridge
+# " GEOGRAPHY
+# Select specific levels only -> keep blank
+# Niagara Area -> check only Niagara Falls - Queenston Bridge
+#  TRAVELLER CHARACTERISITCS
+# Select specific levels only -> keep blank
+# Canadian-resident visitors returning to Canada -> check only Canadian residents returning from the United States of America 
+#  TRAVELLER TYPE
+# Keep defaults (all checked; 'Travellers' is a the final rollup number/totl)
+#  REFERENCE PERIOD
+# March 2024
+# 
+# SAME EXACT STEPS FOR 2025
+
+# DOWNLOAD BOTH AS CSVs and select 'Download selected data (for database loading) "
+# (56331 - 103307) / 103307 # Niagara Falls - Rainbow Bridge
+# (90202 - 144738) / 144738 # Niagara Falls - Queenston Bridge
+# (0.3768 + 0.4547 ) / 2
+
+# let's try to recreate those figures now that we have loaded the full datasets
+map_data_ca_xings <- 
+  read.csv('2024_ca_us_ttl_xing_main_ports.csv') |> 
+  # mutate(year = 2025) |> 
+  clean_names() |> 
+  bind_rows(
+    read_csv('2025_ca_us_ttl_xing_main_ports.csv') |> 
+      # mutate(year = 2024) |> 
+      clean_names()
+  ) |> 
+  as_tibble()
+
+invisible(
+  {
+  map_data_ca_xings |> 
+    mutate(
+      ref_year = word(ref_date, 1, sep = '\\-')
+    ) |> 
+    filter(
+      traveller_type == 'Travellers' &
+        geo %in% c('Niagara Falls - Queenston Bridge', 'Niagara Falls - Rainbow Bridge') &
+        str_detect(traveller_characteristics, 'Canadian residents')
+    ) |> 
+    count(ref_year, geo, crossings = value) |> 
+    summarise(
+      perc_change_niagara_busiest_2ports = (
+        sum(if_else(ref_year == 2025, crossings, 0)) - sum(if_else(ref_year == 2024, crossings, 0))
+      ) / 
+        sum(if_else(ref_year == 2024, crossings, 0))
+    ) # 41% decline - article says 42%; close enough; some values, especially for 2025 may have been preliminary and may have been slightly adjusted 
+  }
+)
+
+# let's create a function now that loops thru all major ports name and generate a port name by % decline (2 column tibble)
+port_name_list <- map_data_ca_xings |> pull(geo) |> unique()
+perc_change_by_port <- function(x, port_name){
+  
+  map_data_ca_xings |> 
+    mutate(
+      ref_year = word(ref_date, 1, sep = '\\-')
+    ) |> 
+    filter(
+      traveller_type == 'Travellers' & 
+        str_detect(traveller_characteristics, 'Canadian residents') &
+        geo %in% port_name
+    ) |> 
+    count(ref_year, geo, crossings = value) |> 
+    filter(crossings >= 1000) |> 
+    summarise(
+      perc_change = (
+        sum(if_else(ref_year == 2025, crossings, 0)) - sum(if_else(ref_year == 2024, crossings, 0))
+      ) / 
+        sum(if_else(ref_year == 2024, crossings, 0)),
+      .by = geo
+    ) |> 
+    filter(geo != 'Canada' & !is.na(perc_change) & between(abs(perc_change), 0, 1)) |> 
+    mutate_if(is.numeric, function(x) round(x, 2))
+}
+port_names_with_perc_changes <- map_dfr(.x = port_name_list, ~ perc_change_by_port(port_name = .x)) 
+# Canada as a whole country, has seen 24% fewer passengers in March 2025 vs. March 2024
+# adding lat/longs to then be able to add as a alayer on the map
+port_coords <- tribble(
+  ~geo, ~latitude, ~longitude,
+  "Niagara Falls - Queenston Bridge",        43.1633, -79.0507,
+  "Niagara Falls - Rainbow Bridge",          43.0896, -79.0703,
+  "Niagara Falls - Whirlpool Bridge",        43.1051, -79.0645,
+  "St. Stephen - 3rd Bridge",                45.1856, -67.2792,
+  "St. Stephen - ferry and other locations", 45.2025, -67.2783,
+  "St-Armand/Philipsburg",                   45.0412, -73.0486,
+  "Stanstead: Route 55",                     45.0036, -72.0981,
+  "Stanstead: Route 143",                    45.0066, -72.1047,
+  "Lacolle: Route 221",                      45.0878, -73.3717,
+  "Lacolle: Route 223",                      45.0861, -73.3597,
+  "St-Bernard-de-Lacolle: Highway 15",       45.0051, -73.3723,
+  "Douglas",                                 49.0033, -122.7578,
+  "Pacific Highway",                         49.0038, -122.7382,
+  "Abbotsford/Huntingdon",                   49.0027, -122.2555
+)
+# not run
+# port_names_with_perc_changes |>
+#   left_join(
+#     port_coords
+#   ) |>
+#   summarise(
+#     na_prop = 1 - mean(is.na(latitude))
+#     ) # currently only a 10% match rate from online searches, so let's explore tidygeoder package to get more granular
+# and see if we can extend the matching to at least 60-70% then we can at least go from there
+
+yet_to_match <- port_names_with_perc_changes |> 
+  left_join(
+    port_coords
+  ) |> 
+  filter(is.na(latitude)) |> 
+  pull(geo) |> 
+  str_c(' Canada US border')
+
+# writing an if statement to check if geocode_arcgis is already created a temp qs file, so that we avoid redundant api calls (every time we run/render the doc)
+cache_file <- "geocoded.qs"
+geocode_arcgis <- if (file.exists(cache_file)) {
+  qread(cache_file)
+} else {
+  geocode_arcgis <- map_dfr(yet_to_match, ~ geo(address = .x, method = "arcgis"))
+  qsave(geocode_arcgis, cache_file)
+  geocode_arcgis
+}
+
+# this massively improved the matches- but let's see if those coordinates realisticall can be considered 
+# border regions between CA and US 
+
+# now onto actual building of plot elements that will go into final output
+
+#|echo: false
+#|message: false
+#|warning: false
+#|include: false
+#|eval: false
+library(ggplot2)
+library(tidyverse)
+library(janitor)
+library(rnaturalearth)
+library(tidygeocoder)
+library(sf)
+library(rnaturalearthdata)
+theme_set_custom()
+
+invisible(
+  {
+    validate_border_crossings <- function(geocoded_df, max_km_from_49th = 200) {
+      
+      # canada rough bounds
+      canada_lat <- c(41.5, 84.0)
+      canada_lon <- c(-141.0, -52.0)
+      
+      # simple distance to 49th parallel (main border)
+      distance_to_49th <- function(lat) abs(lat - 49.0) * 111  # ~111 km per degree latitude
+      
+      geocoded_df |> # geocode_arcgis was here, changed to geocoded_df
+        filter(!is.na(lat), !is.na(long)) |>
+        mutate(
+          within_canada = lat >= canada_lat[1] &
+            lat <= canada_lat[2] &
+            long >= canada_lon[1] &
+            long <= canada_lon[2],
+          
+          km_from_49th = distance_to_49th(lat),
+          
+          is_valid = within_canada & km_from_49th <= max_km_from_49th,
+          
+          status = case_when(
+            !within_canada ~ "outside canada bounds",
+            km_from_49th > max_km_from_49th ~ paste0("too far out (", round(km_from_49th), "km)"),
+            TRUE ~ "valid"
+          )
+        )
+    }
+    
+    validated_coords <- validate_border_crossings(geocode_arcgis, max_km_from_49th = 300)
+    # using above threshold to sorta account for US 'curvature' into Canada, especially on the North-East region,
+    # as the border is not jsut one latitude/'horizontal' line
+    valid_coords <-
+      validated_coords |>
+      filter(is_valid) |>
+      select(geo = address, lat, long) # this has moved from 10 matches up to 96 out of 140 ~ 70% match rate
+    # looking at no. of spikes in the article, 96 spikes should hopefully cover most if not all location of spikes in
+    # the article, which from visual insepction, looks like around 50 are draw/plotted on the Canada/US map/border
+    
+    # combine all tibbles into one with perc_changes
+    # spike_prep is defined but not explicitly used later, spike_prep_sf is the key one
+    spike_prep <- port_names_with_perc_changes |>
+      filter(geo != 'British Columbia') |> # filter out BC early
+      left_join(
+        port_coords,
+        join_by(geo == geo)
+      ) |>
+      left_join(
+        valid_coords |>
+          mutate(
+            geo = str_remove(geo, ' Canada US border')
+          ),
+        join_by(geo == geo)
+      ) |>
+      mutate(
+        latitude = coalesce(latitude, lat),
+        longitude = coalesce(longitude, long)
+      ) |>
+      filter(!is.na(latitude)) |>
+      select(geo:longitude)
+  }
+)
+## starting the work on the map
+
+# get map data
+invisible({
+  countries <-
+    ne_countries(scale = "medium", returnclass = "sf") %>%
+    filter(name %in% c("United States of America", "Canada"))
+})
+invisible(capture.output({
+  # get great lakes
+  lakes <- ne_download(
+    scale = "medium",
+    type = "lakes",
+    category = "physical",
+    returnclass = "sf"
+  ) %>%
+    filter(
+      name %in% c(
+        "Lake Ontario", "Lake Erie", "Lake Huron",
+        "Lake Michigan", "Lake Superior")
+    ) })
+)
+
+# crop to focus area - remove alaska
+map_bounds <- list(
+  xmin = -125, xmax = -65,
+  ymin = 41, ymax = 52
+)
+# filter out Alaska from US (longitude > -140 is roughly Alaska)
+continental_us_canada <-
+  countries |>
+  mutate(
+    # create geometries without Alaska
+    geometry = case_when(
+      name == "United States of America" ~ st_crop(
+        geometry, xmin = -130, ymin = 20, xmax = -60, ymax = 50
+      ),
+      TRUE ~ geometry
+    )
+  ) |>
+  # remove any empty geometries after cropping
+  filter(!st_is_empty(geometry))
+
+# combine all tibbles into one with perc_changes
+spike_prep_sf <-
+  port_names_with_perc_changes |>
+  filter(geo != 'British Columbia') |> # filter out "British Columbia" here
+  left_join(
+    port_coords,
+    join_by(geo == geo)
+  ) |>
+  left_join(
+    valid_coords |>
+      mutate(
+        geo = str_remove(geo, ' Canada US border')
+      ),
+    join_by(geo == geo)
+  ) |>
+  mutate(
+    latitude = coalesce(latitude, lat),
+    longitude = coalesce(longitude, long)
+  ) |>
+  filter(!is.na(latitude)) |>
+  select(geo:longitude) |> # Make sure perc_change is carried through if it exists in port_names_with_perc_changes
+  st_as_sf(
+    coords = c("longitude", "latitude"),
+    crs = 4326, agr = "constant",
+    remove = FALSE
+  )
+
+# generating regions for easier filtering of spikes
+crossing_data <-
+  spike_prep_sf |> # This now uses the BC-filtered data
+  filter(
+    abs(perc_change) <= .50 & longitude >= -122.76 & #exclude far west/Vancouver area and start at Douglas
+      !geo %in% c('Kelowna', 'Calgary Area', 'Calgary', 'Regina', '')
+  ) |>
+  mutate(
+    perc_change = if_else(between(perc_change, -.39, -.23), perc_change / 10, perc_change)
+  ) |>
+  # filter to match article criteria - only significant declines
+  filter(
+    abs(perc_change) <= .45
+  ) %>%
+  # add regional grouping for better selection
+  mutate(
+    region = case_when(
+      longitude < -115 ~ "west_coast",
+      longitude >= -115 & longitude < -100 ~ "prairie",
+      longitude >= -100 & longitude < -85 ~ "central",
+      longitude >= -85 ~ "east",
+      TRUE ~ "other"
+    ),
+    normalized_heights = if (n() > 0 && any(!is.na(perc_change))) abs(perc_change) / max(abs(perc_change), na.rm = TRUE) else 0 # handle empty or all NA cases
+  )
+
+
+# select representative spikes by region to match article count (~40-50 total)
+selected_spikes <-
+  crossing_data |>
+  filter(latitude <= 49.5 & longitude < -65) |>
+  group_by(region) |>
+  arrange(perc_change) |> # most negative first
+  mutate(
+    no = as.integer(case_when(
+      region == "west_coast" ~ 12,
+      region == "prairie" ~ 8,
+      region == "central" ~ 6,
+      region == "east" ~ 15,
+      TRUE ~ 3)
+    )
+  ) |>
+  ungroup() |>
+  slice(.by = region, 1:no[1]) |> 
+  select(-no) |>
+  bind_rows(
+    # pull select positive changes
+    crossing_data |>
+      filter(perc_change > 0) |>
+      filter(longitude < -65)
+  )
+
+
+# transform points to projected coordinate system; original is more elliptic in shape rather than a 'straight' plane
+selected_spikes_projected <-
+  selected_spikes |> # This is now BC-filtered
+  # filter(geo != 'British Columbia') |> # already filtered
+  st_transform(crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
+
+# extract projected coordinates
+selected_spikes_coords <-
+  selected_spikes_projected |>
+  mutate(
+    proj_x = st_coordinates(geometry)[, 1],
+    proj_y = st_coordinates(geometry)[, 2]
+  ) |>
+  st_drop_geometry()
+
+# create triangles using projected coordinates
+create_projected_triangles <- function(data, height_scalar = 1) {
+  
+  # height_mult <<- height_scalar # Avoid using global assignment if possible
+  local_height_mult <- height_scalar
+  # function to create a triangle for each point using projected coordinates
+  create_triangle <- function(x, y, perc_change, normalized_heights, current_height_mult) {
+    
+    # base width and height in projected units (meters)
+    base_width <- 8e4  # 80km base width
+    height <- abs(normalized_heights) * current_height_mult * 4e5  # scale height based on normalized perc change
+    
+    # triangle vertices - purely vertical orientation
+    if (perc_change < 0) {
+      # downward pointing triangle for vast majority of cases
+      vertices <- data.frame(
+        x = c(x - base_width, x + base_width, x, x - base_width),
+        y = c(y, y, y - height, y)
+      )
+    } else {
+      # upward pointing triangle; only for a couple of instances
+      vertices <- data.frame(
+        x = c(x - base_width, x + base_width, x, x - base_width),
+        y = c(y, y, y + height, y)
+      )
+    }
+    # create polygon geometry
+    st_polygon(list(as.matrix(vertices)))
+  }
+  
+  # create triangles for each point
+  triangles <-
+    data |>
+    rowwise() |>
+    mutate(
+      triangle_geom = list(create_triangle(proj_x, proj_y, perc_change, normalized_heights, local_height_mult))
+    ) |>
+    ungroup()
+  
+  # convert to sf object with triangle geometries
+  triangle_sf <-
+    triangles |>
+    mutate(
+      geometry = st_sfc(triangle_geom, crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
+    ) |>
+    st_sf()
+  
+  return(triangle_sf)
+}
+
+# create triangle geometries using projected coordinates
+# ensure selected_spikes_coords is not empty before calling
+triangle_sf <- create_projected_triangles(selected_spikes_coords, height_scalar = 2.5)
+
+# add no. of crossing as well to base color fill on, low raw no. of crossings/change get ligher orange color, vs. darker for higher ones
+# so spike height becomes a factor % change while color that of the raw no. change
+
+# create the crossings data with error checking
+crossings_data_for_join <-
+  map_data_ca_xings |>
+  mutate(
+    ref_year = word(ref_date, 1, sep = '\\-')
+  ) |>
+  filter(
+    traveller_type == 'Travellers' &
+      str_detect(traveller_characteristics, 'Canadian residents')
+  ) |>
+  reframe(
+    crossings_raw_change = sum(if_else(ref_year == "2025", value, 0)) - # ensure year is character for comparison if ref_year is character
+      sum(if_else(ref_year == "2024", value, 0)),
+    .by = geo
+  ) |>
+  filter(!is.na(crossings_raw_change))
+
+# perform the join with error checking
+triangle_sf <- triangle_sf |>
+  left_join(crossings_data_for_join, by = "geo") |>
+  # handle any missing values
+  mutate(
+    crossings_raw_change = coalesce(crossings_raw_change, 0)
+  ) |>
+  # normalize raw changes for alpha scaling
+  mutate(
+    abs_raw_change = abs(crossings_raw_change),
+    # normalize to 0-1 range for alpha values, with safeguard for division by zero
+    max_abs_change = if (n() > 0 && any(!is.na(abs_raw_change))) max(abs_raw_change, na.rm = TRUE) else 0,
+    normalized_raw_change = if_else(
+      max_abs_change > 0,
+      abs_raw_change / max_abs_change,
+      0),
+    # create alpha values: min 0.2 for very small changes, max 0.8 for largest changes
+    alpha_value = 0.2 + (normalized_raw_change * 0.8)
+  ) |>
+  select(-max_abs_change)
+
+
+# transform countries first
+countries_proj <- countries |>
+  st_transform(crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
+
+lakes_proj <- lakes |>
+  st_transform(crs = "+proj=aeqd +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0")
+
+# get the bounding box and expand it significantly for better fade effect
+bbox <- st_bbox(countries_proj)
+x_range <- bbox[3] - bbox[1]
+y_range <- bbox[4] - bbox[2]
+
+# expand bbox by 50% to create more fade area
+bbox_expanded <- c(
+  xmin = bbox[1] - 0.5 * x_range,
+  ymin = bbox[2] - 0.5 * y_range,
+  xmax = bbox[3] + 0.5 * x_range,
+  ymax = bbox[4] + 0.5 * y_range
+)
+
+# create a much finer grid for smoother gradient
+grid_resolution <- 400  # increased for even smoother gradient
+x_seq <- seq(bbox_expanded[1], bbox_expanded[3], length.out = grid_resolution)
+y_seq <- seq(bbox_expanded[2], bbox_expanded[4], length.out = grid_resolution)
+
+# create vertical gradient for within-country areas
+gradient_data <- expand.grid(x = x_seq, y = y_seq) |>
+  mutate(
+    # convert to sf points to check intersection with countries
+    geometry = st_sfc(map2(x, y, ~st_point(c(.x, .y))), crs = st_crs(countries_proj))
+  ) |>
+  st_sf() |>
+  # check which points are within countries
+  mutate(
+    within_countries = lengths(st_intersects(geometry, countries_proj)) > 0
+  ) |>
+  st_drop_geometry() |>
+  mutate(
+    # calculate vertical position for gradient (center = 0)
+    y_center = 0,  # center of our projection
+    y_range_total = bbox_expanded[4] - bbox_expanded[2],
+    # normalize y position from center (-1 to 1, where 0 is center)
+    y_normalized = (y - y_center) / (y_range_total * 0.5),
+    # create vertical gradient: darker at center, lighter toward top/bottom
+    # distance from horizontal center line
+    dist_from_horizontal_center = abs(y_normalized),
+    # apply smooth transition function
+    vertical_fade = pmin(dist_from_horizontal_center^0.6, 1), # the higher the exponent, the 'faster' the fade; away from center, capts at 1
+    # create color values: #e0e0e0 at center fading to white at edges
+    # convert #e0e0e0 (224, 224, 224) to white (255, 255, 255)
+    red_value = 224 + (255 - 224) * vertical_fade,
+    green_value = 224 + (255 - 224) * vertical_fade,
+    blue_value = 224 + (255 - 224) * vertical_fade,
+    # create hex color
+    color_hex = rgb(red_value, green_value, blue_value, maxColorValue = 255),
+    # only apply gradient within countries, white elsewhere
+    final_color = if_else(within_countries, color_hex, "white"),
+    # alpha - fully opaque within countries, transparent outside
+    alpha_value = if_else(within_countries, 1.0, 0.0) # this is for gradient_data alpha
+  )
+
+# create a mask for areas within the bounding box
+bbox_polygon <- st_polygon(list(rbind(
+  c(bbox_expanded[1], bbox_expanded[2]),
+  c(bbox_expanded[3], bbox_expanded[2]),
+  c(bbox_expanded[3], bbox_expanded[4]),
+  c(bbox_expanded[1], bbox_expanded[4]),
+  c(bbox_expanded[1], bbox_expanded[2])
+))) |>
+  st_sfc(crs = st_crs(countries_proj))
+
+# create the main plot with vertical gradient within countries
+main_plot <- ggplot() +
+  # add white background
+  geom_raster(data = gradient_data,
+              aes(x = x, y = y),
+              fill = "white") +
+  # add the vertical gradient within countries only
+  geom_raster(data = gradient_data |> filter(within_countries),
+              aes(x = x, y = y, fill = final_color, alpha = alpha_value)) + # alpha here is for gradient
+  # use identity scales for the custom colors
+  scale_fill_identity() +
+  scale_alpha_identity() + # this will apply to gradient's alpha, and later legend rect's alpha
+  # add country boundaries
+  geom_sf(data = countries_proj,
+          fill = NA, color = "white", linewidth = 0.3) +
+  # Great Lakes
+  geom_sf(data = lakes_proj,
+          fill = "white", color = "white", linewidth = 0.1) +
+  # triangle spikes with alpha based on raw change magnitude
+  geom_sf(
+    data = triangle_sf, 
+    aes(fill = if_else(perc_change < 0, I('#d65f00'), I('#2b9d6c'))), 
+    size = 0.8,
+    alpha = pmin(triangle_sf$alpha_value, .7)
+  ) +
+  scale_fill_identity() + 
+  # triangle color scale
+  # scale_color_manual(
+  #   values = c("negative" = "#d65f00", "positive" = "#2b9d6c"),
+  #   guide = "none"
+  # ) +
+  # coordinate system
+  coord_sf(
+    xlim = c(-4e6, 4e6),
+    ylim = c(-1.75e6, 2.1e6),
+    expand = FALSE,
+    clip = 'off'
+  ) +
+  # clean theme
+  theme_void() +
+  theme(
+    plot.title = element_markdown(hjust = 0.5, size = 14, family = 'franklin', margin = margin(t = -10, b = 10)),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    legend.position = 'none' # ggplot's auto legend is off, we are making a manual one
+  )
+
+# function to create the 1/4 circles for Douglas and Niagara Falls callouts
+draw_quarter_circles <- function(start, end, radius = 400e3, x_offset = 0, y_offset = 0){
+  
+  # get angles and coords for a quarter of a acircle
+  angles <- seq(start, end, length.out = 1000) # reduced length.out for efficiency
+  # radius <- radius # already an argument
+  x_coords <- radius * cos(angles)
+  y_coords <- radius * sin(angles)
+  
+  # test with different offesets to match article's callout positioning
+  x_coords_with_offset <- x_coords + x_offset
+  y_coords_with_offset <- y_coords + y_offset
+  
+  # assign values to a tibble
+  quarter_circle_data <- tibble(x = x_coords_with_offset, y = y_coords_with_offset)
+  
+  # draw said 1/4 circles
+  path <- geom_path(
+    data = quarter_circle_data, aes(x = x, y = y) # simplified aes
+  )
+  
+  return(path)
+}
+
+theme_set_custom() 
+
+# draw 1/4 circles
+main_plot_with_qrt_circles <-
+  main_plot +
+  geom_text(
+    aes(x = -150e3,
+        y = -550e3,  label = 'UNITED STATES'),
+    family = 'franklin',
+    size = 6,
+    color = '#a3a3a3'
+  ) +
+  geom_text(
+    aes(x = -200e3,
+        y = 950e3,  label = 'CANADA'),
+    family = 'franklin',
+    size = 6,
+    color = '#a3a3a3'
+  ) +
+  # douglas 1/4 circle
+  draw_quarter_circles(start = pi, end = 3 * pi/2, x_offset = -150e3 * 11.2, y_offset = -550e3 + 100e4) +
+  # niagara 1/4 circle
+  draw_quarter_circles(start = 0, end = pi/2, x_offset = -150e3 * -11.5, y_offset = -550e3 - 50e4)
+
+call_outs_tibble <-
+  tibble(
+    label = c(
+      "<b>~90,000 fewer<br> people crossed at<br> Douglas</b> in March<br>2025, a 43<br>percent decline.",
+      "<b>Nearly 102,000 fewer <br> people crossed at <br>Niagara Falls,</b> a 41 <br> percent decline."
+    ),
+    x = c(-150e3 * 15, -150e3 * -14),
+    y = c(-550e3 + 100e4, -550e3 - 75e4),
+    hjust = c(.5, 0.05),
+    vjust = c(0, 0.6)
+  )
+
+# add legend elements to the plot
+legend_box <- pmin(
+  triangle_sf$alpha_value, .7
+  ) |> 
+  sort() |>
+  enframe() |> 
+  mutate(
+    normalized_values_01 = (value - min(value)) / (max(value) - min(value)),
+    color_bins = case_when(
+      normalized_values_01 <= .25 ~ '#e3cabd-10', 
+      normalized_values_01 <= .50 ~ '#e0b69e-20',
+      normalized_values_01 <= .75 ~ '#db956a-30',
+      normalized_values_01 <=  1  ~ '#d76c21-40%',
+      TRUE ~ '#c7d8d0'
+      ),
+    labels = paste0('-', word(color_bins, -1, sep = '-')),
+    color_bins = word(color_bins, 1, sep = '-')
+  ) |> 
+  select(color_bins, labels) |> 
+  distinct() |> 
+  ggplot(aes(x = labels, y = .5, fill = I(color_bins))) +
+  geom_tile() +
+  labs(
+    x = NULL, 
+    y = 'Percentage change vs. last year'
+    ) + 
+  # ggtitle(label = '<b>Big drops along the border<b>') +
+  theme(
+    axis.title.y  = element_text(angle = 0, size = 7, vjust = .5, face = 'bold'),
+    axis.text.x = element_text(size = 7, face = 'bold'),# vjust = .5, hjust = -1, 
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = 'none',
+    plot.margin = margin(t = 8)
+  )
+# plot callouts
+final_plot <-
+  main_plot_with_qrt_circles +
+  geom_textbox(
+    data = call_outs_tibble,
+    aes(x = x, y = y, label = label, hjust = hjust, vjust = vjust),
+    family = 'Libre Franklin',
+    width = unit(0.2, "npc"),
+    fill = NA,
+    size = c(3, 2.5),
+    color = 'black',
+    box.colour = NA,
+    orientation = "upright"
+  ) 
+# plot legend box along with its (legend) name
+final_plot_with_legend <- final_plot +
+  annotation_custom(
+    grob = ggplotGrob(legend_box),
+    xmin = -2e6, xmax = 3e6,
+    ymin = 2.5e6, ymax = 2.8e6  
+  )
+
+# plot final with title using geom_text() to avoid running into margin/rendering erros + adding caption to plot
+final_plot_with_legend + 
+  geom_text(
+    aes(x = 0, y = 2.85e6, label = "Big drops along the border"),
+    family = 'franklin',
+    size = 3.5,
+    fontface = 'bold',
+    color = 'black',
+    hjust = 0.3,
+    vjust = 0.5
+  ) + 
+  labs(
+  caption = "<span style='color:#707070; text-align: justify; width: 100%; display: block; padding-top: 25px;'>Source: Statistics Canada Note: The height of
+  each spike reflects the change in passenger numbers this<br>March versus the same month last year. Only ports with at least 1,000 crossings in March 2025
+  are shown.</span>"
+  ) + 
+  theme(
+    plot.caption = element_markdown(margin(t = 50), size = 5, hjust = .5)
+    ) 
+```
+
+Overall, I found this article powerful, clear, and its authors original in their use of data, so truly an enjoyable experience to have worked on 'deconstructing' the article backend to match the outputs as closely as I could.. thank you for taking the time to read this and more to come !
