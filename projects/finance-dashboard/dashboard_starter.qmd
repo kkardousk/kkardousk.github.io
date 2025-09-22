@@ -688,3 +688,7 @@ While above summaries give us a better picture on the stock dynamics; one thing 
 
 
 ```
+
+
+
+
