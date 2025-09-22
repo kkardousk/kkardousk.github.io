@@ -1,7 +1,7 @@
 ---
 title: |
   <div class="custom-title-block" style="font-size: 1.2em;">
-    <span style="color:#000000;">Stock Market Analysis Report (Python)</span><br>
+    <span style="color:#000000;">Stock Market Analysis & Forecast</span><br>
     <span style="color:#666666; font-size:0.7em;">
     </span>
     <span style="font-size:0.8em; color:#333333; white-space: nowrap">
@@ -50,11 +50,11 @@ execute:
   info: false
   cache: false
   freeze: auto
+  daemon: false
 editor: visual
-jupyter: python3
 ---
 
-::: {.text-justify}
+::: text-justify
 After having setup the `.venv` using `uv init`, here we start by importing needed packages and setting up what we need.
 :::
 
@@ -86,7 +86,7 @@ from IPython.display import display, HTML
 from itertools import starmap
 ```
 
-::: {.text-justify}
+::: text-justify
 Here I set up custom HTML-styled `{logging}` for enhanced visual output in Quarto. While logging is typically more valuable for automated scheduled jobs to track errors and events with timestamps, here it provides highly customizable, visually appealing messages compared to 'basic' `print()` statements, taking advantage of Quarto's ability to render custom css/html
 :::
 
@@ -142,11 +142,11 @@ class StyledJupyterHandler(logging.StreamHandler):
         
         display(HTML(html_output))
 
-# set up logger only once
+# set up logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# clear existing handlers and add only one
+# clear existing handlers and add only one; otherwise messages can repeat
 if logger.handlers:
     logger.handlers.clear()
 logger.addHandler(StyledJupyterHandler())
@@ -175,7 +175,7 @@ def download_stocks_data(ticker):
 results = list(map(download_stocks_data, tickers)) 
 ```
 
-::: {.text-justify}
+::: text-justify
 Using {great-tables} after running `uv add great-tables` in terminal and `import great_tables as gt` in script. This is a great way to display tables beautifully. But let's convert the results (pandas into polars first)
 :::
 
@@ -327,8 +327,8 @@ styled_table
 
 ## Plotting Trends of daily Close Price
 
-::: {.text-justify}
-Below I start with designing the building blocks for the visualizations. By building blocks, here I concretely mean 'embedding' a `ggplot2` like theme as I am a fan of the overall layout (I can't be the only one). `create_ggplot_theme()` function below is a nifty way to set a modular/reusable set of values as a dictionary to then be used as arguments for the theme in both `plot_stock_facets()` and `plot_single_comparison()` 
+::: text-justify
+Below I start with designing the building blocks for the visualizations. By building blocks, here I concretely mean 'embedding' a `ggplot2` like theme as I am a fan of the overall layout (I can't be the only one). `create_ggplot_theme()` function below is a nifty way to set a modular/reusable set of values as a dictionary to then be used as arguments for the theme in both `plot_stock_facets()` and `plot_single_comparison()`
 :::
 
 ```{python}
@@ -453,10 +453,8 @@ comparison_chart = plot_single_comparison(
 comparison_chart.show()
 ```
 
-::: {.text-justify}
-As we can see from above, Netflix stock 'overshadows' any subtle variations in the stock prices for the remaining companies/stocks, simply because of the difference in scales/range of values. <br>
-One way to remedy that is by clicking on NFLX tile in the legend, this will deselect the Netflix Series - pun intended - from the graph; a native functionality in `{Plotly}`
-Another way is to be faceting on companies, essentially a '`GROUP BY TICKER`' but for plots. This is what is shown next.
+::: text-justify
+As we can see from above, Netflix stock 'overshadows' any subtle variations in the stock prices for the remaining companies/stocks, simply because of the difference in scales/range of values. <br> One way to remedy that is by clicking on NFLX tile in the legend, this will deselect the Netflix Series - pun intended - from the graph; a native functionality in `{Plotly}` Another way is to be faceting on companies, essentially a '`GROUP BY TICKER`' but for plots. This is what is shown next.
 :::
 
 ```{python}
@@ -554,9 +552,8 @@ faceted_chart = plot_stock_facets(
 faceted_chart.show()
 ```
 
-::: {.text-justify}
-Overall, and despite the dips and volatility, and while a few grew more than others, all 6 stocks have risen in value over the trailing 6 month period.
-Speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall. 
+::: text-justify
+Overall, and despite the dips and volatility, and while a few grew more than others, all 6 stocks have risen in value over the trailing 6 month period. Speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
 :::
 
 ```{python}
@@ -675,20 +672,19 @@ styled_stock_summary = (
         "Volatility Rank": "**Volatility Rank"
     })
 )
-      
+
 styled_stock_summary
 
 ```
 
-::: {.text-justify}
+::: text-justify
 While above summaries give us a better picture on the stock dynamics; one thing that remains unclear is whether or not close price 'consistently' dips or increases on a given day of the week, month, etc. This is what here we look at seasonality and tease out (if any) said seasonality.
 :::
 
-## Teasing out seasonality 
+## Teasing out seasonality
 
 ```{python}
 # build calendar plot
+
+
 ```
-
-
-
