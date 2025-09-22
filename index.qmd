@@ -42,24 +42,24 @@ Replication of a data-driven article and analysis of the UK's healthcare systems
 :::
 :::
 
-::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
-::: {.project-highlight}
-:::
-::: {.project-header}
-### **Stock Market Analysis & Forecast** {.project-title}
-::: {.project-tags}
-[Stocks]{.tag} [Forecast]{.tag} [Python]{.tag}
-:::
-:::
+<!-- ::: {.project-card style="background-color: #f9f9f9; color: #263646;"} -->
+<!-- ::: {.project-highlight} -->
+<!-- ::: -->
+<!-- ::: {.project-header} -->
+<!-- ### **Stock Market Analysis & Forecast** {.project-title} -->
+<!-- ::: {.project-tags} -->
+<!-- [Stocks]{.tag} [Forecast]{.tag} [Python]{.tag} -->
+<!-- ::: -->
+<!-- ::: -->
 
-::: {.project-description}
-Comprehensive analysis of stock market trends and predictive modeling using Python. This project examines market patterns and develops forecasting models for investment decision-making.
-:::
+<!-- ::: {.project-description} -->
+<!-- Comprehensive analysis of stock market trends and predictive modeling using Python. This project examines market patterns and develops forecasting models for investment decision-making. -->
+<!-- ::: -->
 
-::: {.project-footer}
-[View Project](projects/finance-dashboard/dashboard_starter.qmd){.btn .btn-primary}
-:::
-:::
+<!-- ::: {.project-footer} -->
+<!-- [View Project](projects/finance-dashboard/dashboard_starter.qmd){.btn .btn-primary} -->
+<!-- ::: -->
+<!-- ::: -->
 
 ::: {.project-card style="background-color: #f9f9f9; color: #263646;"}
 ::: {.project-highlight}

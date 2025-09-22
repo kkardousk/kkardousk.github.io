@@ -25,8 +25,8 @@ website:
           - href: projects/nhs-healthcare/tom-calver-article-NHS.qmd
             text: "Is NHS Good Value?"
           - href: projects/finance-dashboard/dashboard_starter.qmd 
-            text: "Stock Market Analysis & Forecast"       
-          - href: projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.qmd
+          #   text: "Stock Market Analysis & Forecast"       
+          # - href: projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.qmd
             text: "Intl. Travel Into the US"
           - href: projects/mathematics-inversions/inversions_py/inversions_py.qmd
             text: "Inversions and their interesting properties"
