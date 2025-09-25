@@ -9,7 +9,11 @@ dependencies = [
     "great-tables>=0.18.0",
     "ipykernel",
     "jupyter",
-    "plotly>=6.3.0",
+    "lesley>=0.3.0",
+    "plotly>=5.18.0",
     "polars>=1.33.1",
+    "pyarrow>=21.0.0",
+    "pylsp-mypy>=0.7.0",
+    "python-lsp-server>=1.13.1",
     "yfinance>=0.2.66",
 ]

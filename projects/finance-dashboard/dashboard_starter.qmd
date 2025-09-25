@@ -33,7 +33,7 @@ format:
       toggle: true
     highlight-style: github-dark
     df-print: paged
-    page-layout: article
+    page-layout: full
     embed-resources: true
     smooth-scroll: true
     link-external-icon: false
@@ -74,9 +74,12 @@ from great_tables import GT, md, style, loc
 
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.subplots as sp
 from plotly.subplots import make_subplots
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import numpy as np
+import lesley
+import calendar
 
 import sys
 import logging
@@ -160,7 +163,7 @@ logger.addHandler(StyledJupyterHandler())
 
 # define the watchlist
 tickers = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NFLX', 'NVDA']
-period = "6mo"  # 6 months of data
+period = "3mo"  # 3 months of data
 
 # looping thru dates
 def download_stocks_data(ticker):
@@ -260,7 +263,7 @@ def gt_nyt_custom(x, title='', subtitle='', first_10_rows_only=True):
             locations=loc.body()
         )
         .tab_style(
-            style=style.text(color='#CC6600', weight='bold'),
+            style=style.text(color='#CC6600'),
             locations=loc.column_labels()
         )
         .tab_options(
@@ -311,9 +314,9 @@ def gt_nyt_custom(x, title='', subtitle='', first_10_rows_only=True):
 
 styled_table = (
     gt_nyt_custom(
-        pl_results, 
+        pl_results,
         title = "Stock Market Data", 
-        subtitle = "6 Month Pull (Only 10 records shown)",
+        subtitle = "3 Month Pull (Only 10 records shown)",
         first_10_rows_only=True
     )
     .tab_style(
@@ -340,7 +343,7 @@ def create_ggplot_theme():
     'font': {'family': 'Merriweather, Georgia, serif', 'size': 12, 'color': '#333333'},
     'title': {
         'x': 0.5, 
-        'font': {'family': 'Merriweather, Georgia, serif', 'size': 16, 'color': '#333333', 'weight': 'bold'}
+        'font': {'family': 'Merriweather, Georgia, serif', 'size': 16, 'color': '#333333'}
     },
     'showlegend': True,
     'legend': {
@@ -383,6 +386,7 @@ def update_axes_theme(fig):
         gridwidth=0.5,
         gridcolor='#E5E5E5',
         showline=False,
+        showticklabels=False,
         zeroline=False,
         ticks='outside',
         tickcolor='#CCCCCC',
@@ -438,7 +442,7 @@ def plot_single_comparison(data, title="Stock Price Comparison"):
             'text': title,
             'x': 0.5,
             'xanchor': 'center',
-            'font': {'size': 16, 'family': 'Merriweather, Georgia, serif', 'color': '#333333', 'weight': 'bold'}
+            'font': {'size': 16, 'family': 'Merriweather, Georgia, serif', 'color': '#333333'}
         }
     )
     return fig
@@ -538,7 +542,7 @@ def plot_stock_facets(data, title="Stock Price Performance", height=800):
         'text': title,
         'x': 0.5,
         'xanchor': 'center',
-        'font': {'size': 16, 'family': 'Merriweather, Georgia, serif', 'color': '#333333', 'weight': 'bold'}
+        'font': {'size': 16, 'family': 'Merriweather, Georgia, serif', 'color': '#333333'}
         }
     )
     return fig
@@ -683,12 +687,215 @@ While above summaries give us a better picture on the stock dynamics; one thing 
 
 ## Teasing out seasonality
 
+The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday.
+
 ```{python}
+#|label: date-price-level-calc
+
+# add more date level and price level computations
+calendar_data = (
+    pl_results
+    .sort(["ticker", "Date"])
+    .with_columns([
+        pl.col('Date').dt.year().alias('year'),           
+        pl.col('Date').cast(pl.Date).alias('Date'),     
+        pl.col('Date').dt.weekday().alias('day_of_week'),
+        pl.col('Date').dt.day().alias('day_of_month'),
+        pl.col('Date').dt.week().alias('week_of_year'),
+        pl.col('Date').dt.month().alias('month'),
+        pl.col('Date').dt.strftime('%b').alias('month_name'),
+        # price-related calculations
+        (pl.col('Close') - pl.col('Close').shift(1).over('ticker')).alias('daily_change_abs'),
+        (
+            (pl.col('Close') - pl.col('Close').shift(1).over('ticker'))
+            / pl.col('Close').shift(1).over('ticker')
+        ).alias('daily_change_perc')
+    ])
+)
+
 # build calendar plot
+calendar_pd = pd.DataFrame(calendar_data)
 
-
+calendar_pd.columns = [
+    'Date',
+    'ticker',
+    'Close',
+    'High',
+    'Low',
+    'Open',
+    'Volume',
+    '$volume',
+    'year',
+    'day_of_week',
+    'day_of_month',
+    'week_of_year',
+    'month',
+    'month_name',
+    'daily_change_abs',
+    'daily_change_perc'
+]
 ```
 
 
+```{python}
+def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='viridis'):
+  
+    # convert to pandas 
+    if hasattr(df, "to_pandas"):
+        df = df.to_pandas()
+    
+    # filter the data on ticker/stock and month
+    dff = df[(df['ticker'].isin(stocks)) & (df['month'].isin(months))].copy()
+    
+    # add day, week, and values columns
+    dff['Date'] = pd.to_datetime(dff['Date'])
+    dff['day'] = dff['Date'].dt.day
+    dff['weekday'] = dff['Date'].dt.dayofweek
+    dff['values'] = dff['daily_change_perc'] * 100   # convert to percentage
+    
+    # filter out weekends
+    dff = dff[dff['weekday'] < 5]
+    
+    # calculate proper week numbers within each month
+    dff = dff.sort_values(['month', 'Date'])
+    dff['week_of_month'] = dff.groupby('month')['Date'].transform(
+        lambda x: ((x.dt.day - 1) // 7) + 1
+    )
+    
+    # unique months sorted
+    unique_months = sorted(dff['month'].unique())
+    ncols = len(unique_months)  # months as columns
+    nrows = 1
+    
+    # create subplot grid - months as columns
+    month_names = {
+      1: 'Jan', 
+      2: 'Feb',
+      3: 'Mar', 
+      4: 'Apr', 
+      5: 'May', 
+      6: 'Jun',
+      7: 'Jul', 
+      8: 'Aug', 
+      9: 'Sep',
+      10: 'Oct', 
+      11: 'Nov', 
+      12: 'Dec'
+      }
+      
+    fig = sp.make_subplots(
+        rows=nrows, cols=ncols,
+        subplot_titles=[f"{month_names[m]}" for m in unique_months],
+        horizontal_spacing=0.05
+    )
+    
+    # add one heatmap per month
+    for idx, m in enumerate(unique_months):
+        col = idx + 1
+        row = 1
+        dmonth = dff[dff['month'] == m]
+        
+        if len(dmonth) > 0:
+            # create proper calendar layout
+            first_day = pd.Timestamp(year=dmonth['Date'].dt.year.iloc[0], month=m, day=1)
+            first_weekday = first_day.weekday()
+            
+            # create calendar grid
+            calendar_grid = {}
+            for _, day_data in dmonth.iterrows():
+                day = day_data['day']
+                weekday = day_data['weekday']
+                week = ((first_weekday + day - 1) // 7)
+                calendar_grid[(week, weekday)] = day_data['values']
+            
+            # create arrays for heatmap
+            max_weeks = max([key[0] for key in calendar_grid.keys()]) + 1 if calendar_grid else 1
+            z_data = np.full((max_weeks, 5), np.nan)
+            text_data = np.full((max_weeks, 5), '', dtype=object)
+            
+            # fill arrays
+            for (week, weekday), value in calendar_grid.items():
+                if weekday < 5:
+                    z_data[week, weekday] = value
+                    if not np.isnan(value):
+                        text_data[week, weekday] = f'{value:.1f}%'
+            
+            heatmap = go.Heatmap(
+                z=z_data[::-1],  # reverse week order
+                x=['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                y=[f'{max_weeks-i}' for i in range(max_weeks)],  
+                zmin=vmin,
+                zmax=vmax,
+                colorscale=colorscale,
+                showscale=(idx == len(unique_months)-1),
+                colorbar=dict(
+                    title="% Change in Daily Stock Price",
+                    orientation="h",
+                    titleside="top",
+                    len=0.4,
+                    thickness=15,
+                    x=0.5,
+                    xanchor="center",
+                    y=1.15,
+                    yanchor="bottom"
+                ) if idx == len(unique_months)-1 else None,
+                text=text_data[::-1],
+                texttemplate="<b>%{text}</b>",
+                textfont={"color": "white", "size": 13},
+                xgap=3,
+                ygap=3,
+                hovertemplate="<b>%{x}</b><br>Week: %{y}<br>Change: %{z:.2f}%<extra></extra>"
+            )
+            fig.add_trace(heatmap, row=row, col=col)
+        
+        # hide week numbers by making them white
+        fig.update_yaxes(
+            tickfont=dict(color='white'),
+            row=row, col=col
+        )
+        
+        stock_name_map = {
+          'AAPL': 'Apple',
+          'GOOGL': 'Google',
+          'MSFT': 'Microsoft',
+          'NFLX': 'Netflix',
+          'NVDA': 'Nvidia',
+          'TSLA': 'Tesla'
+          }
+          
+    fig.update_layout(
+        title={
+            'text': "<b>" + ", ".join(f"{stock_name_map[ticker]}" for ticker in stocks) + "</b>",
+            'xanchor': 'center',
+            'font': {'size': 18}
+        },
+        template='plotly_white',
+        height=400,
+        width=300 * ncols,
+        showlegend=False
+    )
 
+    return fig
+
+# crate a function tht loops through all stocks to display calendar view
+def calendar_stock_display(stocks):
+  
+    fig = create_stock_calendar_grid(
+        df=calendar_data,
+        stocks=stocks,
+        months=[7, 8, 9],
+        vmin=-5,
+        vmax=5,
+        colorscale='viridis'
+    )
+    fig.show()
+
+for ticker in tickers:
+  calendar_stock_display([ticker])
+  
+```
+
+From above calendar plots, the idea is to tease out, if any, day of the week/week/or month seasonality at once. 
+A few patterns stand out:
+  - Tesla's stock tends to signficantly pick up toward the end of the week, i.e. Fridays, and regardless of the month.
 
