@@ -50,7 +50,7 @@ Replication of a data-driven article and analysis of the UK's healthcare systems
 <!-- ::: {.project-tags} -->
 <!-- [Stocks]{.tag} [Forecast]{.tag} [Python]{.tag} -->
 <!-- ::: -->
-<!-- ::: -->
+<!-- ::: -->  
 
 <!-- ::: {.project-description} -->
 <!-- Comprehensive analysis of stock market trends and predictive modeling using Python. This project examines market patterns and develops forecasting models for investment decision-making. -->

@@ -1,100 +1,143 @@
-/* Custom styles to complement the theme */
-  
-  /* General styling */
-  body {
-    font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
-    line-height: 1.6;
-    color: #333;
-      background-color: #f9f9f9;
-  }
+/* Import Tektur font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Tektur:wght@400;500;600;700&display=swap');
 
+/* General styling - keep Source Serif Pro as default */
+body {
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f9f9f9;
+}
 
 /* Header styling */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
-    font-weight: 700;
-    color: #2c3e50;
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* TEKTUR FONT - Apply ONLY to sidebar and homepage */
+/* Sidebar gets Tektur */
+.sidebar,
+.sidebar-title,
+.sidebar nav,
+.sidebar .nav-item,
+.sidebar .nav-link {
+  font-family: 'Tektur', monospace !important;
+}
+
+/* Homepage elements get Tektur - direct targeting */
+.header-banner,
+.header-banner h1,
+.header-banner p,
+.g-col-5 h1,
+.g-col-5 p,
+#where-data-meets-curiosity,
+#where-data-meets-curiosity p,
+.projects-grid h2,
+.project-title,
+.project-description,
+h1.title.display-7,
+.btn.btn-primary {
+  font-family: 'Tektur', monospace !important;
+}
+/* Exclude TOC from Tektur font - keep default fonts */
+.toc,
+.toc-title,
+.toc ul,
+.toc li,
+.toc a,
+#TOC,
+#TOC *,
+.sidebar-navigation .toc,
+.sidebar-navigation .toc * {
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif !important;
+}
+
+/* Reset fonts for non-homepage content */
+.quarto-title:not(.header-banner *),
+article:not(.header-banner *) h1,
+article:not(.header-banner *) p {
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif !important;
+}
 
 /* center or justify tag */
-  .text-justify {
-    text-align: justify !important;
-  }
+.text-justify {
+  text-align: justify !important;
+}
 
 .text-center {
   text-align: center !important;
 }
 
-
 /* Main container sizing and spacing */
-  .quarto-container {
-    max-width: 1200px;
-  }
+.quarto-container {
+  max-width: 1200px;
+}
 
 /* Link styling */
-  a {
-    color: #ffa65c;
-      text-decoration: none;
-    transition: color 0.2s ease;
-  }
+a {
+  color: #ffa65c;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
 
 a:hover {
   color: #d35400;
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* Sidebar styling */
-  .sidebar-navigation {
-    background-color: #f8f9fa;
-      border-right: 1px solid #29ecef;
-  }
+.sidebar-navigation {
+  background-color: #f8f9fa;
+  border-right: 1px solid #29ecef;
+}
 
 .sidebar-title {
-  font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
   padding: .2rem;
   white-space: nowrap; 
-  pointer-events: none; /* makes the element unclickable */
-    /*margin-bottom: 1rem;
-  /*border-bottom: 2px solid;
-  /*overflow: hidden;    /* Optional: Hides any overflow */
-    /*text-overflow: ellipsis; /* Optional: Shows ellipsis (...) for overflowing text */
+  pointer-events: none;
 }
 
 .sidebar nav .nav-item {
-  font-size: 1.2rem;  /* Changed from 10rem to a more reasonable size */
-    margin-bottom: 0.25rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
 }
+
 .sidebar nav .nav-link {
   color: #495057;
-    border-left: 3px solid transparent;
+  border-left: 3px solid transparent;
   padding: 0.5rem 1rem;
   transition: all 0.2s ease;
 }
+
 .sidebar nav .nav-link:hover,
 .sidebar nav .nav-link.active {
   color: #ffa65c;
-    border-left-color: #ffa65c;
-    background-color: rgba(230, 126, 34, 0.05);
+  border-left-color: #ffa65c;
+  background-color: rgba(230, 126, 34, 0.05);
 }
+
 /* Target only collapsible section headers */
 .sidebar-item-text.collapsed .menu-text,
 .sidebar-item-text[data-bs-toggle="collapse"] .menu-text {
   font-weight: bold !important;
   font-size: 1.1em !important;
 }
+
 /* Make links in "Older Links" section open in new tab */
 #quarto-sidebar-section-2 a[href^="http"] {
   target: "_blank";
 }
 
 /* Header banner with SVG */
-  .header-banner {
-    position: relative;
-    padding: 2rem 0;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
+.header-banner {
+  position: relative;
+  padding: 2rem 0;
+  text-align: center;
+  margin-bottom: 2rem;
+}
 
 .header-svg {
   position: absolute;
@@ -107,32 +150,32 @@ a:hover {
 }
 
 /* Content area */
-  .quarto-title-banner {
-    background-color: #fff;
-      border-bottom: 1px solid #eaeaea;
-  }
+.quarto-title-banner {
+  background-color: #fff;
+  border-bottom: 1px solid #eaeaea;
+}
 
 .quarto-title {
   color: #2c3e50;
 }
 
 /* Code blocks */
-  pre {
-    border-radius: 4px;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-  }
+pre {
+  border-radius: 4px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 
 /* Tables */
-  table {
-    width: 100%;
-    margin-bottom: 1rem;
-    border-collapse: collapse;
-  }
+table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
 
 thead {
   background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid #dee2e6;
 }
 
 th, td {
@@ -141,51 +184,52 @@ th, td {
 }
 
 /* Footer styling */
-  footer {
-    margin-top: 3rem;
-    padding: 1rem 0;
-    background-color: #f8f9fa;
-      border-top: 1px solid #e9ecef;
-    font-size: 0.9rem;
-  }
+footer {
+  margin-top: 3rem;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.9rem;
+}
 
 /* Responsive adjustments */
-  @media (max-width: 991.98px) {
-    .sidebar {
-      border-right: none;
-      border-bottom: 1px solid #e9ecef;
-      margin-bottom: 2rem;
-    }
+@media (max-width: 991.98px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 2rem;
   }
+}
 
 /* Animation for data visualization elements */
-  .data-viz {
-    transition: transform 0.3s ease;
-  }
+.data-viz {
+  transition: transform 0.3s ease;
+}
 
 .data-viz:hover {
   transform: scale(1.05);
 }
 
 /* SVG styling */
-  .data-svg {
-    max-width: 100%;
-    height: auto;
-  }
-/* For the GIF styling */
-  .gif-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-.rounded-gif {
-  border-radius: 50%;  /* Makes the GIF circular if desired */
-    max-width: 100%;     /* Ensures the GIF is responsive */
-    height: auto;
+.data-svg {
+  max-width: 100%;
+  height: auto;
 }
 
-/* Projects Grid - ONLY NEW ADDITION */
+/* For the GIF styling */
+.gif-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rounded-gif {
+  border-radius: 50%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Projects Grid */
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -193,7 +237,7 @@ th, td {
   margin: 2rem 0;
 }
 
-/* Special styling for project cards */
+/* Project cards styling */
 .project-card {
   background: white;
   border-radius: 8px;
@@ -280,53 +324,42 @@ th, td {
 }
 
 /* Reading time and metadata styling */
-  .quarto-categories {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: #6c757d;
-  }
+.quarto-categories {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
 .full-width-block {
-  width: 50vw; /* Span the full viewport width */
-    max-width: 50vw; /* Ensure it doesn't get constrained by other max-width rules */
+  width: 50vw;
+  max-width: 50vw;
   position: relative;
   left: 50%;
-  transform: translateX(-50%); /* Center the block on the page */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    padding-left: 15px;  /* Optional: some padding so content isn't at the very edge of the screen */
-  padding-right: 15px; /* Optional: adjust as needed */
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  padding-left: 15px;
+  padding-right: 15px;
 }
+
 /* Force TOC to stay beneath all overlapping content */
 .toc {
-    z-index: 10 !important;
-    position: relative !important;
+  z-index: 10 !important;
+  position: relative !important;
 }
-/*
-   Add these styles to your custom CSS file.
-   This combines the previous solution with z-index for stacking order.
-*/
 
 /* Sidebar styling (sticky, max-height, scroll, and z-index) */
-.sidebar { /* Or your specific sidebar selector, e.g., #quarto-sidebar */
-  position: -webkit-sticky; /* For Safari */
+.sidebar {
+  position: -webkit-sticky;
   position: sticky;
-  top: 20px; /* Adjust this value based on your header or desired offset from the top */
-  max-height: 85vh; /* Limits the sidebar height to 85% of the viewport height */
-  overflow-y: auto; /* Adds a scrollbar to the sidebar if its content exceeds max-height */
-  align-self: start; /* Useful if the sidebar is in a flex container */
-  z-index: 1; /* Set a stacking order for the sidebar (lower) */
+  top: 20px;
+  max-height: 85vh;
+  overflow-y: auto;
+  align-self: start;
+  z-index: 1;
 }
 
-/* Main content area styling (Quarto outputs) */
-/* Common Quarto ID for the main content area. Adjust if your theme uses a different selector. */
+/* Main content area styling */
 #quarto-document-content {
-  position: relative; /* Establishes a stacking context. Crucial for z-index to work reliably. */
-  z-index: 2; /* Set a higher stacking order than the sidebar */
-  /*
-     If your main content area or specific output elements (like tables or divs)
-     have transparent backgrounds, the sidebar might still be visually "seen through" them,
-     even if it's technically underneath.
-     You can assign a background color here if needed, though it's often inherited
-     from the body or a parent container.
-     e.g., background-color: #f9f9f9; (matching your body's background)
-  */
+  position: relative;
+  z-index: 2;
 }
