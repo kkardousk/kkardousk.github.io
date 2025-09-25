@@ -25,6 +25,9 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar .nav-link {
   font-family: 'Tektur', monospace !important;
 }
+.sidebar .nav-link[data-scroll-target] {
+  font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif !important;
+}
 
 /* Homepage elements get Tektur - direct targeting */
 .header-banner,
@@ -38,6 +41,8 @@ h1, h2, h3, h4, h5, h6 {
 .project-title,
 .project-description,
 h1.title.display-7,
+h2.anchored[data-anchor-id="list-of-projects"],
+h2.anchored[data-anchor-id="about-this-site"],
 .btn.btn-primary {
   font-family: 'Tektur', monospace !important;
 }
@@ -50,7 +55,9 @@ h1.title.display-7,
 #TOC,
 #TOC *,
 .sidebar-navigation .toc,
-.sidebar-navigation .toc * {
+.sidebar-navigation .toc *,
+.nav-link,
+a.nav-link {
   font-family: 'Source Serif Pro', 'Charter', 'Roboto Slab', serif !important;
 }
 
@@ -90,26 +97,28 @@ a:hover {
 /* Sidebar styling */
 .sidebar-navigation {
   background-color: #f8f9fa;
-  border-right: 1px solid #29ecef;
+  border-right: none;
 }
 
 .sidebar-title {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
+  font-weight: 700;
   padding: .2rem;
-  white-space: nowrap; 
-  pointer-events: none;
+  white-space: normal !important; /* allow wrap */
+  overflow: visible !important;   /* ensure not cut off */
 }
 
 .sidebar nav .nav-item {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   margin-bottom: 0.25rem;
+  letter-spacing: 0.5px;
 }
 
 .sidebar nav .nav-link {
   color: #495057;
   border-left: 3px solid transparent;
   padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.5s ease;
 }
 
 .sidebar nav .nav-link:hover,
@@ -124,6 +133,19 @@ a:hover {
 .sidebar-item-text[data-bs-toggle="collapse"] .menu-text {
   font-weight: bold !important;
   font-size: 1.1em !important;
+}
+
+/* Sidebar hover magnification */
+.sidebar nav .nav-link {
+  transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.sidebar nav .nav-link:hover,
+.sidebar nav .nav-link.active {
+  transform: scale(1.05);   /* subtle magnification */
+  color: #ffa65c !important;
+  border-left-color: #ffa65c !important;
+  background-color: rgba(255, 166, 92, 0.1) !important;
 }
 
 /* Make links in "Older Links" section open in new tab */
@@ -362,4 +384,111 @@ footer {
 #quarto-document-content {
   position: relative;
   z-index: 2;
+}
+
+/* DARK THEME - HOMEPAGE ONLY */
+/* Use a more reliable method to target homepage */
+.header-banner {
+  background-color: rgb(38, 54, 70) !important;
+}
+
+/* Target the main content area on homepage */
+main:has(.header-banner),
+.quarto-container:has(.header-banner) {
+  background-color: rgb(38, 54, 70) !important;
+}
+
+/* Force entire page background when header-banner is present */
+body:has(.header-banner) {
+  background-color: rgb(38, 54, 70) !important;
+}
+
+/* Homepage text white */
+.header-banner,
+.header-banner h1,
+.header-banner p,
+.g-col-5 h1,
+.g-col-5 p,
+#where-data-meets-curiosity,
+#where-data-meets-curiosity p,
+h1.title.display-7,
+h2.anchored[data-anchor-id="list-of-projects"],
+h2.anchored[data-anchor-id="about-this-site"] {
+  color: white !important;
+}
+
+/* About This Site paragraphs */
+h2.anchored[data-anchor-id="about-this-site"] ~ p {
+  color: white !important;
+}
+
+/* Project cards dark theme */
+.projects-grid .project-card {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.projects-grid .project-description {
+  color: white !important;
+}
+
+.projects-grid .project-title {
+  color: #ffa65c !important;
+}
+
+/* Homepage buttons */
+.projects-grid .btn.btn-primary {
+  background-color: #ffa65c !important;
+  border-color: #ffa65c !important;
+  color: rgb(38, 54, 70) !important;
+}
+
+/* Dark sidebar for all pages */
+.sidebar,
+.sidebar-navigation,
+#quarto-sidebar {
+  background-color: rgb(38, 54, 70) !important;
+  border-right: none;
+}
+
+.sidebar-title,
+.sidebar nav .nav-link,
+.sidebar .nav-item,
+.sidebar .menu-text {
+  color: white !important;
+}
+
+.sidebar nav .nav-link:hover,
+.sidebar nav .nav-link.active {
+  color: #ffa65c !important;
+  border-left-color: #ffa65c !important;
+  background-color: rgba(255, 166, 92, 0.1) !important;
+}
+
+/* Light sidebar for project pages - override dark theme */
+body:not(:has(.header-banner)) .sidebar,
+body:not(:has(.header-banner)) .sidebar-navigation,
+body:not(:has(.header-banner)) #quarto-sidebar {
+  background-color: #f8f9fa !important;
+  border-right: .3px solid #d9dee2 !important;
+}
+
+body:not(:has(.header-banner)) .sidebar-title,
+body:not(:has(.header-banner)) .sidebar nav .nav-link,
+body:not(:has(.header-banner)) .sidebar .nav-item,
+body:not(:has(.header-banner)) .sidebar .menu-text {
+  color: #495057 !important;
+}
+
+body:not(:has(.header-banner)) .sidebar nav .nav-link:hover,
+body:not(:has(.header-banner)) .sidebar nav .nav-link.active {
+  color: #ffa65c !important;
+  border-left-color: #ffa65c !important;
+  background-color: rgba(230, 126, 34, 0.05) !important;
+}
+
+/* Light TOC for project pages */
+body:not(:has(.header-banner)) .toc,
+body:not(:has(.header-banner)) .nav-link {
+  color: #495057 !important;
 }

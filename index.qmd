@@ -10,7 +10,7 @@ format:
 ::: {.g-col-5}
 # Where Data Meets Curiosity {.text-center}
   
-In a nutshell, I share my `code` and thoughts while replicating data and reverse engineering data visualizations that I find interesting online, mostly data-driven news articles along with analyses I like to do in my spare time.<br> You will also find external links to more of my work in the 'Older Links' section. <br>Feel free to connect with me if you have any questions or suggestions !
+In a nutshell, I share my code and thoughts while replicating data and reverse engineering data visualizations that I find interesting online, mostly data-driven news articles along with analyses I like to do in my spare time.<br> You will also find external links to more of my work in the 'Older Links' section. <br>Feel free to connect with me if you have any questions or suggestions !
 :::
 
 ::: {.g-col-4 .gif-container .text-center}
@@ -32,7 +32,6 @@ In a nutshell, I share my `code` and thoughts while replicating data and reverse
 [Healthcare]{.tag} [Replication]{.tag} [UK Policy]{.tag}
 :::
 :::
-
 ::: {.project-description}
 Replication of a data-driven article and analysis of the UK's healthcare systems among other countries; by British editor Tom Calver. This study compares healthcare efficiency metrics across multiple nations.
 :::
@@ -65,16 +64,14 @@ Replication of a data-driven article and analysis of the UK's healthcare systems
 ::: {.project-highlight}
 :::
 ::: {.project-header}
-### **Has International Travel Into the U.S declined ?** {.project-title}
+### **Has Int. Travel to the U.S declined?** {.project-title}
 ::: {.project-tags}
 [Tourism]{.tag} [Policy Impact]{.tag} [Replication]{.tag}
 :::
 :::
-
 ::: {.project-description}
 Replication of a data-driven article/analysis of the impact (if any) of President Trump and his administration on international tourism into the United States; by Josh Holder et. al. Examining tourism trends and policy effects.
 :::
-
 ::: {.project-footer}
 [View Project](projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.qmd){.btn .btn-primary}
 :::
