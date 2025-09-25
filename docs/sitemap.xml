@@ -1,76 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://kkardousk.github.io/sept11_legacy.html</loc>
-    <lastmod>2025-09-21T16:44:36.628Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/tom-calver-article-NHS.html</loc>
-    <lastmod>2025-09-10T00:40:52.049Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/journalism_and_political_violence.html</loc>
-    <lastmod>2025-09-08T14:12:00.204Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/inversions_py/inversions_py.html</loc>
-    <lastmod>2025-07-07T18:59:47.233Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/holder-chokshi-granados-article-TravelToUS.html</loc>
-    <lastmod>2025-06-29T12:28:54.295Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/about.html</loc>
-    <lastmod>2025-09-15T15:59:33.213Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/gaza_dmg_building_assessment.html</loc>
-    <lastmod>2025-08-24T16:04:52.607Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/inversions_py/intl_students_dependent_uni.html</loc>
-    <lastmod>2025-07-05T18:58:05.141Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/inversions_py/koch_snowflake_fractals.html</loc>
-    <lastmod>2025-07-08T01:55:33.323Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/test_qmd.html</loc>
-    <lastmod>2025-05-20T23:49:40.148Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/index.html</loc>
-    <lastmod>2025-09-22T13:59:37.999Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/finance-dashboard/dashboard_starter.html</loc>
-    <lastmod>2025-09-21T15:52:26.861Z</lastmod>
+    <loc>https://kkardousk.github.io/projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.html</loc>
+    <lastmod>2025-09-21T16:52:52.610Z</lastmod>
   </url>
   <url>
     <loc>https://kkardousk.github.io/projects/nhs-healthcare/tom-calver-article-NHS.html</loc>
     <lastmod>2025-09-21T16:13:35.532Z</lastmod>
   </url>
   <url>
-    <loc>https://kkardousk.github.io/projects/travel-tourism/holder-chokshi-granados-article-TravelToUS.html</loc>
-    <lastmod>2025-09-21T16:52:52.610Z</lastmod>
+    <loc>https://kkardousk.github.io/projects/mathematics-inversions/inversions_py/inversions_py.html</loc>
+    <lastmod>2025-09-21T16:14:24.085Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kkardousk.github.io/projects/journalism-gaza/journalism_and_political_violence.html</loc>
+    <lastmod>2025-09-21T16:34:50.784Z</lastmod>
   </url>
   <url>
     <loc>https://kkardousk.github.io/projects/finance-dashboard/dashboard_starter.html</loc>
     <lastmod>2025-09-24T16:35:32.600Z</lastmod>
   </url>
   <url>
-    <loc>https://kkardousk.github.io/projects/mathematics-inversions/inversions_py/inversions_py.html</loc>
+    <loc>https://kkardousk.github.io/about.html</loc>
+    <lastmod>2025-09-15T15:59:33.213Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kkardousk.github.io/index.html</loc>
+    <lastmod>2025-09-22T13:59:37.999Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kkardousk.github.io/projects/gaza-damage-assessment/gaza_dmg_building_assessment.html</loc>
+    <lastmod>2025-09-21T16:14:56.629Z</lastmod>
+  </url>
+  <url>
+    <loc>https://kkardousk.github.io/projects/mathematics-inversions/inversions_py/intl_students_dependent_uni.html</loc>
     <lastmod>2025-09-21T16:14:24.085Z</lastmod>
   </url>
   <url>
     <loc>https://kkardousk.github.io/projects/mathematics-inversions/inversions_py/koch_snowflake_fractals.html</loc>
     <lastmod>2025-09-21T16:14:24.107Z</lastmod>
-  </url>
-  <url>
-    <loc>https://kkardousk.github.io/projects/journalism-gaza/journalism_and_political_violence.html</loc>
-    <lastmod>2025-09-21T16:34:50.784Z</lastmod>
   </url>
   <url>
     <loc>https://kkardousk.github.io/projects/sept11-legacy/sept11_legacy.html</loc>

@@ -4,6 +4,7 @@ project:
   render:
     - "*.qmd"
     - "!drafts/"
+    - "!projects/finance-dashboard/"  # this excludes any projects from being rendered (say when they're still work in progress)
 website:
   site-url: https://kkardousk.github.io/
   site-path: /
