@@ -597,7 +597,8 @@ faceted_chart.show()
 ```
 
 ::: text-justify
-Overall, and despite the dips and volatility, and while a few grew more than others, all 6 stocks have risen in value over the period shown. Speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
+Overall, and despite the dips and volatility, and while a few grew more than others, and except for Netflix, all other stocks have risen in value over the period shown. Also, Google and Tesla follow similar trends. <br>
+But speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
 :::
 
 ```{python}
