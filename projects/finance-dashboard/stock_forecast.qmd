@@ -68,7 +68,9 @@ editor: visual
 
 ## Initial Setup
 :::
-
+<p style="color: #ff0000; font-weight: bold; font-size: 18px; text-align: center; background-color: #ffe6e6; padding: 10px; border: 2px solid #ff0000; border-radius: 5px;">
+NOTE: DEPENDING ON THE BROWSER, YOU MIGHT NEED TO REFRESH THIS PAGE A COUPLE OF TIMES IN ORDER FOR THE PLOTS TO RENDER. THIS IS A KNOWN ISSUE WITH {PLOTLY} WHEN USED <u>IN TANDEM</u> WITH QUARTO
+</p>
 ::: text-justify
 After having setup the `.venv` using `uv init`, here we start by importing needed packages and setting up what we need.
 :::
@@ -192,7 +194,7 @@ results = list(map(download_stocks_data, tickers))
 ```
 
 Here I call the yfinance api to pull stock prices for six major technology stocks: Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA).<br> 
-**Note that this analysis is based on data pulled July-September 2025**. Results will vary if run with different or dynamic time periods; the point here is to create a historical fixed snapshot as all my comments/analyses are based on the July-September 2025 period.
+**Note that this analysis is based on data pulled July-September 2025**. Results will vary if run with different or dynamic time periods; the point here is to create a historical fixed snapshot as all my comments/analyses are based on the July-September 2025 period.<br> 
 
 ## Display of data pull using `great-tables`
 
