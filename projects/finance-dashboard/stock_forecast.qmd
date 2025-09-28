@@ -1,0 +1,1742 @@
+---
+title: |
+  <div class="custom-title-block" style="font-size: 1.2em;">
+    <span style="color:#000000;">Stock Market Analysis & Forecast</span><br>
+    <span style="color:#666666; font-size:0.7em;">
+    </span>
+    <span style="font-size:0.8em; color:#333333; white-space: nowrap">
+      Karim K. Kardous
+      <a href='mailto:kardouskarim@gmail.com' style='margin-left: 9px; font-size: 0.9em;'>
+        <i class='bi bi-envelope'></i>
+      </a>
+      <a href='https://github.com/kkardousk' style='margin-left: 5px; font-size: 0.9em;'>
+        <i class='bi bi-github'></i>
+      </a>
+    </span>
+  </div>
+format:
+  html:
+    css: styles.css
+    fig-width: 20
+    fig-height: 14
+    toc: true
+    toc-depth: 4
+    toc-expand: true
+    toc-title: 'Navigation'
+    number-depth: 2
+    fig-format: png
+    fig-dpi: 150
+    code-link: true
+    code-fold: true
+    code-summary: '<i class="bi-code-slash"></i> Show the code'
+    code-tools:
+      toggle: true
+    highlight-style: github-dark
+    df-print: paged
+    page-layout: full
+    embed-resources: true
+    smooth-scroll: true
+    link-external-icon: false
+    link-external-newwindow: true
+    fontsize: 1.1em
+    linestretch: 1
+    linespace: 1
+    html-math-method: katex
+    linkcolor: '#D35400'
+execute:
+  echo: true
+  warning: false
+  message: false
+  info: false
+  cache: false
+  freeze: false  
+  daemon: false
+editor: visual
+---
+
+## High Level Findings
+::: text-justify
+-   Tesla exhibits a consistent Friday effect with positive returns occurring 65% more frequently on Fridays compared to other weekdays across July-September 2025
+
+-   Day-of-week seasonality dominates individual stock characteristics: Seasonal Naive or Naive Baseline models outperformed sophisticated machine learning approaches for 4 out of 6 stocks, indicating either predictable weekly trading patterns or simpler models are best for the job - in the case of this analysis at least
+
+-   End-of-week bias spans the entire tech portfolio: Apple, Tesla, and Nvidia show systematically higher returns on Fridays, suggesting sector-wide behavioral trading patterns rather than stock-specific anomalies
+
+-  Tesla and Nvidia demonstrate 3x higher daily price swings (±3%+ moves) compared to more mature tech stocks like Microsoft and Google, creating distinct forecasting challenges
+
+- However when scaled to each stock close price variation, the most volatile stock is Google (~13% coefficient of variation), followed by Tesla (~12%) and Apple (~7%), with Microsoft being the least volatile (~2%)
+
+## Initial Setup
+:::
+
+::: text-justify
+After having setup the `.venv` using `uv init`, here we start by importing needed packages and setting up what we need.
+:::
+
+```{python}
+#| label: load-libraries
+#| message: false
+#| warning: false
+
+import yfinance as yf
+import pandas as pd
+import polars as pl
+import polars.selectors as cs
+import great_tables as gt
+from great_tables import GT, md, style, loc
+
+import plotly.graph_objects as go
+import plotly.express as px
+import plotly.subplots as sp
+from plotly.subplots import make_subplots
+from datetime import datetime, timedelta, date
+import numpy as np
+import lesley
+import calendar
+
+import sys
+import logging
+import pprint
+from IPython.display import display, HTML
+
+from itertools import starmap
+```
+
+::: text-justify
+Here I set up custom HTML-styled `{logging}` for enhanced visual output in Quarto. While logging is typically more valuable for automated scheduled jobs to track errors and events with timestamps, here it provides highly customizable, visually appealing messages compared to 'basic' `print()` statements, taking advantage of Quarto's ability to render custom css/html.
+:::
+
+```{python}
+#| label: setup-logging
+#| message: false
+#| warning: false
+
+# custom handler that outputs styled HTML
+class StyledJupyterHandler(logging.StreamHandler):
+    def __init__(self):
+        super().__init__(sys.stdout)
+    
+    def emit(self, record):
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        level = record.levelname
+        message = record.getMessage()
+        
+        # style based on log level
+        if level == 'INFO':
+            color = '#28a745'  # green
+            icon = 'ℹ️'
+        elif level == 'WARNING':
+            color = '#ffc107'  # yellow
+            icon = '⚠️'
+        elif level == 'ERROR':
+            color = '#dc3545'  # red
+            icon = '❌'
+        else:
+            color = '#6c757d'  # gray
+            icon = '•'
+        
+        html_output = f"""
+        <div style="
+            background-color: {color}15;
+            border-left: 4px solid {color};
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;">
+            <span style="color: {color}; font-weight: bold;">
+                {icon} {level}
+            </span>
+            <span style="color: #6c757d; margin: 0 8px;">
+                {timestamp}
+            </span>
+            <span style="color: #333;">
+                {message}
+            </span>
+        </div>
+        """
+        
+        display(HTML(html_output))
+
+# set up logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# clear existing handlers and add only one; otherwise messages can repeat
+if logger.handlers:
+    logger.handlers.clear()
+logger.addHandler(StyledJupyterHandler())
+
+```
+
+## Fetching stock data from Yahoo Finance API.
+
+```{python}
+#| label: market-data
+
+# define the watchlist
+tickers = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NFLX', 'NVDA']
+period = "3mo"  # 3 months of data
+
+# looping thru dates
+def download_stocks_data(ticker):
+  try:
+    stock_data = yf.download(ticker, start='2025-07-01', end='2025-09-26', progress=False) # time bounding the pull here so my analysis stay the same/matches the outputs/results a few months from now
+    logger.info(f'Downloaded {ticker}: {len(stock_data)} days')
+    return (ticker, stock_data)
+  except Exception as e:
+     logger.error(f'Failed to download {ticker}: {e}')
+     return (ticker, None)
+   
+results = list(map(download_stocks_data, tickers)) 
+```
+
+Here I call the yfinance api to pull stock prices for six major technology stocks: Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA).<br> 
+**Note that this analysis is based on data pulled July-September 2025**. Results will vary if run with different or dynamic time periods; the point here is to create a historical fixed snapshot as all my comments/analyses are based on the July-September 2025 period.
+
+## Display of data pull using `great-tables`
+
+::: text-justify
+Here I decide to use {great-tables} after running `uv add great-tables` in terminal and `import great_tables as gt` in script. This is a great way to display summary tables. But let's convert the results (pandas into polars first)
+:::
+
+```{python}
+#| label: polars-gt-output
+
+def convert_to_polars(result):
+  ticker, stock_data = result
+  if stock_data is not None and not stock_data.empty:
+    if isinstance(stock_data.columns, pd.MultiIndex):
+      stock_data.columns = stock_data.columns.droplevel(1)  # remove ticker level/unnest the MultiIndex struct from yahoo downlaod
+    pl_stock = pl.from_pandas(stock_data.reset_index())
+    pl_stock = pl_stock.with_columns(pl.lit(ticker).alias('ticker'))
+    return pl_stock
+  return None
+  
+# loop thru all data
+all_data = list(map(convert_to_polars, results))
+
+# filter out any None/Nulls
+complete_data = [data for data in all_data if data is not None]
+
+# concatenate all data together into a polars obkect
+pl_results = pl.concat(complete_data, how="vertical")
+
+# rearrange columns and sort descending dates and ticker; also adding new column dollar_volume
+pl_results = (
+  pl_results
+    .select(['Date', 'ticker', 'Close', 'High', 'Low', 'Open', 'Volume'])
+    .sort(['Date', 'ticker'], descending = [True, False])
+    .with_columns( (pl.col('Volume') * pl.col('Close') ).alias('$volume'))
+)
+
+# build a gt function that formats numeric data, cleans column names, adds a title/subtitle (if provided) and customizes the  overall theme simialr to NYT
+def gt_nyt_custom(x, title='', subtitle='', first_10_rows_only=True):
+    
+    import polars as pl
+    from great_tables import GT, md, style, loc
+    
+    # clean column names to title case (similar to clean_names)
+    x = x.rename({col: col.replace('_', ' ').title() for col in x.columns})
+    
+    # identify numeric columns (float and integer)
+    numeric_cols = [col for col in x.columns if x[col].dtype in [pl.Float64, pl.Float32]]
+    integer_cols = [col for col in x.columns if x[col].dtype in [pl.Int64, pl.Int32, pl.Int16, pl.Int8]]
+    
+    # handle currency columns - check if specific columns exist
+    currency_cols = []
+    volume_cols = []
+    date_cols = []
+    
+    for col in numeric_cols:
+        if '$volume' in col.lower() or 'volume' in col.lower():
+            volume_cols.append(col)
+        else:
+            currency_cols.append(col)
+    
+    # check for date columns
+    for col in x.columns:
+        if 'date' in col.lower() or x[col].dtype == pl.Date:
+            date_cols.append(col)
+    
+    # format title and subtitle
+    title_fmt = f"**{title}**" if title != "" else ""
+    subtitle_fmt = f"*{subtitle}*" if subtitle != "" else ""
+    
+    # apply first_10_rows_only filter
+    if first_10_rows_only:
+        x = x.head(10)
+    
+    # create gt table and apply styling
+    gt_table = (
+        GT(x)
+        .tab_header(
+            title=md(title_fmt),
+            subtitle=md(subtitle_fmt)
+        )
+        .tab_style(
+            style=style.text(color='#333333'),
+            locations=loc.body()
+        )
+        .tab_style(
+            style=style.text(color='#CC6600'),
+            locations=loc.column_labels()
+        )
+        .tab_options(
+            table_font_names=['Merriweather', 'Georgia', 'serif'],
+            table_font_size='14px',
+            heading_title_font_size='18px',
+            heading_subtitle_font_size='14px',
+            column_labels_font_weight='bold',
+            column_labels_background_color='#eeeeee',
+            table_border_top_color='#dddddd',
+            table_border_bottom_color='#dddddd',
+            data_row_padding='6px',
+            row_striping_include_table_body=True,
+            row_striping_background_color='#f9f9f9',
+        )
+    )
+    
+    # conditionally apply formatting based on column existence
+    if currency_cols:
+        gt_table = gt_table.fmt_currency(
+            columns=currency_cols,
+            decimals=1,
+            currency='USD'
+        )
+    
+    if volume_cols:
+        gt_table = gt_table.fmt_currency(
+            columns=volume_cols,
+            decimals=1,
+            currency='USD',
+            compact=True
+        )
+    
+    if integer_cols:
+        gt_table = gt_table.fmt_number(
+            columns=integer_cols, 
+            decimals=0
+        )
+    
+    if date_cols:
+        gt_table = gt_table.fmt_date(
+            columns=date_cols, 
+            date_style='year.mn.day'
+        )
+    
+    return gt_table
+  
+
+styled_table = (
+    gt_nyt_custom(
+        pl_results,
+        title = "Stock Market Data", 
+        subtitle = "3 Month Pull (Only 10 records shown)",
+        first_10_rows_only=True
+    )
+    .tab_style(
+        style=style.text(align='left'),
+        locations=loc.column_labels()
+    )
+)
+    
+styled_table
+```
+
+## Plotting Trends of daily Close Price
+
+::: text-justify
+Below I start with designing the building blocks for the visualizations. By building blocks, here I concretely mean 'embedding' a `ggplot2` like theme as I am a fan of the overall layout (I can't be the only one). `create_ggplot_theme()` function below is a nifty way to set a modular/reusable set of values as a dictionary to then be used as arguments for the theme in both `plot_stock_facets()` and `plot_single_comparison()`
+:::
+
+```{python}
+#| label: build-plot-structures
+def create_ggplot_theme():
+    """create a ggplot2 theme_minimal() equivalent for plotly"""
+    return {
+    'template': 'plotly_white',
+    'plot_bgcolor' :'rgb(248, 248, 248)',  
+    'paper_bgcolor': 'rgb(248, 248, 248)',
+    'font': {'family': 'Merriweather, Georgia, serif', 'size': 12, 'color': '#333333'},
+    'title': {
+        'x': 0.5, 
+        'font': {'family': 'Merriweather, Georgia, serif', 'size': 16, 'color': '#333333'}
+    },
+    'showlegend': True,
+    'legend': {
+        'orientation': 'h',
+        'yanchor': 'bottom',
+        'y': -0.2,
+        'xanchor': 'center',
+        'x': 0.5,
+        'bgcolor': 'rgba(0,0,0,0)',
+        'bordercolor': 'rgba(0,0,0,0)'
+    },
+    'margin': {'l': 60, 'r': 40, 't': 60, 'b': 80},
+    'plot_bgcolor': '#F8F8F8',
+    'paper_bgcolor': '#F8F8F8'
+    }
+    
+def update_axes_theme(fig):
+    """apply ggplot2-style axis formatting"""
+    fig.update_xaxes(
+        title_text="", # hid x axis
+        showgrid=True,
+        gridwidth=0.5,
+        gridcolor='#E5E5E5',
+        showline=True,
+        linewidth=0.5,
+        linecolor='#CCCCCC',
+        mirror=False,
+        ticks='outside',
+        tickcolor='#CCCCCC',
+        title_font={'size': 12, 'color': '#666666'}
+    )
+    
+    fig.update_yaxes(
+      title={
+        'text': 'Close Price',
+        'standoff': 10, # distance from y axis
+        'font': {'size': 12, 'family': 'Merriweather, Georgia, serif', 'color': '#666666'}
+        },
+        showgrid=True,
+        gridwidth=0.5,
+        gridcolor='#E5E5E5',
+        showline=False,
+        showticklabels=False,
+        zeroline=False,
+        ticks='outside',
+        tickcolor='#CCCCCC',
+        title_font={'size': 12, 'color': '#666666'},
+        tickformat='$,.0f'
+    )
+    
+    return fig
+
+def plot_single_comparison(data, title="Stock Price Comparison"):
+    """
+    create a single plot with all stocks for comparison
+    """
+    
+    # color palette
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    
+    fig = go.Figure()
+    
+    tickers = sorted(data['ticker'].unique().to_list())
+    
+    for i, ticker in enumerate(tickers):
+        ticker_data = data.filter(pl.col('ticker') == ticker).sort('Date')
+        
+        fig.add_trace(
+            go.Scatter(
+                x=ticker_data['Date'].to_list(),
+                y=ticker_data['Close'].to_list(),
+                mode='lines',
+                name=ticker,
+                line=dict(color=colors[i % len(colors)], width=2),
+                hovertemplate='<b>%{fullData.name}</b><br>' +
+                            'Date: %{x}<br>' +
+                            'Close: $%{y:.2f}<extra></extra>'
+            )
+        )
+    
+    # apply theme
+    theme = create_ggplot_theme()
+    fig.update_layout(**theme)
+    fig.update_layout(
+        title=title,
+        xaxis_title="Date",
+        yaxis_title="Close Price",
+        height=500
+    )
+    
+    fig = update_axes_theme(fig)
+    
+    # center and bolden title
+    fig.update_layout(
+      title=dict(
+        text = title,
+        x = 0.5,
+        xanchor = 'center',
+        font = dict(
+          size = 16, family = 'Merriweather, Georgia, serif', 
+          color = '#333333'
+          )
+        )
+    )
+    # making ytick labels more visibale
+    fig.update_yaxes(
+      showticklabels=True,
+      tickformat='$,.0f',
+      tickfont=dict(size=10, color='#333333')
+      )
+    
+    return fig
+
+# single comparison plot
+comparison_chart = plot_single_comparison(
+    pl_results,
+    title="Stock Price Comparison Overall (3 Months)"
+)
+
+# display the charts
+comparison_chart.show()
+```
+
+::: text-justify
+As we can see from above, Netflix stock 'overshadows' any subtle variations in the stock prices for the remaining companies/stocks, simply because of the difference in scales/range of values. <br> One way to remedy that is by clicking on NFLX tile in the legend, this will deselect the Netflix Series - pun intended - from the graph; a native functionality in `{Plotly}` Another way is to be faceting on companies, essentially a '`GROUP BY TICKER`' but for plots. This is what is shown next.
+:::
+
+```{python}
+#| label: facetted-plots
+def plot_stock_facets(data, title="Stock Price Performance", height=800):
+    """
+    create faceted line charts for stock prices - ggplot2 style
+    """
+    
+    # get unique tickers for subplot layout
+    tickers = sorted(data['ticker'].unique().to_list())
+    n_tickers = len(tickers)
+    
+    # calculate subplot grid (2 columns)
+    cols = 2
+    rows = (n_tickers + cols - 1) // cols
+    
+    # create subplots with shared x-axis
+    fig = make_subplots(
+        rows=rows, 
+        cols=cols,
+        subplot_titles=[
+          f"{name} ({ticker})" for name, ticker in zip(
+            ['Apple', 'Google', 'Microsoft', 'Netflix', 'Nvidia', 'Tesla'],
+            sorted(pl_results['ticker'].unique())
+            )
+            ],
+        shared_xaxes=True,
+        shared_yaxes=False, # essentially scales_y = 'free' in r
+        vertical_spacing=0.08,
+        horizontal_spacing=0.1
+    )
+    
+    # color palette (ggplot2-like)
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    
+    # add line for each ticker
+    for i, ticker in enumerate(tickers):
+        ticker_data = data.filter(pl.col('ticker') == ticker).sort('Date')
+        
+        row = (i // cols) + 1
+        col = (i % cols) + 1
+        
+        fig.add_trace(
+            go.Scatter(
+                x=ticker_data['Date'].to_list(),
+                y=ticker_data['Close'].to_list(),
+                mode='lines',
+                name=ticker,
+                line=dict(color=colors[i % len(colors)], width=2),
+                hovertemplate='<b>%{fullData.name}</b><br>' +
+                            'Date: %{x}<br>' +
+                            'Close: $%{y:.2f}<extra></extra>',
+                showlegend=False  
+            ),
+            row=row, col=col
+        )
+    
+    # apply ggplot2 theme
+    theme = create_ggplot_theme()
+    fig.update_layout(**theme)
+    fig.update_layout(
+        title=title,
+        height=height,
+        showlegend=False
+    )
+    
+    # apply axis styling
+    fig = update_axes_theme(fig)
+    
+    # update subplot titles to be more prominent
+    for i, annotation in enumerate(fig['layout']['annotations']):
+        annotation['font'] = dict(
+          size=14,
+          color='#333333',
+          family='Merriweather, Georgia, serif'
+          )
+        
+    fig.update_layout(
+      title=dict(
+        text = title,
+        x = 0.5,
+        xanchor = 'center',
+        font = dict(
+          size = 16, family = 'Merriweather, Georgia, serif', 
+          color = '#333333'
+          )
+        )
+    )
+    
+    fig.update_yaxes(
+      showticklabels=True,
+      tickformat='$,.0f',
+      tickfont=dict(size=10, color='#333333')
+      )
+    
+    return fig
+  
+# faceted plot 
+faceted_chart = plot_stock_facets(
+    pl_results, 
+    title="Stock Performance by Ticker (3 Months)", 
+    height=600
+)
+faceted_chart.show()
+```
+
+::: text-justify
+Overall, and despite the dips and volatility, and while a few grew more than others, all 6 stocks have risen in value over the period shown. Speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
+:::
+
+```{python}
+#|label: summary-table
+
+most_recent_date = pd.Timestamp('2025-09-26')  # this is so my analysis stay the same/matches the outputs/results a few months from now
+
+summary_stats = (
+  pl_results
+  .group_by(
+    pl.col('ticker')
+    )
+  .agg(
+    volatility_std = pl.col('Close').std(),
+    # coefficient of variation (volatility relative to price)
+    cv = (pl.col('Close').std() / pl.col('Close').mean()).alias('cv_percent'),
+    average_price = pl.col('Close').mean(),
+    # last month rolling window average
+    average_trailing_1mo = pl.col('Close')
+    .filter(
+      pl.col('Date') >= (most_recent_date - timedelta(days=30)))
+      .mean(),
+    average_trailing_2mo = pl.col('Close')
+    .filter(
+      pl.col('Date') >= (most_recent_date - timedelta(days=60)))
+      .mean()
+    )
+  .with_columns(
+    volatility_rank = pl.col('cv').rank(descending=True)
+    )
+)
+
+# pull svgs to then render as markdown instead of display plain ticker text
+def svg_to_html(ticker, width=80, height=60):
+    """convert SVG file to inline HTML for gt tables"""
+    # map tickers to filenames
+    svg_files = {
+        'AAPL' : 'apple-svgrepo-com.svg',
+        'GOOGL': 'google-2015-logo-svgrepo-com.svg',
+        'NFLX' : 'netflix-svgrepo-com.svg', 
+        'NVDA' : 'nvidia-logo-svgrepo-com.svg',
+        'MSFT' : 'microsoft-logo-svgrepo-com.svg',
+        'TSLA' : 'tesla-9-logo-svgrepo-com.svg'
+    }
+
+    if ticker in svg_files:
+        with open(svg_files[ticker], 'r') as f:
+            svg_content = f.read()
+        
+        return f'''<div style="width:{width}px;height:{height}px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                     <div style="transform:scale(0.1);transform-origin:center;">{svg_content}</div>
+                   </div>'''
+    else:
+        return ticker # else fallback to plain ticker text
+
+# render logo column, select needed columns, and sort on volatility rank
+stock_summary = (
+  summary_stats.with_columns(
+    logo = pl.col('ticker').map_elements(
+        lambda x: svg_to_html(x), 
+        return_dtype=pl.Utf8
+        )
+    )
+    .select(
+      'logo','volatility_rank', 'volatility_std', 'cv', 
+      'average_price', 'average_trailing_1mo', 'average_trailing_2mo'
+      )
+    .sort('volatility_rank')
+    )
+
+# gt output with logo mkdown-rendered and more general styling
+styled_stock_summary = (
+    gt_nyt_custom(
+        stock_summary,
+        title = "On Volatility & Averages",
+        subtitle = "",
+        first_10_rows_only=True
+    )
+    .fmt_markdown(columns='Logo')
+    .fmt_percent(columns='Cv')              
+    .fmt_integer(columns='Volatility Rank') 
+    .tab_style(
+        style=style.text(color="black", size = 16, align = 'center'),
+        locations=loc.column_labels()
+    )
+    .tab_spanner(
+        label = md('**Volatility Stats**'),
+        columns = ['Volatility Std', 'Cv', 'Volatility Rank']  
+    )
+    .tab_spanner(
+        label = md('**Average Closing Price**'),
+        columns = ['Average Price', 'Average Trailing 2Mo', 'Average Trailing 1Mo'] 
+    )
+    .tab_style(
+        style=style.text(color= '#2e8b57', weight = 'bold'),
+        locations=gt.loc.body(
+          columns = ['Volatility Std', 'Cv', 'Volatility Rank'],
+          rows = (pl.col('Volatility Rank') == 6)
+          )
+    )
+    .tab_style(
+        style=style.text(color= '#8b1a1a', weight = 'bold'),
+        locations=gt.loc.body(
+          columns = ['Volatility Std', 'Cv', 'Volatility Rank'],
+          rows = (pl.col('Volatility Rank') == 1)
+          )
+    )
+    .tab_source_note(
+      source_note=md("""*Coef. of Variation (CV) = σ/μ × 100%, where σ is standard deviation and μ is the mean.<br>
+      **Volatility Rank: Simple Rank based on Coef. of Variation (1 = most volatile, 6 = least volatile)""")
+      )
+    .cols_label(**{
+        "Logo": "",
+        "Volatility Std": "Std. Deviation", 
+        "Cv": "*Coef. of Variation",
+        "Volatility Rank": "**Volatility Rank"
+    })
+)
+
+styled_stock_summary
+
+```
+
+::: text-justify
+While above summaries give us a better picture on the stock dynamics; one thing that remains unclear is whether or not close price 'consistently' dips or increases on a given day of the week, month, etc. This is what here we look at seasonality and tease out (if any) said seasonality.
+:::
+
+## Teasing out seasonality
+
+The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday.
+An attempt (leslie calendar plots)[https://github.com/mitbal/lesley]
+
+```{python}
+#|label: date-price-level-calc
+
+# add more date level and price level computations
+calendar_data = (
+    pl_results
+    .sort(["ticker", "Date"])
+    .with_columns([
+        pl.col('Date').dt.year().alias('year'),           
+        pl.col('Date').cast(pl.Date).alias('Date'),     
+        pl.col('Date').dt.weekday().alias('day_of_week'),
+        pl.col('Date').dt.day().alias('day_of_month'),
+        pl.col('Date').dt.week().alias('week_of_year'),
+        pl.col('Date').dt.month().alias('month'),
+        pl.col('Date').dt.strftime('%B').alias('month_name'),
+        # price-related calculations
+        (pl.col('Close') - pl.col('Close').shift(1).over('ticker')).alias('daily_change_abs'),
+        (
+            (pl.col('Close') - pl.col('Close').shift(1).over('ticker'))
+            / pl.col('Close').shift(1).over('ticker')
+        ).alias('daily_change_perc')
+    ])
+)
+
+# build calendar plot
+calendar_pd = pd.DataFrame(calendar_data)
+
+calendar_pd.columns = [
+    'Date',
+    'ticker',
+    'Close',
+    'High',
+    'Low',
+    'Open',
+    'Volume',
+    '$volume',
+    'year',
+    'day_of_week',
+    'day_of_month',
+    'week_of_year',
+    'month',
+    'month_name',
+    'daily_change_abs',
+    'daily_change_perc'
+]
+```
+
+```{python}
+#| label: seasonality-view-calendar-grid
+def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='viridis', show_disclaimer=False):
+    
+    # convert to pandas 
+    if hasattr(df, "to_pandas"):
+        df = df.to_pandas()
+    
+    # filter the data on ticker/stock and month
+    dff = df[(df['ticker'].isin(stocks)) & (df['month'].isin(months))].copy()
+    
+    # add day, week, and values columns
+    dff['Date'] = pd.to_datetime(dff['Date'])
+    dff['day'] = dff['Date'].dt.day
+    dff['weekday'] = dff['Date'].dt.dayofweek
+    dff['values'] = dff['daily_change_perc'] * 100   # convert to percentage
+    
+    # filter out weekends
+    dff = dff[dff['weekday'] < 5]
+    
+    # calculate proper week numbers within each month
+    dff = dff.sort_values(['month', 'Date'])
+    dff['week_of_month'] = dff.groupby('month')['Date'].transform(
+        lambda x: ((x.dt.day - 1) // 7) + 1
+    )
+    
+    # unique months sorted
+    unique_months = sorted(dff['month'].unique())
+    ncols = len(unique_months)  # months as columns
+    nrows = 1
+    
+    # create subplot grid - months as columns
+    month_names = {
+        1: 'Jan', 
+        2: 'Feb',
+        3: 'Mar', 
+        4: 'Apr', 
+        5: 'May', 
+        6: 'Jun',
+        7: 'Jul', 
+        8: 'Aug', 
+        9: 'Sep',
+        10: 'Oct', 
+        11: 'Nov', 
+        12: 'Dec'
+    }
+      
+    fig = sp.make_subplots(
+        rows=nrows, cols=ncols,
+        subplot_titles=[f"{month_names[m]}" for m in unique_months],
+        horizontal_spacing=0.05
+    )
+    
+    # add one heatmap per month
+    for idx, m in enumerate(unique_months):
+        col = idx + 1
+        row = 1
+        dmonth = dff[dff['month'] == m]
+        
+        if len(dmonth) > 0:
+            # create proper calendar layout
+            first_day = pd.Timestamp(year=dmonth['Date'].dt.year.iloc[0], month=m, day=1)
+            first_weekday = first_day.weekday()
+            
+            # create calendar grid
+            calendar_grid = {}
+            for _, day_data in dmonth.iterrows():
+                day = day_data['day']
+                weekday = day_data['weekday']
+                week = ((first_weekday + day - 1) // 7)
+                calendar_grid[(week, weekday)] = day_data['values']
+            
+            # create arrays for heatmap
+            max_weeks = max([key[0] for key in calendar_grid.keys()]) + 1 if calendar_grid else 1
+            z_data = np.full((max_weeks, 5), np.nan)
+            text_data = np.full((max_weeks, 5), '', dtype=object)
+            
+            # fill arrays
+            for (week, weekday), value in calendar_grid.items():
+                if weekday < 5:
+                    z_data[week, weekday] = value
+                    if not np.isnan(value):
+                        text_data[week, weekday] = f'{value:.1f}%'
+                        
+            colorbar_title = (
+              "*Note that the U.S. stock exchanges were <b>closed</b> on September 1, 2025 due to <b>Labor Day</b>*<br>% Change in Daily Stock Price" 
+              if show_disclaimer 
+              else "% Change in Daily Stock Price"
+              )
+                        
+            heatmap = go.Heatmap(
+                z=z_data[::-1],  # reverse week order
+                x=['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                y=[f'{max_weeks-i}' for i in range(max_weeks)],  
+                zmin=vmin,
+                zmax=vmax,
+                colorscale=colorscale,
+                showscale=(idx == len(unique_months)-1),
+                colorbar=dict(
+                    title=colorbar_title,
+                    orientation="h",
+                    titleside="top",
+                    len=0.4,
+                    thickness=15,
+                    x=0.5,
+                    xanchor="center",
+                    y=1.15,
+                    yanchor="bottom"
+                ) if idx == len(unique_months)-1 else None,
+                text=text_data[::-1],
+                texttemplate="%{text}",
+                textfont={"color": "black", "size": 13},
+                xgap=3,
+                ygap=3,
+                hovertemplate="<b>%{x}</b><br>Week: %{y}<br>Change: %{z:.2f}%<extra></extra>"
+            )
+            fig.add_trace(heatmap, row=row, col=col)
+
+    fig.update_xaxes(
+        gridcolor='rgb(248, 248, 248)'
+    )
+
+    # hide week numbers by making them white
+    fig.update_yaxes(
+        tickfont=dict(color='white'),
+        gridcolor='rgb(248, 248, 248)'
+    )
+    
+    stock_name_map = {
+        'AAPL': 'Apple',
+        'GOOGL': 'Google',
+        'MSFT': 'Microsoft',
+        'NFLX': 'Netflix',
+        'NVDA': 'Nvidia',
+        'TSLA': 'Tesla'
+    }
+          
+    fig.update_layout(
+        title={
+            'text': "<b>" + ", ".join(f"{stock_name_map[ticker]}" for ticker in stocks) + "</b>",
+            'xanchor': 'center',
+            'font': {'size': 18}
+        },
+        template='plotly_white',
+        plot_bgcolor='rgb(248, 248, 248)',
+        paper_bgcolor='rgb(248, 248, 248)',
+        height=400,
+        width=300 * ncols,
+        showlegend=False
+    )
+
+    return fig
+
+# create a function that loops through all stocks to display calendar view
+def calendar_stock_display(stocks, show_disclaimer=False):
+    fig = create_stock_calendar_grid(
+        df=calendar_data,
+        stocks=stocks,
+        months=[7, 8, 9],
+        vmin=-5,
+        vmax=5,
+        colorscale='Earth',
+        show_disclaimer=show_disclaimer
+    )
+    fig.show()
+
+# Loop through stocks, only show disclaimer for Apple
+for i, ticker in enumerate(tickers):
+    show_disclaimer = (ticker == 'AAPL')
+    calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
+
+```
+<br>
+
+From above calendar plots, a few patterns stand out:
+
+-   Tesla shows a notable Friday effect: consistent positive performance (blueish green tiles) appearing frequently on Fridays across multiple months
+
+-   End-of-week effects across portfolio: Apple, Tesla, and Nvidia show more frequent positive returns on Fridays compared to other weekdays
+
+-   High volatility stocks identified: Tesla and Nvidia exhibit frequent extreme daily moves (±3%+) while Netflix, Microsoft and Google show more stable patterns
+
+-   Patterns persist across time: Friday effects (upticks in stock price) remain fairly consistent across July-September
+
+
+## Building the Forecasts 
+
+```{python}
+#| label: forecast-build
+# chunk 1: building forecast frameworks
+# corrected forecasting code with fixes and commented sections
+
+# chunk 1: building forecast frameworks
+from pathlib import Path
+import joblib
+import json
+# import statements for all our models
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import xgboost as xgb
+
+def prepare_forecasting_data(pl_results):
+    """
+    convert polars data to pandas and prepare for forecasting
+    """
+    # convert to pandas for easier time series handling
+    df = pl_results.to_pandas()
+    
+    # ensure Date is datetime
+    df['Date'] = pd.to_datetime(df['Date'])
+    
+    # sort by ticker and date
+    df = df.sort_values(['ticker', 'Date']).reset_index(drop=True)
+    
+    # add day of week features (for seasonality)
+    df['day_of_week'] = df['Date'].dt.day_name()
+    df['is_friday'] = (df['Date'].dt.weekday == 4).astype(int)
+    df['is_monday'] = (df['Date'].dt.weekday == 0).astype(int)
+    
+    # calculate daily returns for analysis
+    df['daily_return'] = df.groupby('ticker')['Close'].pct_change() * 100
+    
+    return df
+
+def create_train_test_split(df, train_months=['July', 'August'], test_month='September'):
+    """
+    split data into training and testing sets
+    """
+    # create month names
+    df['month_name'] = df['Date'].dt.strftime('%B')
+    
+    # split the data
+    train_data = df[df['month_name'].isin(train_months)].copy()
+    test_data = df[df['month_name'] == test_month].copy()
+    
+    # logger.info(f"training data: {train_data['Date'].min()} to {train_data['Date'].max()}")
+    # logger.info(f"test data: {test_data['Date'].min()} to {test_data['Date'].max()}")
+    logger.info(f"training observations by ticker:")
+    for ticker, count in train_data.groupby('ticker').size().items():
+        logger.info(f"  {ticker}: {count} observations")
+    
+    return train_data, test_data
+
+class StockForecastingFramework:
+    """
+    comprehensive stock price forecasting framework with multiple models
+    """
+    
+    def __init__(self, prediction_log_dir='predictions_log'):
+        self.prediction_log_dir = Path(prediction_log_dir)
+        self.prediction_log_dir.mkdir(exist_ok=True)
+        
+        # initialize model registry
+        self.models = {}
+        self.model_configs = {
+            'naive_baseline': {'description': 'Previous day closing price'},
+            'seasonal_naive': {'description': 'Same weekday last week price'},
+            'linear_trend': {'description': 'Linear regression with day-of-week features'},
+            'xgboost': {'description': 'XGBoost with engineered features'}
+        }
+        
+        # prediction storage
+        self.predictions_df = pd.DataFrame()
+        self.model_performance = {}
+        
+        logger.info("StockForecastingFramework initialized")
+        logger.info(f"prediction logs will be saved to: {self.prediction_log_dir}")
+        
+    def prepare_features(self, df, ticker):
+        """
+        create features for machine learning models
+        """
+        ticker_data = df[df['ticker'] == ticker].copy().sort_values('Date')
+        
+        # technical indicators
+        ticker_data['sma_5'] = ticker_data['Close'].rolling(5).mean()
+        ticker_data['sma_20'] = ticker_data['Close'].rolling(20).mean()
+        ticker_data['volatility_5'] = ticker_data['Close'].rolling(5).std()
+        
+        # lag features
+        for lag in [1, 2, 3, 5]:
+            ticker_data[f'close_lag_{lag}'] = ticker_data['Close'].shift(lag)
+            ticker_data[f'return_lag_{lag}'] = ticker_data['daily_return'].shift(lag)
+        
+        # day of week dummies
+        ticker_data['monday'] = (ticker_data['Date'].dt.weekday == 0).astype(int)
+        ticker_data['tuesday'] = (ticker_data['Date'].dt.weekday == 1).astype(int)
+        ticker_data['wednesday'] = (ticker_data['Date'].dt.weekday == 2).astype(int)
+        ticker_data['thursday'] = (ticker_data['Date'].dt.weekday == 3).astype(int)
+        ticker_data['friday'] = (ticker_data['Date'].dt.weekday == 4).astype(int)
+        
+        # tesla friday effect (special feature based on your analysis)
+        if ticker == 'TSLA':
+            ticker_data['tesla_friday_effect'] = ticker_data['friday']
+        else:
+            ticker_data['tesla_friday_effect'] = 0
+            
+        return ticker_data.dropna()
+    
+    def log_prediction(self, prediction_date, target_date, ticker, model, 
+                      predicted_price, actual_price=None):
+        """
+        log prediction to tracking system
+        """
+        timestamp = datetime.now()
+        
+        # calculate errors if actual price is available
+        absolute_error = None
+        percentage_error = None
+        direction_correct = None
+        
+        if actual_price is not None:
+            absolute_error = abs(predicted_price - actual_price)
+            percentage_error = (absolute_error / actual_price) * 100
+            direction_correct = True
+        
+        # create prediction record
+        prediction_record = {
+            'timestamp': timestamp,
+            'prediction_date': prediction_date,
+            'target_date': target_date,
+            'ticker': ticker,
+            'model': model,
+            'predicted_price': predicted_price,
+            'actual_price': actual_price,
+            'absolute_error': absolute_error,
+            'percentage_error': percentage_error,
+            'direction_correct': direction_correct
+        }
+        
+        # add to internal storage
+        self.predictions_df = pd.concat([
+            self.predictions_df, 
+            pd.DataFrame([prediction_record])
+        ], ignore_index=True)
+        
+        # log to file
+        log_file = self.prediction_log_dir / 'stock_predictions.csv'
+        pd.DataFrame([prediction_record]).to_csv(
+            log_file, mode='a', header=not log_file.exists(), index=False
+        )
+        
+        # fixed the syntax error here - was "matarget_date" 
+        # logger.info(f"logged prediction: {ticker} {model} -> ${predicted_price:.2f} for {target_date}")
+    
+    def evaluate_model_performance(self, model_name, predictions, actuals):
+        """
+        calculate comprehensive performance metrics
+        """
+        # convert to numpy arrays
+        predictions = np.array(predictions)
+        actuals = np.array(actuals)
+        
+        mae = mean_absolute_error(actuals, predictions)
+        rmse = np.sqrt(mean_squared_error(actuals, predictions))
+        mape = np.mean(np.abs((actuals - predictions) / actuals)) * 100
+        
+        self.model_performance[model_name] = {
+            'MAE': mae,
+            'RMSE': rmse,
+            'MAPE': mape,
+            'n_predictions': len(predictions)
+        }
+        
+        logger.info(f"{model_name} performance - MAE: ${mae:.2f}, RMSE: ${rmse:.2f}, MAPE: {mape:.1f}%")
+        
+        return self.model_performance[model_name]
+
+# initialize the framework
+def setup_forecasting_framework():
+    """
+    setup the forecasting environment
+    """
+    logger.info("setting up forecasting framework...")
+    
+    # initialize framework
+    framework = StockForecastingFramework()
+    
+    # prepare data (assuming forecast_df from previous step)
+    logger.info("preparing forecasting data...")
+    
+    return framework
+
+# chunk 2: baseline models (naive and seasonal naive forecasters)
+class BaselineModels:
+    """
+    naive and seasonal naive forecasting models that serve as benchmarks
+    """
+    
+    def __init__(self, framework):
+        self.framework = framework
+        logger.info("initializing baseline models...")
+    
+    def naive_forecast(self, train_data, test_dates, ticker):
+        """
+        naive forecast: next day price = today's price
+        """
+        ticker_train = train_data[train_data['ticker'] == ticker].sort_values('Date')
+        
+        if len(ticker_train) == 0:
+            logger.warning(f"no training data found for {ticker}")
+            return {}
+        
+        # get last known price
+        last_price = ticker_train['Close'].iloc[-1]
+        last_date = ticker_train['Date'].iloc[-1]
+        
+        predictions = {}
+        for target_date in test_dates:
+            predictions[target_date] = last_price
+            
+            # log the prediction
+            self.framework.log_prediction(
+                prediction_date=last_date,
+                target_date=target_date,
+                ticker=ticker,
+                model='naive_baseline',
+                predicted_price=last_price
+            )
+        
+        return predictions
+    
+    def seasonal_naive_forecast(self, train_data, test_dates, ticker):
+        """
+        seasonal naive: next monday = last monday's price, etc.
+        """
+        ticker_train = train_data[train_data['ticker'] == ticker].sort_values('Date')
+        
+        if len(ticker_train) == 0:
+            logger.warning(f"no training data found for {ticker}")
+            return {}
+        
+        predictions = {}
+        
+        for target_date in test_dates:
+            target_weekday = target_date.weekday()
+            
+            # find most recent day with same weekday
+            same_weekday_data = ticker_train[
+                ticker_train['Date'].dt.weekday == target_weekday
+            ].sort_values('Date')
+            
+            if len(same_weekday_data) > 0:
+                # use most recent same weekday price
+                seasonal_price = same_weekday_data['Close'].iloc[-1]
+                seasonal_date = same_weekday_data['Date'].iloc[-1]
+            else:
+                # fallback to naive if no same weekday found
+                seasonal_price = ticker_train['Close'].iloc[-1]
+                seasonal_date = ticker_train['Date'].iloc[-1]
+            
+            predictions[target_date] = seasonal_price
+            
+            # log the prediction
+            self.framework.log_prediction(
+                prediction_date=seasonal_date,
+                target_date=target_date,
+                ticker=ticker,
+                model='seasonal_naive',
+                predicted_price=seasonal_price
+            )
+        
+        return predictions
+    
+    def run_baseline_forecasts(self, train_data, test_data):
+        """
+        run both baseline models for all tickers
+        """
+        logger.info("running baseline forecasts for all tickers...")
+        
+        tickers = train_data['ticker'].unique()
+        test_dates = sorted(test_data['Date'].unique())
+        
+        all_predictions = {}
+        
+        for ticker in tickers:
+            # run naive forecast
+            naive_preds = self.naive_forecast(train_data, test_dates, ticker)
+            
+            # run seasonal naive forecast
+            seasonal_preds = self.seasonal_naive_forecast(train_data, test_dates, ticker)
+            
+            all_predictions[ticker] = {
+                'naive_baseline': naive_preds,
+                'seasonal_naive': seasonal_preds
+            }
+        
+        return all_predictions
+
+def run_baseline_evaluation(framework, baseline_models, train_data, test_data):
+    """
+    evaluate baseline model performance on test data
+    """
+    logger.info("evaluating baseline model performance...")
+    
+    # run predictions
+    predictions = baseline_models.run_baseline_forecasts(train_data, test_data)
+    
+    # evaluate against actual test data
+    tickers = test_data['ticker'].unique()
+    
+    for ticker in tickers:
+        ticker_test = test_data[test_data['ticker'] == ticker].sort_values('Date')
+        
+        if ticker not in predictions:
+            continue
+            
+        for model_name in ['naive_baseline', 'seasonal_naive']:
+            model_preds = predictions[ticker][model_name]
+            
+            # align predictions with actual test dates
+            pred_values = []
+            actual_values = []
+            
+            for _, row in ticker_test.iterrows():
+                test_date = row['Date']
+                actual_price = row['Close']
+                
+                if test_date in model_preds:
+                    pred_values.append(model_preds[test_date])
+                    actual_values.append(actual_price)
+            
+            if len(pred_values) > 0:
+                # evaluate performance
+                framework.evaluate_model_performance(
+                    f"{model_name}_{ticker}",
+                    pred_values,
+                    actual_values
+                )
+
+def setup_and_run_baselines(framework, train_data, test_data):
+    """
+    setup and run baseline models
+    """
+    logger.info("setting up baseline models...")
+    
+    # initialize baseline models
+    baseline_models = BaselineModels(framework)
+    
+    # run baseline evaluation
+    run_baseline_evaluation(framework, baseline_models, train_data, test_data)
+    
+    logger.info("chunk 2 complete - baseline models evaluated")
+    return baseline_models
+
+# chunk 3: statistical models (linear regression and xgboost)
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
+class StatisticalModels:
+    """
+    linear regression and xgboost models with feature engineering
+    """
+    
+    def __init__(self, framework):
+        self.framework = framework
+        self.models = {}
+        self.scalers = {}
+        self.train_data = None
+        logger.info("initializing statistical models...")
+        
+    def prepare_model_features(self, data, ticker, is_training=True):
+        """
+        prepare feature matrix for ml models
+        """
+        if is_training:
+            # for training, use all available data for feature engineering
+            ticker_data = self.framework.prepare_features(data, ticker)
+            self.train_data = data
+            # logger.info(f"training feature data for {ticker}: {len(ticker_data)} rows after dropna")
+        else:
+            # for testing, we simulate real forecasting - no future prices known
+            test_ticker_data = data[data['ticker'] == ticker].sort_values('Date')
+            train_ticker_data = self.train_data[self.train_data['ticker'] == ticker].sort_values('Date')
+            
+            # get the last known values from training data
+            last_train_close = train_ticker_data['Close'].iloc[-1]
+            last_train_return = train_ticker_data['daily_return'].iloc[-1] if 'daily_return' in train_ticker_data.columns else 0
+            
+            feature_rows = []
+            
+            for _, test_row in test_ticker_data.iterrows():
+                test_date = test_row['Date']
+                
+                feature_dict = {
+                    'Date': test_date,
+                    'Close': last_train_close,  
+                    'ticker': ticker,
+                    'daily_return': 0,  
+                    
+                    # indicators based on last known training data
+                    'sma_5': last_train_close,
+                    'sma_20': last_train_close,
+                    'volatility_5': abs(last_train_return) if last_train_return else 1.0,
+                    
+                    # lag features use historical data only
+                    'close_lag_1': last_train_close,
+                    'close_lag_2': last_train_close,
+                    'close_lag_3': last_train_close,
+                    'close_lag_5': last_train_close,
+                    'return_lag_1': last_train_return,
+                    'return_lag_2': last_train_return,
+                    'return_lag_3': last_train_return,
+                    'return_lag_5': last_train_return,
+                    
+                    # day of week features 
+                    'monday': 1 if test_date.weekday() == 0 else 0,
+                    'tuesday': 1 if test_date.weekday() == 1 else 0,
+                    'wednesday': 1 if test_date.weekday() == 2 else 0,
+                    'thursday': 1 if test_date.weekday() == 3 else 0,
+                    'friday': 1 if test_date.weekday() == 4 else 0,
+                    
+                    # tesla friday effect
+                    'tesla_friday_effect': 1 if (ticker == 'TSLA' and test_date.weekday() == 4) else 0
+                }
+                
+                feature_rows.append(feature_dict)
+            
+            ticker_data = pd.DataFrame(feature_rows)
+            # logger.info(f"test feature data for {ticker}: {len(ticker_data)} rows created")
+        
+          
+        if len(ticker_data) < 1:
+            logger.warning(f"insufficient feature data for {ticker}: only {len(ticker_data)} rows")
+            return None, None, None, None
+        
+        # define feature columns
+        feature_cols = [
+            'sma_5', 'sma_20', 'volatility_5',
+            'close_lag_1', 'close_lag_2', 'close_lag_3', 'close_lag_5',
+            'return_lag_1', 'return_lag_2', 'return_lag_3', 'return_lag_5',
+            'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+            'tesla_friday_effect'
+        ]
+        
+        # create feature matrix
+        X = ticker_data[feature_cols].values
+        y = ticker_data['Close'].values
+        dates = ticker_data['Date'].values
+        
+        return X, y, dates, feature_cols
+    
+    def train_linear_model(self, train_data, ticker):
+        """
+        train linear regression model with day-of-week features
+        """
+        X_train, y_train, train_dates, feature_cols = self.prepare_model_features(train_data, ticker, is_training=True)
+        
+        if X_train is None or len(X_train) == 0:
+            logger.warning(f"no training data for linear model: {ticker}")
+            return None
+        
+        # scale features
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        
+        # train linear regression
+        model = LinearRegression()
+        model.fit(X_train_scaled, y_train)
+        
+        # store model and scaler
+        model_key = f"linear_{ticker}"
+        self.models[model_key] = model
+        self.scalers[model_key] = scaler
+        
+        # logger.info(f"trained linear regression for {ticker} with {len(X_train)} samples")
+        return model, scaler
+    
+    def train_xgboost_model(self, train_data, ticker):
+        """
+        train xgboost model with advanced features
+        """
+        X_train, y_train, train_dates, feature_cols = self.prepare_model_features(train_data, ticker, is_training=True)
+        
+        if X_train is None or len(X_train) == 0:
+            logger.warning(f"no training data for xgboost model: {ticker}")
+            return None
+        
+        # xgboost parameters
+        params = {
+            'objective': 'reg:squarederror',
+            'max_depth': 4,
+            'learning_rate': 0.1,
+            'n_estimators': 50,
+            'random_state': 42
+        }
+        
+        # train xgboost
+        model = xgb.XGBRegressor(**params)
+        model.fit(X_train, y_train)
+        
+        # store model
+        model_key = f"xgboost_{ticker}"
+        self.models[model_key] = model
+        
+        # logger.info(f"trained xgboost for {ticker} with {len(X_train)} samples")
+        return model
+    
+    def predict_linear(self, test_data, ticker):
+        """
+        make predictions using linear regression
+        """
+        model_key = f"linear_{ticker}"
+        
+        if model_key not in self.models:
+            logger.warning(f"no trained linear model for {ticker}")
+            return {}
+        
+        model = self.models[model_key]
+        scaler = self.scalers[model_key]
+        
+        # prepare test features 
+        X_test, y_test, test_dates, feature_cols = self.prepare_model_features(test_data, ticker, is_training=False)
+        
+        if X_test is None or len(X_test) == 0:
+            logger.warning(f"no test features for linear model: {ticker}")
+            return {}
+        
+        # scale and predict
+        X_test_scaled = scaler.transform(X_test)
+        predictions = model.predict(X_test_scaled)
+        
+        # create prediction dictionary
+        pred_dict = {}
+        for i, date in enumerate(test_dates):
+            pred_dict[pd.to_datetime(date)] = predictions[i]
+            
+            # log prediction
+            self.framework.log_prediction(
+                prediction_date=test_dates[-1] if len(test_dates) > 0 else date,
+                target_date=pd.to_datetime(date),
+                ticker=ticker,
+                model='linear_trend',
+                predicted_price=predictions[i]
+            )
+        
+        # logger.info(f"linear model predictions for {ticker}: {len(predictions)} forecasts")
+        return pred_dict
+    
+    def predict_xgboost(self, test_data, ticker):
+        """
+        make predictions using xgboost
+        """
+        model_key = f"xgboost_{ticker}"
+        
+        if model_key not in self.models:
+            logger.warning(f"no trained xgboost model for {ticker}")
+            return {}
+        
+        model = self.models[model_key]
+        
+        # prepare test features
+        X_test, y_test, test_dates, feature_cols = self.prepare_model_features(test_data, ticker, is_training=False)
+        
+        if X_test is None or len(X_test) == 0:
+            logger.warning(f"no test features for xgboost model: {ticker}")
+            return {}
+        
+        # predict
+        predictions = model.predict(X_test)
+        
+        # create prediction dictionary
+        pred_dict = {}
+        for i, date in enumerate(test_dates):
+            pred_dict[pd.to_datetime(date)] = predictions[i]
+            
+            # log prediction
+            self.framework.log_prediction(
+                prediction_date=test_dates[-1] if len(test_dates) > 0 else date,
+                target_date=pd.to_datetime(date),
+                ticker=ticker,
+                model='xgboost',
+                predicted_price=predictions[i]
+            )
+        
+        # logger.info(f"xgboost predictions for {ticker}: {len(predictions)} forecasts")
+        return pred_dict
+    
+    def run_statistical_forecasts(self, train_data, test_data):
+        """
+        train and run both statistical models for all tickers
+        """
+        logger.info("running statistical forecasts for all tickers...")
+        
+        tickers = train_data['ticker'].unique()
+        all_predictions = {}
+        
+        for ticker in tickers:
+            # logger.info(f"processing statistical models for {ticker}...")
+            
+            # train models
+            linear_model = self.train_linear_model(train_data, ticker)
+            xgb_model = self.train_xgboost_model(train_data, ticker)
+            
+            # make predictions
+            linear_preds = self.predict_linear(test_data, ticker)
+            xgb_preds = self.predict_xgboost(test_data, ticker)
+            
+            all_predictions[ticker] = {
+                'linear_trend': linear_preds,
+                'xgboost': xgb_preds
+            }
+        
+        logger.info("statistical forecasts completed for all tickers")
+        return all_predictions
+
+def run_statistical_evaluation(framework, statistical_models, train_data, test_data):
+    """
+    evaluate statistical model performance
+    """
+    logger.info("evaluating statistical model performance...")
+    
+    # run predictions
+    predictions = statistical_models.run_statistical_forecasts(train_data, test_data)
+    
+    # evaluate against actual test data
+    tickers = test_data['ticker'].unique()
+    
+    for ticker in tickers:
+        ticker_test = test_data[test_data['ticker'] == ticker].sort_values('Date')
+        
+        if ticker not in predictions:
+            continue
+            
+        for model_name in ['linear_trend', 'xgboost']:
+            model_preds = predictions[ticker][model_name]
+            
+            # align predictions with actual test dates
+            pred_values = []
+            actual_values = []
+            
+            for _, row in ticker_test.iterrows():
+                test_date = pd.to_datetime(row['Date'])
+                actual_price = row['Close']
+                
+                if test_date in model_preds:
+                    pred_values.append(model_preds[test_date])
+                    actual_values.append(actual_price)
+            
+            if len(pred_values) > 0:
+                # evaluate performance
+                framework.evaluate_model_performance(
+                    f"{model_name}_{ticker}",
+                    pred_values,
+                    actual_values
+                )
+
+def setup_and_run_statistical_models(framework, train_data, test_data):
+    """
+    setup and run statistical models
+    """
+    logger.info("setting up statistical models...")
+    
+    # initialize statistical models
+    statistical_models = StatisticalModels(framework)
+    
+    # run evaluation
+    run_statistical_evaluation(framework, statistical_models, train_data, test_data)
+    
+    logger.info("chunk 3 complete - statistical models evaluated")
+    return statistical_models
+
+# performance summary function
+def get_performance_df(framework):
+    """
+    extract performance data from framework and return as polars dataframe
+    """
+    if not framework.model_performance:
+        logger.warning("no model performance data found")
+        return None
+    
+    # convert performance dict to list
+    performance_data = []
+    
+    for model_ticker, metrics in framework.model_performance.items():
+        # parse model name and ticker (format: "model_name_TICKER")
+        parts = model_ticker.split('_')
+        ticker = parts[-1]  
+        model = '_'.join(parts[:-1]).replace('_', ' ').title()
+      
+        performance_data.append({
+            'ticker': ticker,
+            'model': model,
+            'mae_dollars': metrics['MAE'],
+            'rmse_dollars': metrics['RMSE'], 
+            'mape_percent': metrics['MAPE'] / 100,
+            'predictions': metrics['n_predictions']
+        })
+    
+    # convert to polars and sort
+    performance_df = pl.DataFrame(performance_data).sort(['ticker', 'model'])
+    
+    return performance_df
+
+# main execution
+logger.info("starting forecasting pipeline...")
+
+# setup framework
+framework = setup_forecasting_framework()
+
+# prepare data
+forecast_df = prepare_forecasting_data(pl_results)
+train_data, test_data = create_train_test_split(forecast_df)
+
+# run baseline models
+baseline_models = setup_and_run_baselines(framework, train_data, test_data)
+
+# run statistical models
+statistical_models = setup_and_run_statistical_models(framework, train_data, test_data)
+
+# show results
+performance_df = get_performance_df(framework)
+```
+
+## On the choice of Forecasting Models
+
+I always prerfer to nest multiple models per series (stock in this case). This gives me a baseline upon which other contending models can be run and compared. <br>
+In this case, four forecasting approaches were tested/run: Naive Baseline (last known price), Seasonal Naive (same weekday historical price), Linear Regression with day-of-week features, and XGBoost with engineered technical indicators (mainly revolving around rolling n-day averages).
+
+Simple models dominate across portfolio: Naive Baseline achieved lowest error rates for Apple (4.08% MAPE) and Microsoft (0.98% MAPE), while Seasonal Naive performed best for Tesla (12.21% MAPE) and Netflix (1.56% MAPE).
+
+Machine learning shows limited advantage: XGBoost outperformed simpler methods only for Nvidia (2.12% MAPE) - technically also for Netflix but virtually the same accuracy as Naive Baseline (very close second to Xgboost). <br> 
+This suggests that complex feature engineering and model provide minimal forecasting improvement for most stocks in this timeframe.
+
+Volatility drives prediction difficulty: High-volatility stocks like Tesla show consistently poor performance across all models (12-15% MAPE), while stable stocks like Microsoft achieve sub-1% error rates even with basic approaches.
+
+Day-of-week seasonality proves more valuable than technical indicators: The success of Seasonal Naive models validates the calendar analysis findings, demonstrating that weekly trading patterns contain more predictive signal than moving averages or lag features for short-term forecasting.
+
+```{python}
+#|label: display-forecasts-error-summary
+# check comprehensive performance across all models
+performance_df = get_performance_df(framework)
+# sort on stock and mape (ascending)
+performance_df = performance_df.sort(['ticker', 'mape_percent'])
+
+(
+  gt_nyt_custom(performance_df, title='Complete Model Performance By Stock', first_10_rows_only=False)
+  .fmt_percent('Mape Percent')
+  .cols_hide('Predictions')
+)
+
+```
+
+::: text-justify
+The results reveal that sophisticated machine learning models almost consistently underperform simpler approaches across most stocks. 
+Notably, XGBoost achieves the lowest error rate only for Nvidia (2.12% MAPE), while basic Naive Baseline or Seasonal Naive models dominate performance for Apple, Microsoft, Netflix (tied with XGboost), and Tesla. 
+
+This pattern suggests that for short-term daily price forecasting, the day-of-week seasonality captured by simple historical patterns often provides more predictive value than complex feature engineering. 
+
+The exception is Google, where Linear Trend slightly outperforms baseline methods, and Tesla, where all models struggle with high volatility (12-15% MAPE), indicating that the Teska stock's erratic price movements are inherently difficult to forecast regardless of modeling approach.
+
+I wanted to include even more complex forecasting methods such as Prophet (from Meta), or LSTMs (Long Term Short Term Model), but seeing that simple models already achieve high accuracy, I decided not to go for those. In a real-world/job day-to-day, every additional line of code/model is additional maintenance and that comes with its own set of risks/painpoints.
+::: 
+
+
+
+
+
+
+
+
+
+
+
