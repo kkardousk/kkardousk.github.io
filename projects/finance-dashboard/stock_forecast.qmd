@@ -24,7 +24,8 @@ format:
     toc-expand: true
     toc-title: 'Navigation'
     number-depth: 2
-    fig-format: png
+    fig-format: retina  
+    plotly-connected: true  
     fig-dpi: 150
     code-link: true
     code-fold: true
@@ -54,7 +55,11 @@ execute:
 editor: visual
 ---
 
+::: text-justify
 ## High Level Findings
+I looked at 6 stocks over a 3-month period (July-September 2025) using multiple forecasting approaches to identify trading patterns and evaluate predictive model performance. The analysis examined Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA), comparing naive baselines against machine learning models to determine which approaches best capture short-term price movements.
+:::
+
 ::: text-justify
 -   Tesla exhibits a consistent Friday effect with positive returns occurring 65% more frequently on Fridays compared to other weekdays across July-September 2025
 
@@ -62,15 +67,18 @@ editor: visual
 
 -   End-of-week bias spans the entire tech portfolio: Apple, Tesla, and Nvidia show systematically higher returns on Fridays, suggesting sector-wide behavioral trading patterns rather than stock-specific anomalies
 
--  Tesla and Nvidia demonstrate 3x higher daily price swings (±3%+ moves) compared to more mature tech stocks like Microsoft and Google, creating distinct forecasting challenges
+-   Tesla and Nvidia demonstrate 3x higher daily price swings (±3%+ moves) compared to more mature tech stocks like Microsoft and Google, creating distinct forecasting challenges. Note that Google remains the most volatile in terms of $ value of the std. deviation of stock compared to its mean stock price (not the most volatile in its % change of stock price day over day). 
 
-- However when scaled to each stock close price variation, the most volatile stock is Google (~13% coefficient of variation), followed by Tesla (~12%) and Apple (~7%), with Microsoft being the least volatile (~2%)
+-   However when scaled to each stock close price variation, the most volatile stock is Google (\~13% coefficient of variation), followed by Tesla (\~12%) and Apple (\~7%), with Microsoft being the least volatile (\~2%)
+:::
 
 ## Initial Setup
-:::
+
 <p style="color: #ff0000; font-weight: bold; font-size: 18px; text-align: center; background-color: #ffe6e6; padding: 10px; border: 2px solid #ff0000; border-radius: 5px;">
+
 NOTE: DEPENDING ON THE BROWSER, YOU MIGHT NEED TO REFRESH THIS PAGE A COUPLE OF TIMES IN ORDER FOR THE PLOTS TO RENDER. THIS IS A KNOWN ISSUE WITH {PLOTLY} WHEN USED <u>IN TANDEM</u> WITH QUARTO
 </p>
+
 ::: text-justify
 After having setup the `.venv` using `uv init`, here we start by importing needed packages and setting up what we need.
 :::
@@ -91,9 +99,11 @@ import plotly.graph_objects as go
 import plotly.express as px
 import plotly.subplots as sp
 from plotly.subplots import make_subplots
+import plotly.offline as pyo
+pyo.init_notebook_mode(connected=False)
+
 from datetime import datetime, timedelta, date
 import numpy as np
-import lesley
 import calendar
 
 import sys
@@ -102,6 +112,12 @@ import pprint
 from IPython.display import display, HTML
 
 from itertools import starmap
+
+def render_plot(fig):
+    """Render Plotly figure with embedded JS (no CDN required)"""
+    from IPython.display import HTML, display
+    display(HTML(fig.to_html(include_plotlyjs=True, full_html=False)))
+    
 ```
 
 ::: text-justify
@@ -193,8 +209,7 @@ def download_stocks_data(ticker):
 results = list(map(download_stocks_data, tickers)) 
 ```
 
-Here I call the yfinance api to pull stock prices for six major technology stocks: Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA).<br> 
-**Note that this analysis is based on data pulled July-September 2025**. Results will vary if run with different or dynamic time periods; the point here is to create a historical fixed snapshot as all my comments/analyses are based on the July-September 2025 period.<br> 
+Here I call the yfinance api to pull stock prices for six major technology stocks: Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA).<br> **Note that this analysis is based on data pulled July-September 2025**. Results will vary if run with different or dynamic time periods; the point here is to create a historical fixed snapshot as all my comments/analyses are based on the July-September 2025 period.<br>
 
 ## Display of data pull using `great-tables`
 
@@ -484,7 +499,8 @@ comparison_chart = plot_single_comparison(
 )
 
 # display the charts
-comparison_chart.show()
+render_plot(comparison_chart)
+
 ```
 
 ::: text-justify
@@ -593,12 +609,12 @@ faceted_chart = plot_stock_facets(
     title="Stock Performance by Ticker (3 Months)", 
     height=600
 )
-faceted_chart.show()
+
+render_plot(faceted_chart)
 ```
 
 ::: text-justify
-Overall, and despite the dips and volatility, and while a few grew more than others, and except for Netflix, all other stocks have risen in value over the period shown. Also, Google and Tesla follow similar trends. <br>
-But speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
+Overall, and despite the dips and volatility, and while a few grew more than others, and except for Netflix, all other stocks have risen in value over the period shown. Also, Google and Tesla follow similar trends. <br> But speaking of volatility, let's gather more stats around stock price evolution and tease out more insights overall.
 :::
 
 ```{python}
@@ -728,8 +744,7 @@ While above summaries give us a better picture on the stock dynamics; one thing 
 
 ## Teasing out seasonality
 
-The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday.
-An attempt (leslie calendar plots)[https://github.com/mitbal/lesley]
+The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday. 
 
 ```{python}
 #|label: date-price-level-calc
@@ -811,18 +826,9 @@ def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='
     
     # create subplot grid - months as columns
     month_names = {
-        1: 'Jan', 
-        2: 'Feb',
-        3: 'Mar', 
-        4: 'Apr', 
-        5: 'May', 
-        6: 'Jun',
         7: 'Jul', 
         8: 'Aug', 
-        9: 'Sep',
-        10: 'Oct', 
-        11: 'Nov', 
-        12: 'Dec'
+        9: 'Sep'
     }
       
     fig = sp.make_subplots(
@@ -942,14 +948,17 @@ def calendar_stock_display(stocks, show_disclaimer=False):
         colorscale='Earth',
         show_disclaimer=show_disclaimer
     )
-    fig.show()
+    return fig
 
-# Loop through stocks, only show disclaimer for Apple
+
+# loop through stocks, only show disclaimer for Apple
 for i, ticker in enumerate(tickers):
     show_disclaimer = (ticker == 'AAPL')
-    calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
+    render_plot(calendar_stock_display([ticker], show_disclaimer=show_disclaimer))
+
 
 ```
+
 <br>
 
 From above calendar plots, a few patterns stand out:
@@ -962,14 +971,10 @@ From above calendar plots, a few patterns stand out:
 
 -   Patterns persist across time: Friday effects (upticks in stock price) remain fairly consistent across July-September
 
-
-## Building the Forecasts 
+## Building the Forecasts
 
 ```{python}
 #| label: forecast-build
-# chunk 1: building forecast frameworks
-# corrected forecasting code with fixes and commented sections
-
 # chunk 1: building forecast frameworks
 from pathlib import Path
 import joblib
@@ -1665,6 +1670,7 @@ def get_performance_df(framework):
             'mae_dollars': metrics['MAE'],
             'rmse_dollars': metrics['RMSE'], 
             'mape_percent': metrics['MAPE'] / 100,
+            'accuracy': 1 - metrics['MAPE'] / 100,
             'predictions': metrics['n_predictions']
         })
     
@@ -1695,13 +1701,11 @@ performance_df = get_performance_df(framework)
 
 ## On the choice of Forecasting Models
 
-I always prerfer to nest multiple models per series (stock in this case). This gives me a baseline upon which other contending models can be run and compared. <br>
-In this case, four forecasting approaches were tested/run: Naive Baseline (last known price), Seasonal Naive (same weekday historical price), Linear Regression with day-of-week features, and XGBoost with engineered technical indicators (mainly revolving around rolling n-day averages).
+I always prefer to nest multiple models per series (stock in this case). This gives me a baseline upon which other contending models can be run and compared. <br> In this case, four forecasting approaches were tested/run: Naive Baseline (last known price), Seasonal Naive (same weekday historical price), Linear Regression with day-of-week features, and XGBoost with engineered technical indicators (mainly revolving around rolling n-day averages).
 
 Simple models dominate across portfolio: Naive Baseline achieved lowest error rates for Apple (4.08% MAPE) and Microsoft (0.98% MAPE), while Seasonal Naive performed best for Tesla (12.21% MAPE) and Netflix (1.56% MAPE).
 
-Machine learning shows limited advantage: XGBoost outperformed simpler methods only for Nvidia (2.12% MAPE) - technically also for Netflix but virtually the same accuracy as Naive Baseline (very close second to Xgboost). <br> 
-This suggests that complex feature engineering and model provide minimal forecasting improvement for most stocks in this timeframe.
+Machine learning shows limited advantage: XGBoost outperformed simpler methods only for Nvidia (2.12% MAPE) - technically also for Netflix but virtually the same accuracy as Naive Baseline (very close second to Xgboost). <br> This suggests that complex feature engineering and model provide minimal forecasting improvement for most stocks in this timeframe.
 
 Volatility drives prediction difficulty: High-volatility stocks like Tesla show consistently poor performance across all models (12-15% MAPE), while stable stocks like Microsoft achieve sub-1% error rates even with basic approaches.
 
@@ -1716,30 +1720,18 @@ performance_df = performance_df.sort(['ticker', 'mape_percent'])
 
 (
   gt_nyt_custom(performance_df, title='Complete Model Performance By Stock', first_10_rows_only=False)
-  .fmt_percent('Mape Percent')
+  .fmt_percent(['Mape Percent', 'Accuracy'])
   .cols_hide('Predictions')
 )
 
 ```
 
 ::: text-justify
-The results reveal that sophisticated machine learning models almost consistently underperform simpler approaches across most stocks. 
-Notably, XGBoost achieves the lowest error rate only for Nvidia (2.12% MAPE), while basic Naive Baseline or Seasonal Naive models dominate performance for Apple, Microsoft, Netflix (tied with XGboost), and Tesla. 
+The results reveal that sophisticated machine learning models almost consistently under-perform simpler approaches across most stocks. Notably, XGBoost achieves the lowest error rate only for Nvidia (2.12% MAPE), while basic Naive Baseline or Seasonal Naive models dominate performance for Apple, Microsoft, Netflix (tied with XGboost), and Tesla.
 
-This pattern suggests that for short-term daily price forecasting, the day-of-week seasonality captured by simple historical patterns often provides more predictive value than complex feature engineering. 
+This pattern suggests that for short-term daily price forecasting, the day-of-week seasonality captured by simple historical patterns often provides more predictive value than complex feature engineering.
 
-The exception is Google, where Linear Trend slightly outperforms baseline methods, and Tesla, where all models struggle with high volatility (12-15% MAPE), indicating that the Teska stock's erratic price movements are inherently difficult to forecast regardless of modeling approach.
+The exception is Google, where Linear Trend slightly outperforms baseline methods, and Tesla, where all models struggle with high volatility (12-15% MAPE), indicating that the Tesla stock's erratic price movements are inherently difficult to forecast regardless of modeling approach.
 
 I wanted to include even more complex forecasting methods such as Prophet (from Meta), or LSTMs (Long Term Short Term Model), but seeing that simple models already achieve high accuracy, I decided not to go for those. In a real-world/job day-to-day, every additional line of code/model is additional maintenance and that comes with its own set of risks/painpoints.
-::: 
-
-
-
-
-
-
-
-
-
-
-
+:::
