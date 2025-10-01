@@ -382,6 +382,9 @@ footer {
   align-self: start;
   z-index: 1;
 }
+.sidebar-section[data-bs-target*="personal-projects"] {
+  display: block !important;
+}
 
 /* Main content area styling */
 #quarto-document-content {
