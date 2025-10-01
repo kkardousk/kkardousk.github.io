@@ -100,6 +100,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import plotly.subplots as sp
 from plotly.subplots import make_subplots
+from plotly.io import to_html
 
 from datetime import datetime, timedelta, date
 import numpy as np
@@ -111,7 +112,6 @@ import pprint
 from IPython.display import display, HTML
 
 from itertools import starmap
-
     
 ```
 
@@ -501,7 +501,8 @@ comparison_chart = plot_single_comparison(
     height=500
 )
 
-comparison_chart
+HTML(to_html(comparison_chart, include_plotlyjs='cdn', full_html=False))
+
 ```
 
 ::: text-justify
@@ -611,7 +612,7 @@ faceted_chart = plot_stock_facets(
     height=600
 )
 
-faceted_chart
+display(faceted_chart)
 ```
 
 ::: text-justify
@@ -956,7 +957,8 @@ def calendar_stock_display(stocks, show_disclaimer=False):
 for i, ticker in enumerate(tickers):
     show_disclaimer = (ticker == 'AAPL')
     calendar_chart = calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
-    display(calendar_chart)
+
+display(calendar_chart)
 ```
 
 <br>
