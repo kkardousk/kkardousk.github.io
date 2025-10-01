@@ -24,7 +24,7 @@ format:
     toc-expand: true
     toc-title: 'Navigation'
     number-depth: 2
-    fig-format: retina  
+    fig-format: png  
     plotly-connected: true  
     fig-dpi: 150
     code-link: true
