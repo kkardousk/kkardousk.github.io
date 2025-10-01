@@ -160,6 +160,9 @@ a:hover {
   text-align: center;
   margin-bottom: 2rem;
 }
+svg {
+  background-color: #f8f8f8 !important;
+}
 
 .header-svg {
   position: absolute;
