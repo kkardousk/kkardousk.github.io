@@ -1704,7 +1704,7 @@ Machine learning shows limited advantage: XGBoost outperformed simpler methods o
 
 Volatility drives prediction difficulty: High-volatility stocks like Tesla show consistently poor performance across all models (12-15% MAPE), while stable stocks like Microsoft achieve sub-1% error rates even with basic approaches.
 
-Day-of-week seasonality proves more valuable than technical indicators: The success of Seasonal Naive models validates the calendar analysis findings, demonstrating that weekly trading patterns contain more predictive signal than moving averages or lag features for short-term forecasting.
+Day-of-week seasonality often proves more valuable than technical indicators: The success of Seasonal Naive models validates the calendar analysis findings, demonstrating that weekly trading patterns contain more predictive signal than moving averages or lag features for short-term forecasting.
 
 ```{python}
 #|label: display-forecasts-error-summary
@@ -1729,4 +1729,6 @@ This pattern suggests that for short-term daily price forecasting, the day-of-we
 The exception is Google, where Linear Trend slightly outperforms baseline methods, and Tesla, where all models struggle with high volatility (12-15% MAPE), indicating that the Tesla stock's erratic price movements are inherently difficult to forecast regardless of modeling approach.
 
 I wanted to include even more complex forecasting methods such as Prophet (from Meta), or LSTMs (Long Term Short Term Model), but seeing that simple models already achieve high accuracy, I decided not to go for those. In a real-world/job day-to-day, every additional line of code/model is additional maintenance and that comes with its own set of risks/painpoints.
+
+Thanks for taking the time to read this and hopefully, if nothing else, you have enjoyed it, more to come !
 :::
