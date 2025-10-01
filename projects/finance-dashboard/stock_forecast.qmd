@@ -389,11 +389,11 @@ def create_ggplot_theme():
     'plot_bgcolor': '#F8F8F8',
     'paper_bgcolor': '#F8F8F8'
     }
-    
+
 def update_axes_theme(fig):
     """apply ggplot2-style axis formatting"""
     fig.update_xaxes(
-        title_text="", # hid x axis
+        title_text="",
         showgrid=True,
         gridwidth=0.5,
         gridcolor='#E5E5E5',
@@ -407,10 +407,10 @@ def update_axes_theme(fig):
     )
     
     fig.update_yaxes(
-      title={
-        'text': 'Close Price',
-        'standoff': 10, # distance from y axis
-        'font': {'size': 12, 'family': 'Merriweather, Georgia, serif', 'color': '#666666'}
+        title={
+            'text': 'Close Price',
+            'standoff': 10,
+            'font': {'size': 12, 'family': 'Merriweather, Georgia, serif', 'color': '#666666'}
         },
         showgrid=True,
         gridwidth=0.5,
@@ -425,13 +425,11 @@ def update_axes_theme(fig):
     )
     
     return fig
-
-def plot_single_comparison(data, title="Stock Price Comparison"):
-    """
-    create a single plot with all stocks for comparison
-    """
     
-    # color palette
+def plot_single_comparison(data, title="Stock Price Comparison", height=500):
+    """
+    create a single plot with all stocks for comparison - ggplot2 style
+    """
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
     
     fig = go.Figure()
@@ -454,48 +452,56 @@ def plot_single_comparison(data, title="Stock Price Comparison"):
             )
         )
     
-    # apply theme
-    theme = create_ggplot_theme()
-    fig.update_layout(**theme)
+    # Single consolidated layout update
     fig.update_layout(
-        title=title,
-        xaxis_title="Date",
-        yaxis_title="Close Price",
-        height=500
-    )
-    
-    fig = update_axes_theme(fig)
-    
-    # center and bolden title
-    fig.update_layout(
-      title=dict(
-        text = title,
-        x = 0.5,
-        xanchor = 'center',
-        font = dict(
-          size = 16, family = 'Merriweather, Georgia, serif', 
-          color = '#333333'
-          )
+        template='plotly_white',
+        plot_bgcolor='#F8F8F8',
+        paper_bgcolor='#F8F8F8',
+        font={'family': 'Merriweather, Georgia, serif', 'size': 12, 'color': '#333333'},
+        title=dict(
+            text=title,
+            x=0.5,
+            xanchor='center',
+            font=dict(size=16, family='Merriweather, Georgia, serif', color='#333333')
+        ),
+        showlegend=True,
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=-0.2,
+            xanchor='center',
+            x=0.5
+        ),
+        height=height,
+        margin={'l': 60, 'r': 40, 't': 60, 'b': 80},
+        xaxis=dict(
+            showgrid=True,
+            gridwidth=0.5,
+            gridcolor='#E5E5E5',
+            showline=True,
+            linewidth=0.5,
+            linecolor='#CCCCCC'
+        ),
+        yaxis=dict(
+            title='Close Price',
+            showgrid=True,
+            gridwidth=0.5,
+            gridcolor='#E5E5E5',
+            showticklabels=True,
+            tickformat='$,.0f',
+            tickfont=dict(size=10, color='#333333')
         )
     )
-    # making ytick labels more visibale
-    fig.update_yaxes(
-      showticklabels=True,
-      tickformat='$,.0f',
-      tickfont=dict(size=10, color='#333333')
-      )
     
     return fig
 
-# single comparison plot
 comparison_chart = plot_single_comparison(
     pl_results,
-    title="Stock Price Comparison Overall (3 Months)"
+    title="Stock Price Comparison Overall (3 Months)",
+    height=500
 )
 
-# display the charts
 comparison_chart
-
 ```
 
 ::: text-justify
@@ -861,7 +867,7 @@ def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='
                 if weekday < 5:
                     z_data[week, weekday] = value
                     if not np.isnan(value):
-                        text_data[week, weekday] = f'{value:.1f}%'
+                        text_data[week, weekday] = f'{value:.1f}'
                         
             colorbar_title = (
               "*Note that the U.S. stock exchanges were <b>closed</b> on September 1, 2025 due to <b>Labor Day</b>*<br>% Change in Daily Stock Price" 
@@ -925,8 +931,8 @@ def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='
         template='plotly_white',
         plot_bgcolor='rgb(248, 248, 248)',
         paper_bgcolor='rgb(248, 248, 248)',
-        height=400,
-        width=300 * ncols,
+        height=350,
+        width=700,
         showlegend=False
     )
 
@@ -949,9 +955,8 @@ def calendar_stock_display(stocks, show_disclaimer=False):
 # loop through stocks, only show disclaimer for Apple
 for i, ticker in enumerate(tickers):
     show_disclaimer = (ticker == 'AAPL')
-    calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
-
-
+    calendar_chart = calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
+    display(calendar_chart)
 ```
 
 <br>
