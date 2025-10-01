@@ -58,7 +58,7 @@ editor: visual
 ::: text-justify
 ## High Level Findings
 
-In this peice, I looked at 6 stocks over a 3-month period (July-September 2025) using multiple forecasting approaches to identify trading patterns and evaluate predictive model performance. The analysis examined Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA), comparing naive baselines against machine learning models to determine which approaches best capture short-term price movements.
+In this piece, I looked at 6 stocks over a 3-month period (July-September 2025) using multiple forecasting approaches to identify trading patterns and evaluate predictive model performance. The analysis examined Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA), comparing naive baselines against machine learning models to determine which approaches best capture short-term price movements.
 :::
 
 ::: text-justify
