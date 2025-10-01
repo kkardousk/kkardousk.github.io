@@ -57,7 +57,8 @@ editor: visual
 
 ::: text-justify
 ## High Level Findings
-I looked at 6 stocks over a 3-month period (July-September 2025) using multiple forecasting approaches to identify trading patterns and evaluate predictive model performance. The analysis examined Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA), comparing naive baselines against machine learning models to determine which approaches best capture short-term price movements.
+
+In this peice, I looked at 6 stocks over a 3-month period (July-September 2025) using multiple forecasting approaches to identify trading patterns and evaluate predictive model performance. The analysis examined Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Tesla (TSLA), Netflix (NFLX), and Nvidia (NVDA), comparing naive baselines against machine learning models to determine which approaches best capture short-term price movements.
 :::
 
 ::: text-justify
@@ -67,7 +68,7 @@ I looked at 6 stocks over a 3-month period (July-September 2025) using multiple 
 
 -   End-of-week bias spans the entire tech portfolio: Apple, Tesla, and Nvidia show systematically higher returns on Fridays, suggesting sector-wide behavioral trading patterns rather than stock-specific anomalies
 
--   Tesla and Nvidia demonstrate 3x higher daily price swings (±3%+ moves) compared to more mature tech stocks like Microsoft and Google, creating distinct forecasting challenges. Note that Google remains the most volatile in terms of $ value of the std. deviation of stock compared to its mean stock price (not the most volatile in its % change of stock price day over day). 
+-   Tesla and Nvidia demonstrate 3x higher daily price swings (±3%+ moves) compared to more mature tech stocks like Microsoft and Google, creating distinct forecasting challenges. Note that Google remains the most volatile in terms of \$ value of the std. deviation of stock compared to its mean stock price (not the most volatile in its % change of stock price day over day).
 
 -   However when scaled to each stock close price variation, the most volatile stock is Google (\~13% coefficient of variation), followed by Tesla (\~12%) and Apple (\~7%), with Microsoft being the least volatile (\~2%)
 :::
@@ -99,8 +100,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 import plotly.subplots as sp
 from plotly.subplots import make_subplots
-import plotly.offline as pyo
-pyo.init_notebook_mode(connected=False)
 
 from datetime import datetime, timedelta, date
 import numpy as np
@@ -113,10 +112,6 @@ from IPython.display import display, HTML
 
 from itertools import starmap
 
-def render_plot(fig):
-    """Render Plotly figure with embedded JS (no CDN required)"""
-    from IPython.display import HTML, display
-    display(HTML(fig.to_html(include_plotlyjs=True, full_html=False)))
     
 ```
 
@@ -499,7 +494,7 @@ comparison_chart = plot_single_comparison(
 )
 
 # display the charts
-render_plot(comparison_chart)
+comparison_chart
 
 ```
 
@@ -610,7 +605,7 @@ faceted_chart = plot_stock_facets(
     height=600
 )
 
-render_plot(faceted_chart)
+faceted_chart
 ```
 
 ::: text-justify
@@ -744,7 +739,7 @@ While above summaries give us a better picture on the stock dynamics; one thing 
 
 ## Teasing out seasonality
 
-The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday. 
+The goal now is to generate a set of calendar plots where daily price changes are used as value/color gradient, this should clearly/visually indicate any day of the week seasonality (if any). We will also need to control for Saturday/Sundays being off and for months that don't start on the first of the month being a Monday.
 
 ```{python}
 #|label: date-price-level-calc
@@ -954,7 +949,7 @@ def calendar_stock_display(stocks, show_disclaimer=False):
 # loop through stocks, only show disclaimer for Apple
 for i, ticker in enumerate(tickers):
     show_disclaimer = (ticker == 'AAPL')
-    render_plot(calendar_stock_display([ticker], show_disclaimer=show_disclaimer))
+    calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
 
 
 ```
