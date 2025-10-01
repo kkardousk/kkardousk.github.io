@@ -24,9 +24,8 @@ format:
     toc-expand: true
     toc-title: 'Navigation'
     number-depth: 2
-    fig-format: png  
-    plotly-connected: true  
-    fig-dpi: 150
+    fig-format: retina
+    fig-dpi: 300
     code-link: true
     code-fold: true
     code-summary: '<i class="bi-code-slash"></i> Show the code'
@@ -75,14 +74,10 @@ In this piece, I looked at 6 stocks over a 3-month period (July-September 2025) 
 
 ## Initial Setup
 
-<p style="color: #ff0000; font-weight: bold; font-size: 18px; text-align: center; background-color: #ffe6e6; padding: 10px; border: 2px solid #ff0000; border-radius: 5px;">
-
-NOTE: DEPENDING ON THE BROWSER, YOU MIGHT NEED TO REFRESH THIS PAGE A COUPLE OF TIMES IN ORDER FOR THE PLOTS TO RENDER. THIS IS A KNOWN ISSUE WITH {PLOTLY} WHEN USED <u>IN TANDEM</u> WITH QUARTO
-</p>
-
 ::: text-justify
 After having setup the `.venv` using `uv init`, here we start by importing needed packages and setting up what we need.
 :::
+
 
 ```{python}
 #| label: load-libraries
@@ -96,11 +91,7 @@ import polars.selectors as cs
 import great_tables as gt
 from great_tables import GT, md, style, loc
 
-import plotly.graph_objects as go
-import plotly.express as px
-import plotly.subplots as sp
-from plotly.subplots import make_subplots
-from plotly.io import to_html
+import matplotlib.pyplot as plt
 
 from datetime import datetime, timedelta, date
 import numpy as np
@@ -112,7 +103,7 @@ import pprint
 from IPython.display import display, HTML
 
 from itertools import starmap
-    
+
 ```
 
 ::: text-justify
@@ -364,159 +355,75 @@ Below I start with designing the building blocks for the visualizations. By buil
 
 ```{python}
 #| label: build-plot-structures
-def create_ggplot_theme():
-    """create a ggplot2 theme_minimal() equivalent for plotly"""
-    return {
-    'template': 'plotly_white',
-    'plot_bgcolor' :'rgb(248, 248, 248)',  
-    'paper_bgcolor': 'rgb(248, 248, 248)',
-    'font': {'family': 'Merriweather, Georgia, serif', 'size': 12, 'color': '#333333'},
-    'title': {
-        'x': 0.5, 
-        'font': {'family': 'Merriweather, Georgia, serif', 'size': 16, 'color': '#333333'}
-    },
-    'showlegend': True,
-    'legend': {
-        'orientation': 'h',
-        'yanchor': 'bottom',
-        'y': -0.2,
-        'xanchor': 'center',
-        'x': 0.5,
-        'bgcolor': 'rgba(0,0,0,0)',
-        'bordercolor': 'rgba(0,0,0,0)'
-    },
-    'margin': {'l': 60, 'r': 40, 't': 60, 'b': 80},
-    'plot_bgcolor': '#F8F8F8',
-    'paper_bgcolor': '#F8F8F8'
-    }
 
-def update_axes_theme(fig):
-    """apply ggplot2-style axis formatting"""
-    fig.update_xaxes(
-        title_text="",
-        showgrid=True,
-        gridwidth=0.5,
-        gridcolor='#E5E5E5',
-        showline=True,
-        linewidth=0.5,
-        linecolor='#CCCCCC',
-        mirror=False,
-        ticks='outside',
-        tickcolor='#CCCCCC',
-        title_font={'size': 12, 'color': '#666666'}
-    )
-    
-    fig.update_yaxes(
-        title={
-            'text': 'Close Price',
-            'standoff': 10,
-            'font': {'size': 12, 'family': 'Merriweather, Georgia, serif', 'color': '#666666'}
-        },
-        showgrid=True,
-        gridwidth=0.5,
-        gridcolor='#E5E5E5',
-        showline=False,
-        showticklabels=False,
-        zeroline=False,
-        ticks='outside',
-        tickcolor='#CCCCCC',
-        title_font={'size': 12, 'color': '#666666'},
-        tickformat='$,.0f'
-    )
-    
-    return fig
-    
-def plot_single_comparison(data, title="Stock Price Comparison", height=500):
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.ticker import FuncFormatter
+
+# set ggplot2-like style globally
+plt.style.use('seaborn-v0_8-whitegrid')
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Georgia', 'Times New Roman']
+plt.rcParams['font.size'] = 11
+plt.rcParams['axes.facecolor'] = '#F8F8F8'
+plt.rcParams['figure.facecolor'] = '#F8F8F8'
+plt.rcParams['axes.edgecolor'] = 'none'
+plt.rcParams['axes.linewidth'] = 0
+plt.rcParams['grid.color'] = '#E5E5E5'
+plt.rcParams['grid.linewidth'] = 0.5
+
+def plot_single_comparison_mpl(data, title="Stock Price Comparison", height=6):
     """
     create a single plot with all stocks for comparison - ggplot2 style
     """
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
-    
-    fig = go.Figure()
+    fig, ax = plt.subplots(figsize=(12, height))
     
     tickers = sorted(data['ticker'].unique().to_list())
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
     
     for i, ticker in enumerate(tickers):
         ticker_data = data.filter(pl.col('ticker') == ticker).sort('Date')
-        
-        fig.add_trace(
-            go.Scatter(
-                x=ticker_data['Date'].to_list(),
-                y=ticker_data['Close'].to_list(),
-                mode='lines',
-                name=ticker,
-                line=dict(color=colors[i % len(colors)], width=2),
-                hovertemplate='<b>%{fullData.name}</b><br>' +
-                            'Date: %{x}<br>' +
-                            'Close: $%{y:.2f}<extra></extra>'
-            )
-        )
+        ax.plot(ticker_data['Date'], ticker_data['Close'], 
+                label=ticker, color=colors[i], linewidth=2)
     
-    # Single consolidated layout update
-    fig.update_layout(
-        template='plotly_white',
-        plot_bgcolor='#F8F8F8',
-        paper_bgcolor='#F8F8F8',
-        font={'family': 'Merriweather, Georgia, serif', 'size': 12, 'color': '#333333'},
-        title=dict(
-            text=title,
-            x=0.5,
-            xanchor='center',
-            font=dict(size=16, family='Merriweather, Georgia, serif', color='#333333')
-        ),
-        showlegend=True,
-        legend=dict(
-            orientation='h',
-            yanchor='bottom',
-            y=-0.2,
-            xanchor='center',
-            x=0.5
-        ),
-        height=height,
-        margin={'l': 60, 'r': 40, 't': 60, 'b': 80},
-        xaxis=dict(
-            showgrid=True,
-            gridwidth=0.5,
-            gridcolor='#E5E5E5',
-            showline=True,
-            linewidth=0.5,
-            linecolor='#CCCCCC'
-        ),
-        yaxis=dict(
-            title='Close Price',
-            showgrid=True,
-            gridwidth=0.5,
-            gridcolor='#E5E5E5',
-            showticklabels=True,
-            tickformat='$,.0f',
-            tickfont=dict(size=10, color='#333333')
-        )
-    )
+    ax.set_title(title, fontsize=16, pad=20, fontweight='normal')
+    ax.set_ylabel('Close Price', fontsize=12)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), 
+             ncol=6, frameon=False, fontsize=10)
+    ax.grid(True, alpha=0.7, linewidth=0.5)
     
+    # format y-axis as currency
+    def currency_formatter(x, p):
+        return f'${x:,.0f}'
+    ax.yaxis.set_major_formatter(FuncFormatter(currency_formatter))
+    
+    # remove spines (borders)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    
+    plt.tight_layout()
     return fig
 
-comparison_chart = plot_single_comparison(
+# single comparison plot
+fig = plot_single_comparison_mpl(
     pl_results,
     title="Stock Price Comparison Overall (3 Months)",
-    height=500
+    height=5
 )
-
-HTML(to_html(comparison_chart, include_plotlyjs='cdn', full_html=False))
+plt.show()
 
 ```
 
 ::: text-justify
-As we can see from above, Netflix stock 'overshadows' any subtle variations in the stock prices for the remaining companies/stocks, simply because of the difference in scales/range of values. <br> One way to remedy that is by clicking on NFLX tile in the legend, this will deselect the Netflix Series - pun intended - from the graph; a native functionality in `{Plotly}` Another way is to be faceting on companies, essentially a '`GROUP BY TICKER`' but for plots. This is what is shown next.
+As we can see from above, Netflix stock 'overshadows' any subtle variations in the stock prices for the remaining companies/stocks, simply because of the difference in scales/range of values. <br> One way to remedy that is to be faceting on companies, essentially a '`GROUP BY TICKER`' but for plots. This is what is shown next.
 :::
 
 ```{python}
 #| label: facetted-plots
-def plot_stock_facets(data, title="Stock Price Performance", height=800):
+def plot_stock_facets_mpl(data, title="Stock Performance by Ticker", height=8):
     """
     create faceted line charts for stock prices - ggplot2 style
     """
-    
-    # get unique tickers for subplot layout
     tickers = sorted(data['ticker'].unique().to_list())
     n_tickers = len(tickers)
     
@@ -524,95 +431,45 @@ def plot_stock_facets(data, title="Stock Price Performance", height=800):
     cols = 2
     rows = (n_tickers + cols - 1) // cols
     
-    # create subplots with shared x-axis
-    fig = make_subplots(
-        rows=rows, 
-        cols=cols,
-        subplot_titles=[
-          f"{name} ({ticker})" for name, ticker in zip(
-            ['Apple', 'Google', 'Microsoft', 'Netflix', 'Nvidia', 'Tesla'],
-            sorted(pl_results['ticker'].unique())
-            )
-            ],
-        shared_xaxes=True,
-        shared_yaxes=False, # essentially scales_y = 'free' in r
-        vertical_spacing=0.08,
-        horizontal_spacing=0.1
-    )
+    fig, axes = plt.subplots(rows, cols, figsize=(14, height))
+    axes = axes.flatten()
     
-    # color palette (ggplot2-like)
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    ticker_names = ['Apple', 'Google', 'Microsoft', 'Netflix', 'Nvidia', 'Tesla']
     
-    # add line for each ticker
     for i, ticker in enumerate(tickers):
         ticker_data = data.filter(pl.col('ticker') == ticker).sort('Date')
         
-        row = (i // cols) + 1
-        col = (i % cols) + 1
+        axes[i].plot(ticker_data['Date'], ticker_data['Close'], 
+                    color=colors[i], linewidth=2)
+        axes[i].set_title(f'{ticker_names[i]} ({ticker})', 
+                         fontsize=14, pad=10, fontweight='bold')
+        axes[i].grid(True, alpha=0.7, linewidth=0.5)
         
-        fig.add_trace(
-            go.Scatter(
-                x=ticker_data['Date'].to_list(),
-                y=ticker_data['Close'].to_list(),
-                mode='lines',
-                name=ticker,
-                line=dict(color=colors[i % len(colors)], width=2),
-                hovertemplate='<b>%{fullData.name}</b><br>' +
-                            'Date: %{x}<br>' +
-                            'Close: $%{y:.2f}<extra></extra>',
-                showlegend=False  
-            ),
-            row=row, col=col
-        )
-    
-    # apply ggplot2 theme
-    theme = create_ggplot_theme()
-    fig.update_layout(**theme)
-    fig.update_layout(
-        title=title,
-        height=height,
-        showlegend=False
-    )
-    
-    # apply axis styling
-    fig = update_axes_theme(fig)
-    
-    # update subplot titles to be more prominent
-    for i, annotation in enumerate(fig['layout']['annotations']):
-        annotation['font'] = dict(
-          size=14,
-          color='#333333',
-          family='Merriweather, Georgia, serif'
-          )
+        # format y-axis as currency
+        def currency_formatter(x, p):
+            return f'${x:,.0f}'
+        axes[i].yaxis.set_major_formatter(FuncFormatter(currency_formatter))
         
-    fig.update_layout(
-      title=dict(
-        text = title,
-        x = 0.5,
-        xanchor = 'center',
-        font = dict(
-          size = 16, family = 'Merriweather, Georgia, serif', 
-          color = '#333333'
-          )
-        )
-    )
+        # remove spines (borders)
+        for spine in axes[i].spines.values():
+            spine.set_visible(False)
     
-    fig.update_yaxes(
-      showticklabels=True,
-      tickformat='$,.0f',
-      tickfont=dict(size=10, color='#333333')
-      )
+    # hide extra subplots if any
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
     
+    fig.suptitle(title, fontsize=16, y=0.995, fontweight='normal')
+    plt.tight_layout()
     return fig
-  
+
 # faceted plot 
-faceted_chart = plot_stock_facets(
+fig = plot_stock_facets_mpl(
     pl_results, 
     title="Stock Performance by Ticker (3 Months)", 
-    height=600
+    height=8
 )
-
-display(faceted_chart)
+plt.show()
 ```
 
 ::: text-justify
@@ -797,8 +654,11 @@ calendar_pd.columns = [
 
 ```{python}
 #| label: seasonality-view-calendar-grid
-def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='viridis', show_disclaimer=False):
-    
+
+def create_calendar_heatmap_mpl(df, stocks, months, vmin=-5, vmax=5, show_disclaimer=False):
+    """
+    create calendar heatmap using matplotlib
+    """
     # convert to pandas 
     if hasattr(df, "to_pandas"):
         df = df.to_pandas()
@@ -815,34 +675,24 @@ def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='
     # filter out weekends
     dff = dff[dff['weekday'] < 5]
     
-    # calculate proper week numbers within each month
-    dff = dff.sort_values(['month', 'Date'])
-    dff['week_of_month'] = dff.groupby('month')['Date'].transform(
-        lambda x: ((x.dt.day - 1) // 7) + 1
-    )
-    
     # unique months sorted
     unique_months = sorted(dff['month'].unique())
-    ncols = len(unique_months)  # months as columns
-    nrows = 1
+    ncols = len(unique_months)
     
-    # create subplot grid - months as columns
-    month_names = {
-        7: 'Jul', 
-        8: 'Aug', 
-        9: 'Sep'
+    # create subplot grid - months as columns (reduced width)
+    month_names = {7: 'Jul', 8: 'Aug', 9: 'Sep'}
+    
+    fig, axes = plt.subplots(1, ncols, figsize=(10, 3.5))
+    if ncols == 1:
+        axes = [axes]
+    
+    stock_name_map = {
+        'AAPL': 'Apple', 'GOOGL': 'Google', 'MSFT': 'Microsoft',
+        'NFLX': 'Netflix', 'NVDA': 'Nvidia', 'TSLA': 'Tesla'
     }
-      
-    fig = sp.make_subplots(
-        rows=nrows, cols=ncols,
-        subplot_titles=[f"{month_names[m]}" for m in unique_months],
-        horizontal_spacing=0.05
-    )
     
     # add one heatmap per month
     for idx, m in enumerate(unique_months):
-        col = idx + 1
-        row = 1
         dmonth = dff[dff['month'] == m]
         
         if len(dmonth) > 0:
@@ -863,106 +713,79 @@ def create_stock_calendar_grid(df, stocks, months, vmin=-5, vmax=5, colorscale='
             z_data = np.full((max_weeks, 5), np.nan)
             text_data = np.full((max_weeks, 5), '', dtype=object)
             
-            # fill arrays
+            # fill arrays - no inversion
             for (week, weekday), value in calendar_grid.items():
                 if weekday < 5:
                     z_data[week, weekday] = value
                     if not np.isnan(value):
                         text_data[week, weekday] = f'{value:.1f}'
-                        
-            colorbar_title = (
-              "*Note that the U.S. stock exchanges were <b>closed</b> on September 1, 2025 due to <b>Labor Day</b>*<br>% Change in Daily Stock Price" 
-              if show_disclaimer 
-              else "% Change in Daily Stock Price"
-              )
-                        
-            heatmap = go.Heatmap(
-                z=z_data[::-1],  # reverse week order
-                x=['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                y=[f'{max_weeks-i}' for i in range(max_weeks)],  
-                zmin=vmin,
-                zmax=vmax,
-                colorscale=colorscale,
-                showscale=(idx == len(unique_months)-1),
-                colorbar=dict(
-                    title=colorbar_title,
-                    orientation="h",
-                    titleside="top",
-                    len=0.4,
-                    thickness=15,
-                    x=0.5,
-                    xanchor="center",
-                    y=1.15,
-                    yanchor="bottom"
-                ) if idx == len(unique_months)-1 else None,
-                text=text_data[::-1],
-                texttemplate="%{text}",
-                textfont={"color": "black", "size": 13},
-                xgap=3,
-                ygap=3,
-                hovertemplate="<b>%{x}</b><br>Week: %{y}<br>Change: %{z:.2f}%<extra></extra>"
-            )
-            fig.add_trace(heatmap, row=row, col=col)
-
-    fig.update_xaxes(
-        gridcolor='rgb(248, 248, 248)'
-    )
-
-    # hide week numbers by making them white
-    fig.update_yaxes(
-        tickfont=dict(color='white'),
-        gridcolor='rgb(248, 248, 248)'
-    )
+            
+            # plot heatmap
+            im = axes[idx].imshow(z_data, cmap='cividis_r', aspect='auto', vmin=vmin, vmax=vmax)
+            
+            # add text annotations
+            for week in range(max_weeks):
+                for day in range(5):
+                    if text_data[week, day]:
+                        value = z_data[week, day]
+                        text_color = 'white' if value > 3.5 else 'black'
+                        axes[idx].text(
+                            day, week, text_data[week, day],
+                            ha='center', va='center', fontsize=11, color=text_color
+                        )
+            
+            # set axis labels
+            axes[idx].set_xticks(range(5))
+            axes[idx].set_xticklabels(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], fontsize=10)
+            axes[idx].set_yticks([])
+            axes[idx].set_title(month_names[m], fontsize=12, pad=8, fontweight='normal')
+            axes[idx].grid(False)
+            
+            # remove borders/spines
+            for spine in axes[idx].spines.values():
+                spine.set_visible(False)
+            
+            axes[idx].set_facecolor((0.973, 0.973, 0.973))
     
-    stock_name_map = {
-        'AAPL': 'Apple',
-        'GOOGL': 'Google',
-        'MSFT': 'Microsoft',
-        'NFLX': 'Netflix',
-        'NVDA': 'Nvidia',
-        'TSLA': 'Tesla'
-    }
-          
-    fig.update_layout(
-        title={
-            'text': "<b>" + ", ".join(f"{stock_name_map[ticker]}" for ticker in stocks) + "</b>",
-            'xanchor': 'center',
-            'font': {'size': 18}
-        },
-        template='plotly_white',
-        plot_bgcolor='rgb(248, 248, 248)',
-        paper_bgcolor='rgb(248, 248, 248)',
-        height=350,
-        width=700,
-        showlegend=False
+    # add colorbar (top centered, horizontal)
+    cbar = fig.colorbar(
+      im, 
+      ax=axes,
+      orientation='horizontal',
+      fraction=0.05, 
+      pad=0.35,
+      aspect=25,
+      location='top'
+      )
+    
+    colorbar_title = (
+        "Note that the US stock exchanges closed on Jul 3 (early) & Sep 1; due to Independance & Labor Day respectively\n% Change in Daily Stock Price" 
+        if show_disclaimer 
+        else "% Change in Daily Stock Price"
     )
-
+    cbar.set_label(colorbar_title, fontsize=12, weight='bold')
+    cbar.ax.xaxis.set_label_position('top')
+    
+    # set main title (left aligned)
+    title = ", ".join(f"{stock_name_map[ticker]}" for ticker in stocks)
+    fig.text(0.125, 0.85, title, fontsize=16, fontweight='bold',
+             ha='left', va='bottom')
+    
+    fig.patch.set_facecolor((0.973, 0.973, 0.973))
+    plt.tight_layout(rect=[0, 0, 1, 0.78])
     return fig
-
-# create a function that loops through all stocks to display calendar view
-def calendar_stock_display(stocks, show_disclaimer=False):
-    fig = create_stock_calendar_grid(
-        df=calendar_data,
-        stocks=stocks,
-        months=[7, 8, 9],
-        vmin=-5,
-        vmax=5,
-        colorscale='Earth',
-        show_disclaimer=show_disclaimer
-    )
-    return fig
-
-
-# loop through stocks, only show disclaimer for Apple
+  
+  
+# loop through stocks, only show disclaimer for apple
 for i, ticker in enumerate(tickers):
     show_disclaimer = (ticker == 'AAPL')
-    calendar_chart = calendar_stock_display([ticker], show_disclaimer=show_disclaimer)
+    fig = create_calendar_heatmap_mpl(
+        calendar_data, [ticker], [7, 8, 9],
+        vmin=-5, vmax=5, show_disclaimer=show_disclaimer
+    )
+    plt.show()
 
-display(calendar_chart)
 ```
-
-<br>
-
 From above calendar plots, a few patterns stand out:
 
 -   Tesla shows a notable Friday effect: consistent positive performance (blueish green tiles) appearing frequently on Fridays across multiple months
