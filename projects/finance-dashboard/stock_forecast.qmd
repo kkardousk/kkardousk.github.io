@@ -759,7 +759,7 @@ def create_calendar_heatmap_mpl(df, stocks, months, vmin=-5, vmax=5, show_discla
       )
     
     colorbar_title = (
-        "Note that the US stock exchanges closed on Jul 3 (early) & Sep 1; due to Independance & Labor Day respectively\n% Change in Daily Stock Price" 
+        "Note that the US stock exchanges closed on Jul 3 (early) & Sep 1; due to Independence & Labor Day respectively\n% Change in Daily Stock Price" 
         if show_disclaimer 
         else "% Change in Daily Stock Price"
     )
