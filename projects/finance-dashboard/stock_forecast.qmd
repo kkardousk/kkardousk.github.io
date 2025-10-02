@@ -759,7 +759,7 @@ def create_calendar_heatmap_mpl(df, stocks, months, vmin=-5, vmax=5, show_discla
       )
     
     colorbar_title = (
-        "Note that the US stock exchanges closed on Jul 3 (early) & Sep 1; due to Independence & Labor Day respectively\n% Change in Daily Stock Price" 
+        "Note that the US stock exchanges closed on Jul 3 (early) & Sep 1; due to Independence & Labor Day, respectively\n% Change in Daily Stock Price" 
         if show_disclaimer 
         else "% Change in Daily Stock Price"
     )
@@ -788,7 +788,7 @@ for i, ticker in enumerate(tickers):
 ```
 From above calendar plots, a few patterns stand out:
 
--   Tesla shows a notable Friday effect: consistent positive performance (blueish green tiles) appearing frequently on Fridays across multiple months
+-   Tesla shows a notable Friday effect: consistent positive performance (darker blueish tiles) appearing frequently on Fridays across multiple months
 
 -   End-of-week effects across portfolio: Apple, Tesla, and Nvidia show more frequent positive returns on Fridays compared to other weekdays
 
@@ -1558,7 +1558,7 @@ This pattern suggests that for short-term daily price forecasting, the day-of-we
 
 The exception is Google, where Linear Trend slightly outperforms baseline methods, and Tesla, where all models struggle with high volatility (12-15% MAPE), indicating that the Tesla stock's erratic price movements are inherently difficult to forecast regardless of modeling approach.
 
-I wanted to include even more complex forecasting methods such as Prophet (from Meta), or LSTMs (Long Term Short Term Model), but seeing that simple models already achieve high accuracy, I decided not to go for those. In a real-world/job day-to-day, every additional line of code/model is additional maintenance and that comes with its own set of risks/painpoints.
+I wanted to include even more complex forecasting methods such as Prophet (from Meta), or LSTMs (Long Short-Term Memory), but seeing that simple models already achieve high accuracy, I decided not to go for those. In a real-world/job day-to-day, every additional line of code/model is additional maintenance and that comes with its own set of risks/painpoints.
 
 Thanks for taking the time to read this and hopefully, if nothing else, you have enjoyed it, more to come !
 :::
