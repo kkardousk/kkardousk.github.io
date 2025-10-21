@@ -8,7 +8,7 @@ format:
 :::: {.header-banner .grid}
 
 ::: {.g-col-5}
-# Where Data Meets Curiosity {.text-center}
+# Where Data Meets <span id="cycling-text" class="animated-word">Curiosity</span> {.text-center}
   
 In a nutshell, I share my code and thoughts while replicating data and reverse engineering data visualizations that I find interesting online, mostly data-driven news articles along with analyses I like to do in my spare time.<br> You will also find external links to more of my work in the 'Older Links' section. <br>Feel free to connect with me if you have any questions or suggestions !
 :::
@@ -16,6 +16,32 @@ In a nutshell, I share my code and thoughts while replicating data and reverse e
 ::: {.g-col-4 .gif-container .text-center}
 ![](giphy.gif){.rounded-gif}
 :::
+
+::::
+
+<script>
+const words = ['Curiosity', 'Discovery', 'Insight'];
+let currentIndex = 0;
+const textElement = document.getElementById('cycling-text');
+
+function cycleWords() {
+  // Fade out
+  textElement.classList.add('fade-out');
+  
+  // Wait for fade out, then change text and fade in
+  setTimeout(() => {
+    currentIndex = (currentIndex + 1) % words.length;
+    textElement.textContent = words[currentIndex];
+    textElement.classList.remove('fade-out');
+    textElement.classList.add('fade-in');
+  }, 500);
+}
+
+// Start cycling after initial delay
+setTimeout(() => {
+  setInterval(cycleWords, 2000);
+}, 2000);
+</script>
 
 ::::
 

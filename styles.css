@@ -498,3 +498,22 @@ body:not(:has(.header-banner)) .toc,
 body:not(:has(.header-banner)) .nav-link {
   color: #495057 !important;
 }
+
+.animated-word {
+  color: white; /* White text */
+  background-color: rgba(255, 154, 84, 0.4); /* Orange background with transparency */
+  font-weight: bold;
+  display: inline-block;
+  min-width: 150px;
+  padding: 5px 15px; /* Add padding so background shows nicely around text */
+  border-radius: 8px; /* Rounded corners for the rectangular background */
+  transition: opacity 0.5s ease-in-out;
+}
+
+.animated-word.fade-out {
+  opacity: 0;
+}
+
+.animated-word.fade-in {
+  opacity: 1;
+}
